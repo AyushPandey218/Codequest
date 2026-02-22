@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Subtle Page Animations */
+@layer utilities {
+
+  /* Fade in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Slide up animation */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Slide in from left */
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Slide in from right */
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Scale in animation */
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Animation classes */
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .animate-float-spin {
+    animation: floatSpin 20s linear infinite;
+  }
+
+  @keyframes floatSpin {
+    0% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+
+    25% {
+      transform: translate(15px, 15px) rotate(5deg);
+    }
+
+    50% {
+      transform: translate(0, 30px) rotate(0deg);
+    }
+
+    75% {
+      transform: translate(-15px, 15px) rotate(-5deg);
+    }
+
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+  }
+
+  .animate-fade-out {
+    animation: fadeOut 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
+    }
+  }
+
+  /* Stagger delays for child elements */
+  .animate-delay-100 {
+    animation-delay: 0.1s;
+    animation-fill-mode: backwards;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 0.2s;
+    animation-fill-mode: backwards;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 0.3s;
+    animation-fill-mode: backwards;
+  }
+
+  .animate-delay-400 {
+    animation-delay: 0.4s;
+    animation-fill-mode: backwards;
+  }
+
+  .animate-delay-500 {
+    animation-delay: 0.5s;
+    animation-fill-mode: backwards;
+  }
+}
+
+/* Custom Base Styles */
+@layer base {
+  body {
+    @apply font-display antialiased;
+  }
+
+  /* Selection styles */
+  ::selection {
+    @apply bg-primary text-white;
+  }
+}
+
+/* Custom Component Classes */
+@layer components {
+
+  /* Glass morphism effect */
+  .glass-card {
+    @apply bg-[#1c1c27]/85 backdrop-blur-xl;
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply bg-primary hover:bg-blue-600 text-white font-bold rounded-xl px-6 py-3 transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.01] active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply bg-[#282839] hover:bg-[#3b3b54] text-white font-bold rounded-xl px-6 py-3 transition-all border border-[#3b3b54];
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary hover:bg-primary/10 font-bold rounded-xl px-6 py-3 transition-all;
+  }
+
+  /* Background patterns */
+  .bg-grid-pattern {
+    background-image: radial-gradient(rgba(43, 43, 238, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Animations */
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px -5px rgba(43, 43, 238, 0.3);
+    }
+
+    50% {
+      box-shadow: 0 0 40px -5px rgba(43, 43, 238, 0.6);
+    }
+  }
+
+  .animate-glow {
+    animation: pulse-glow 3s infinite;
+  }
+
+  /* Material Icons styling */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Global Scrollbar Styling */
+/* Modern, thin scrollbars for all browsers */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a35 transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a35;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a45;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #4a4a55;
+}
+
+/* Scrollbar for specific dark containers */
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: #3a3a45;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4a4a55;
+}
+
+/* Scrollbar for code editor areas */
+.monaco-editor ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.monaco-editor ::-webkit-scrollbar-thumb {
+  background: #3a3a45;
+  border-radius: 4px;
+}
+
+.monaco-editor ::-webkit-scrollbar-thumb:hover {
+  background: #4a4a55;
+}
