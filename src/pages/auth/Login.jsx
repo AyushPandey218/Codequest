@@ -23,6 +23,11 @@ const Login = () => {
     setPassword('demo123')
   }
 
+  const handleAdminLogin = () => {
+    setEmail('admin@codequest.com')
+    setPassword('admin123')
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -198,6 +203,15 @@ const Login = () => {
             >
               <span className="material-symbols-outlined text-primary group-hover:animate-pulse">terminal</span>
               <span>Use Demo Credentials</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAdminLogin}
+              className="group flex h-14 items-center justify-center gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 backdrop-blur-md px-4 text-base font-bold text-amber-400 transition-all hover:bg-amber-500/10 hover:border-amber-500/30 active:scale-[0.98] shadow-lg hover:shadow-amber-500/10"
+            >
+              <span className="material-symbols-outlined text-amber-400 group-hover:animate-pulse">admin_panel_settings</span>
+              <span>Admin Access</span>
             </button>
           </form>
 

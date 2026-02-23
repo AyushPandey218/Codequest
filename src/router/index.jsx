@@ -43,6 +43,10 @@ import AppSettings from '../pages/settings/AppSettings'
 import CommunityForum from '../pages/community/CommunityForum'
 import ContactSupport from '../pages/community/ContactSupport'
 
+// Admin Pages
+import AdminQuestManager from '../pages/admin/AdminQuestManager'
+import AdminRoute from '../components/common/AdminRoute'
+
 // Legal Pages
 import TermsOfService from '../pages/legal/TermsPage'
 import PrivacyPolicy from '../pages/legal/PrivacyPage'
@@ -181,6 +185,17 @@ const router = createBrowserRouter([
           {
             path: 'settings/app',
             element: <AppSettings />,
+          },
+          // Admin Routes (protected - admin only)
+          {
+            path: 'admin',
+            element: <AdminRoute />,
+            children: [
+              {
+                path: 'quests',
+                element: <AdminQuestManager />,
+              },
+            ],
           },
           // Community Routes
           {

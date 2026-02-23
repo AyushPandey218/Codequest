@@ -7,7 +7,7 @@ import { useState } from 'react'
  * Used for: Dashboard, Quests, Leaderboard, Profile, Settings, etc.
  */
 const DashboardLayout = () => {
-  const { user, logout } = useAuth()
+  const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
@@ -32,6 +32,10 @@ const DashboardLayout = () => {
     { path: '/app/support', icon: 'help', label: 'Support' },
   ]
 
+  const adminNavItems = [
+    { path: '/app/admin/quests', icon: 'admin_panel_settings', label: 'Quest Manager' },
+  ]
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark flex">
       {/* Sidebar */}
@@ -46,45 +50,67 @@ const DashboardLayout = () => {
           </Link>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 pr-2 space-y-1">
-          {navigationItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  isActive
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+        {isAdmin ? (
+          /* Admin-only nav: only Quest Manager */
+          <nav className="flex-1 overflow-y-auto p-4 pr-2 space-y-1">
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-4 mb-2">Admin Panel</p>
+            {adminNavItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
+                    ? 'bg-primary/20 text-primary border border-primary/30'
                     : 'text-text-muted hover:text-white hover:bg-[#282839]'
-                }`
-              }
-            >
-              <span className="material-symbols-outlined text-xl">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
+                  }`
+                }
+              >
+                <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        ) : (
+          <>
+            {/* Regular Navigation */}
+            <nav className="flex-1 overflow-y-auto p-4 pr-2 space-y-1">
+              {navigationItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'text-text-muted hover:text-white hover:bg-[#282839]'
+                    }`
+                  }
+                >
+                  <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
 
-        {/* Bottom Nav */}
-        <div className="p-4 border-t border-border-dark space-y-1">
-          {bottomNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  isActive
-                    ? 'bg-[#282839] text-white'
-                    : 'text-text-muted hover:text-white hover:bg-[#282839]'
-                }`
-              }
-            >
-              <span className="material-symbols-outlined text-xl">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </NavLink>
-          ))}
-        </div>
+            {/* Bottom Nav */}
+            <div className="p-4 border-t border-border-dark space-y-1">
+              {bottomNavItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
+                      ? 'bg-[#282839] text-white'
+                      : 'text-text-muted hover:text-white hover:bg-[#282839]'
+                    }`
+                  }
+                >
+                  <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          </>
+        )}
       </aside>
 
       {/* Overlay for mobile */}

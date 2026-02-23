@@ -36,9 +36,23 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Demo user account
       let mockUser
-      if (email === 'demo@codequest.com' && password === 'demo123') {
+
+      // Admin account
+      if (email === 'admin@codequest.com' && password === 'admin123') {
+        mockUser = {
+          id: 'admin-user-001',
+          username: 'Admin',
+          email: email,
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
+          level: 99,
+          xp: 99999,
+          rank: 1,
+          role: 'admin'
+        }
+      }
+      // Demo user account
+      else if (email === 'demo@codequest.com' && password === 'demo123') {
         mockUser = {
           id: 'demo-user-123',
           username: 'DemoUser',
@@ -124,9 +138,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser))
   }
 
+  const isAdmin = user?.role === 'admin'
+
   const value = {
     user,
     isAuthenticated,
+    isAdmin,
     isLoading,
     login,
     signup,

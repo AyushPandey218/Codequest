@@ -227,6 +227,13 @@ export const questDetails = {
             JavaScript: `function solution(arr) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static int solution(int[] arr) {\n        // Your code here\n        return 0;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Positive numbers', input: '[1, 2, 3, 4, 5]', expectedOutput: '15', isHidden: false },
+            { id: 'tc2', description: 'Mixed positive and negative', input: '[-3, 0, 7]', expectedOutput: '4', isHidden: false },
+            { id: 'tc3', description: 'Empty array', input: '[]', expectedOutput: '0', isHidden: false },
+            { id: 'tc4', description: 'Single element', input: '[42]', expectedOutput: '42', isHidden: true },
+            { id: 'tc5', description: 'All zeros', input: '[0, 0, 0]', expectedOutput: '0', isHidden: true },
+        ],
         tags: ['Arrays', 'Loops', 'Math'],
     },
     q2: {
@@ -253,6 +260,13 @@ export const questDetails = {
             JavaScript: `function solution(s) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static String solution(String s) {\n        // Your code here\n        return "";\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Basic word', input: '"hello"', expectedOutput: '"olleh"', isHidden: false },
+            { id: 'tc2', description: 'Mixed case', input: '"CodeQuest"', expectedOutput: '"tseuQedoC"', isHidden: false },
+            { id: 'tc3', description: 'Empty string', input: '""', expectedOutput: '""', isHidden: false },
+            { id: 'tc4', description: 'Single char', input: '"a"', expectedOutput: '"a"', isHidden: true },
+            { id: 'tc5', description: 'Palindrome', input: '"racecar"', expectedOutput: '"racecar"', isHidden: true },
+        ],
         tags: ['Strings', 'Basics'],
     },
     q3: {
@@ -278,6 +292,13 @@ export const questDetails = {
             JavaScript: `function solution(n) {\n    const result = [];\n    // Your code here\n    return result;\n}`,
             Java: `import java.util.*;\npublic class Solution {\n    public static List<String> solution(int n) {\n        List<String> result = new ArrayList<>();\n        // Your code here\n        return result;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'n=5', input: '5', expectedOutput: '["1","2","Fizz","4","Buzz"]', isHidden: false },
+            { id: 'tc2', description: 'n=15 (includes FizzBuzz)', input: '15', expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz","11","Fizz","13","14","FizzBuzz"]', isHidden: false },
+            { id: 'tc3', description: 'n=1', input: '1', expectedOutput: '["1"]', isHidden: false },
+            { id: 'tc4', description: 'n=3', input: '3', expectedOutput: '["1","2","Fizz"]', isHidden: true },
+            { id: 'tc5', description: 'n=30', input: '30', expectedOutput: '...30 elements...', isHidden: true },
+        ],
         tags: ['Math', 'Conditionals', 'Loops'],
     },
     q4: {
@@ -303,6 +324,13 @@ export const questDetails = {
             JavaScript: `function solution(s) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static boolean solution(String s) {\n        // Your code here\n        return false;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Classic palindrome', input: '"racecar"', expectedOutput: 'true', isHidden: false },
+            { id: 'tc2', description: 'Not a palindrome', input: '"hello"', expectedOutput: 'false', isHidden: false },
+            { id: 'tc3', description: 'Mixed case palindrome', input: '"Madam"', expectedOutput: 'true', isHidden: false },
+            { id: 'tc4', description: 'Single character', input: '"a"', expectedOutput: 'true', isHidden: true },
+            { id: 'tc5', description: 'Two same chars', input: '"aa"', expectedOutput: 'true', isHidden: true },
+        ],
         tags: ['Strings', 'Two Pointers'],
     },
     q5: {
@@ -328,6 +356,13 @@ export const questDetails = {
             JavaScript: `function solution(s) {\n    let count = 0;\n    // Your code here\n    return count;\n}`,
             Java: `public class Solution {\n    public static int solution(String s) {\n        int count = 0;\n        // Your code here\n        return count;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Basic vowel count', input: '"hello"', expectedOutput: '2', isHidden: false },
+            { id: 'tc2', description: 'Multiple vowels', input: '"CodeQuest"', expectedOutput: '4', isHidden: false },
+            { id: 'tc3', description: 'No vowels', input: '"gym"', expectedOutput: '0', isHidden: false },
+            { id: 'tc4', description: 'All vowels', input: '"aeiou"', expectedOutput: '5', isHidden: true },
+            { id: 'tc5', description: 'Empty string', input: '""', expectedOutput: '0', isHidden: true },
+        ],
         tags: ['Strings', 'Iteration'],
     },
     q6: {
@@ -353,6 +388,13 @@ export const questDetails = {
             JavaScript: `function solution(arr, target) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static int[] solution(int[] arr, int target) {\n        // Your code here\n        return new int[]{};\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Basic case', input: '{"arr": [2,7,11,15], "target": 9}', expectedOutput: '[0,1]', isHidden: false },
+            { id: 'tc2', description: 'Middle pair', input: '{"arr": [3,2,4], "target": 6}', expectedOutput: '[1,2]', isHidden: false },
+            { id: 'tc3', description: 'Duplicate values', input: '{"arr": [3,3], "target": 6}', expectedOutput: '[0,1]', isHidden: false },
+            { id: 'tc4', description: 'Negative numbers', input: '{"arr": [-1,-2,-3,-4,-5], "target": -8}', expectedOutput: '[2,4]', isHidden: true },
+            { id: 'tc5', description: 'Larger array', input: '{"arr": [0,4,3,0], "target": 0}', expectedOutput: '[0,3]', isHidden: true },
+        ],
         tags: ['Arrays', 'Hash Map', 'Classic'],
     },
     q7: {
@@ -378,6 +420,13 @@ export const questDetails = {
             JavaScript: `function solution(n) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static int solution(int n) {\n        // Your code here\n        return 0;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'F(0)', input: '0', expectedOutput: '0', isHidden: false },
+            { id: 'tc2', description: 'F(1)', input: '1', expectedOutput: '1', isHidden: false },
+            { id: 'tc3', description: 'F(6)', input: '6', expectedOutput: '8', isHidden: false },
+            { id: 'tc4', description: 'F(10)', input: '10', expectedOutput: '55', isHidden: true },
+            { id: 'tc5', description: 'F(20)', input: '20', expectedOutput: '6765', isHidden: true },
+        ],
         tags: ['Math', 'Recursion', 'Dynamic Programming'],
     },
     q8: {
@@ -403,6 +452,13 @@ export const questDetails = {
             JavaScript: `function solution(s) {\n    const stack = [];\n    // Your code here\n    return true;\n}`,
             Java: `import java.util.*;\npublic class Solution {\n    public static boolean solution(String s) {\n        Deque<Character> stack = new ArrayDeque<>();\n        // Your code here\n        return true;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Simple valid', input: '"()"', expectedOutput: 'true', isHidden: false },
+            { id: 'tc2', description: 'Multiple types valid', input: '"()[]{}"', expectedOutput: 'true', isHidden: false },
+            { id: 'tc3', description: 'Mismatched brackets', input: '"(]"', expectedOutput: 'false', isHidden: false },
+            { id: 'tc4', description: 'Wrong order', input: '"([)]"', expectedOutput: 'false', isHidden: true },
+            { id: 'tc5', description: 'Nested valid', input: '"{[]}"', expectedOutput: 'true', isHidden: true },
+        ],
         tags: ['Stacks', 'Strings', 'Classic'],
     },
     q9: {
@@ -428,6 +484,13 @@ export const questDetails = {
             JavaScript: `function solution(arr) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static int solution(int[] arr) {\n        // Your code here\n        return 0;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Classic Kadane', input: '[-2,1,-3,4,-1,2,1,-5,4]', expectedOutput: '6', isHidden: false },
+            { id: 'tc2', description: 'Single element', input: '[1]', expectedOutput: '1', isHidden: false },
+            { id: 'tc3', description: 'All negative', input: '[-1,-2,-3]', expectedOutput: '-1', isHidden: false },
+            { id: 'tc4', description: 'All positive', input: '[1,2,3,4]', expectedOutput: '10', isHidden: true },
+            { id: 'tc5', description: 'Mixed with large gap', input: '[-5,100,-5]', expectedOutput: '100', isHidden: true },
+        ],
         tags: ['Arrays', 'Dynamic Programming', 'Kadane'],
     },
     q10: {
@@ -453,6 +516,13 @@ export const questDetails = {
             JavaScript: `function solution(a, b) {\n    const result = [];\n    // Your code here\n    return result;\n}`,
             Java: `public class Solution {\n    public static int[] solution(int[] a, int[] b) {\n        // Your code here\n        return new int[]{};\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Interleaved', input: '{"a": [1,3,5], "b": [2,4,6]}', expectedOutput: '[1,2,3,4,5,6]', isHidden: false },
+            { id: 'tc2', description: 'One empty', input: '{"a": [1,2], "b": []}', expectedOutput: '[1,2]', isHidden: false },
+            { id: 'tc3', description: 'Other empty', input: '{"a": [], "b": [1]}', expectedOutput: '[1]', isHidden: false },
+            { id: 'tc4', description: 'Duplicates', input: '{"a": [1,1,2], "b": [1,2,3]}', expectedOutput: '[1,1,1,2,2,3]', isHidden: true },
+            { id: 'tc5', description: 'Different lengths', input: '{"a": [5], "b": [1,2,3,4]}', expectedOutput: '[1,2,3,4,5]', isHidden: true },
+        ],
         tags: ['Arrays', 'Sorting', 'Two Pointers'],
     },
     q11: {
@@ -478,6 +548,13 @@ export const questDetails = {
             JavaScript: `function solution(arr) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static int solution(int[] arr) {\n        // Your code here\n        return 0;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Mixed sequence', input: '[10,9,2,5,3,7,101,18]', expectedOutput: '4', isHidden: false },
+            { id: 'tc2', description: 'All increasing', input: '[0,1,0,3,2,3]', expectedOutput: '4', isHidden: false },
+            { id: 'tc3', description: 'All same', input: '[7,7,7,7]', expectedOutput: '1', isHidden: false },
+            { id: 'tc4', description: 'Single element', input: '[1]', expectedOutput: '1', isHidden: true },
+            { id: 'tc5', description: 'Strictly increasing', input: '[1,2,3,4,5]', expectedOutput: '5', isHidden: true },
+        ],
         tags: ['Dynamic Programming', 'Arrays', 'Classic'],
     },
     q12: {
@@ -503,6 +580,13 @@ export const questDetails = {
             JavaScript: `function solution(arr, target) {\n    let left = 0, right = arr.length - 1;\n    // Your code here\n    return -1;\n}`,
             Java: `public class Solution {\n    public static int solution(int[] arr, int target) {\n        int left = 0, right = arr.length - 1;\n        // Your code here\n        return -1;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Target found', input: '{"arr": [-1,0,3,5,9,12], "target": 9}', expectedOutput: '4', isHidden: false },
+            { id: 'tc2', description: 'Target not found', input: '{"arr": [-1,0,3,5,9,12], "target": 2}', expectedOutput: '-1', isHidden: false },
+            { id: 'tc3', description: 'Single element found', input: '{"arr": [5], "target": 5}', expectedOutput: '0', isHidden: false },
+            { id: 'tc4', description: 'First element', input: '{"arr": [1,3,5,7,9], "target": 1}', expectedOutput: '0', isHidden: true },
+            { id: 'tc5', description: 'Last element', input: '{"arr": [1,3,5,7,9], "target": 9}', expectedOutput: '4', isHidden: true },
+        ],
         tags: ['Binary Search', 'Arrays', 'Classic'],
     },
     q13: {
@@ -528,6 +612,13 @@ export const questDetails = {
             JavaScript: `function solution(s, t) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static boolean solution(String s, String t) {\n        // Your code here\n        return false;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Valid anagram', input: '{"s": "anagram", "t": "nagaram"}', expectedOutput: 'true', isHidden: false },
+            { id: 'tc2', description: 'Not anagram', input: '{"s": "rat", "t": "car"}', expectedOutput: 'false', isHidden: false },
+            { id: 'tc3', description: 'Case-insensitive', input: '{"s": "Listen", "t": "Silent"}', expectedOutput: 'true', isHidden: false },
+            { id: 'tc4', description: 'Different lengths', input: '{"s": "ab", "t": "abc"}', expectedOutput: 'false', isHidden: true },
+            { id: 'tc5', description: 'Single chars match', input: '{"s": "a", "t": "a"}', expectedOutput: 'true', isHidden: true },
+        ],
         tags: ['Strings', 'Hash Map', 'Sorting'],
     },
     q14: {
@@ -553,6 +644,14 @@ export const questDetails = {
             JavaScript: `function solution(n) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static boolean solution(int n) {\n        // Your code here\n        return false;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: '2^0 = 1', input: '1', expectedOutput: 'true', isHidden: false },
+            { id: 'tc2', description: '2^1 = 2', input: '2', expectedOutput: 'true', isHidden: false },
+            { id: 'tc3', description: 'Not power of two', input: '3', expectedOutput: 'false', isHidden: false },
+            { id: 'tc4', description: '2^4 = 16', input: '16', expectedOutput: 'true', isHidden: false },
+            { id: 'tc5', description: 'Zero', input: '0', expectedOutput: 'false', isHidden: true },
+            { id: 'tc6', description: 'Negative', input: '-8', expectedOutput: 'false', isHidden: true },
+        ],
         tags: ['Math', 'Bit Manipulation'],
     },
     q15: {
@@ -578,6 +677,13 @@ export const questDetails = {
             JavaScript: `function solution(arr) {\n    const result = [];\n    // Your code here\n    return result;\n}`,
             Java: `import java.util.*;\npublic class Solution {\n    public static List<Integer> solution(List<Object> arr) {\n        List<Integer> result = new ArrayList<>();\n        // Your code here\n        return result;\n    }\n}`,
         },
+        testCases: [
+            { id: 'tc1', description: 'Nested one level', input: '[1,[2,3],[4,[5,6]]]', expectedOutput: '[1,2,3,4,5,6]', isHidden: false },
+            { id: 'tc2', description: 'Deeply nested', input: '[[1,[2]],[3,[4,[5]]]]', expectedOutput: '[1,2,3,4,5]', isHidden: false },
+            { id: 'tc3', description: 'Already flat', input: '[1,2,3]', expectedOutput: '[1,2,3]', isHidden: false },
+            { id: 'tc4', description: 'Single nested', input: '[[1]]', expectedOutput: '[1]', isHidden: true },
+            { id: 'tc5', description: 'Empty array', input: '[]', expectedOutput: '[]', isHidden: true },
+        ],
         tags: ['Arrays', 'Recursion', 'Stack'],
     },
 }
