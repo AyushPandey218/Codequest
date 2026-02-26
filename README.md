@@ -1,7 +1,8 @@
 <p align="center">
-  # CODEQUEST
+  <h1 align="center">🚀 CODEQUEST</h1>
+
 </p>
-> Unlock Creativity, Master Coding, Conquer Challenges Instantly
+
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-18-blue?logo=react" />
@@ -98,7 +99,7 @@ npm -v
 1️⃣ Clone the repository:
 
 ``` bash
-git clone https://github.com/AyushPandey218/Codequest.git
+git clone https://github.com/AyushPandey218/Codequest
 ```
 
 2️⃣ Navigate to the project directory:
