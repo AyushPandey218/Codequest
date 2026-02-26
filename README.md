@@ -3,7 +3,7 @@
 > Unlock Creativity, Master Coding, Conquer Challenges Instantly
 
 ```{=html}
-<palign="center">
+<p align="center">
 ```
 `<img src="https://img.shields.io/badge/React-18-blue?logo=react" />`{=html}
 `<img src="https://img.shields.io/badge/Vite-Latest-purple?logo=vite" />`{=html}
@@ -77,9 +77,9 @@ scalable environment for coding challenges.
 
 ------------------------------------------------------------------------
 
-# 🛠 Getting Started
+## 🛠 Getting Started
 
-## Prerequisites
+### Prerequisites
 
 Make sure you have the following installed:
 
@@ -95,7 +95,7 @@ npm -v
 
 ------------------------------------------------------------------------
 
-## Installation
+### Installation
 
 1️⃣ Clone the repository:
 
@@ -117,7 +117,7 @@ npm install
 
 ------------------------------------------------------------------------
 
-# ▶️ Usage
+## ▶️ Usage
 
 Run the project locally:
 
@@ -131,7 +131,7 @@ The app will start on:
 
 ------------------------------------------------------------------------
 
-# 🧪 Testing
+## 🧪 Testing
 
 Run tests (if configured):
 
@@ -143,7 +143,7 @@ npm run test
 
 ------------------------------------------------------------------------
 
-# 📁 Project Structure
+## 📁 Project Structure
 
     Codequest/
     │
@@ -162,7 +162,7 @@ npm run test
 
 ------------------------------------------------------------------------
 
-# 🔮 Future Improvements
+## 🔮 Future Improvements
 
 -   🔐 Backend integration for real authentication
 -   ☁️ Database support for storing progress
@@ -173,16 +173,13 @@ npm run test
 
 ------------------------------------------------------------------------
 
-# 👨‍💻 Contributors
+## 👨‍💻 Contributors
 
 -   Ayush Pandey
 
 ------------------------------------------------------------------------
 
-# 📄 License
 
-This project is currently not licensed.\
-You may add a license such as MIT if open-sourcing publicly.
 
 
 
