@@ -36,7 +36,7 @@ const Login = () => {
     const result = await login(email, password)
 
     if (result.success) {
-      navigate('/app/dashboard')
+      navigate(result.isAdmin ? '/admin/dashboard' : '/app/dashboard')
     } else {
       setError(result.error || 'Login failed. Please try again.')
     }

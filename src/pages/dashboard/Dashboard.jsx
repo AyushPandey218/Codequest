@@ -231,13 +231,18 @@ const Dashboard = () => {
                   </Link>
                 ))
               ) : (
-                <Card variant="elevated" className="p-6 text-center">
-                  <p className="text-slate-600 dark:text-slate-400">
-                    No quests in progress. Start a new quest to begin learning!
+                <Card variant="elevated" className="p-10 text-center bg-gradient-to-br from-[#1c1c27] to-[#282839] border-dashed border-2 border-white/5">
+                  <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="material-symbols-outlined text-4xl text-primary">rocket_launch</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Welcome to the Arena!</h3>
+                  <p className="max-w-md mx-auto text-slate-400 mb-8">
+                    Your coding journey begins here. Complete your first quest to unlock achievements,
+                    earn XP, and climb the global leaderboard.
                   </p>
                   <Link to="/app/quests">
-                    <Button variant="primary" size="sm" className="mt-4">
-                      Browse Quests
+                    <Button variant="primary" size="lg" className="px-10 h-14 text-base shadow-xl shadow-primary/30">
+                      Start Your First Quest
                     </Button>
                   </Link>
                 </Card>

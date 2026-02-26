@@ -30,37 +30,34 @@ const Avatar = ({
     lg: 'size-12 text-lg',
     xl: 'size-16 text-xl',
   }
-  
+
   const sizeStyle = sizes[size] || sizes.md
   const ringStyle = ring ? `ring-2 ${ringColor}` : ''
-  
+
   return (
-    <div className={cn('relative inline-block', className)} {...props}>
+    <div
+      className={cn(
+        'relative inline-flex shrink-0 items-center justify-center rounded-full overflow-hidden',
+        sizeStyle,
+        ringStyle,
+        className
+      )}
+      {...props}
+    >
       {src ? (
-        <div
-          className={cn(
-            'rounded-full bg-cover bg-center',
-            sizeStyle,
-            ringStyle
-          )}
-          style={{ backgroundImage: `url(${src})` }}
-          role="img"
-          aria-label={alt}
+        <img
+          src={src}
+          alt={alt}
+          className="size-full object-cover"
         />
       ) : (
-        <div
-          className={cn(
-            'rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold',
-            sizeStyle,
-            ringStyle
-          )}
-        >
+        <div className="size-full bg-primary/20 flex items-center justify-center text-primary font-bold">
           {getInitials(name)}
         </div>
       )}
-      
+
       {online && (
-        <span className="absolute bottom-0 right-0 block size-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-background-dark" />
+        <span className="absolute bottom-1 right-1 block size-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-background-dark" />
       )}
     </div>
   )

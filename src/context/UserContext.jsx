@@ -3,6 +3,8 @@ import { useAuth } from './AuthContext'
 import { useUserData } from '../hooks/useUserData'
 import { useUserProgress } from '../hooks/useUserProgress'
 import { useSubmissions } from '../hooks/useSubmissions'
+import { getProgressSummary } from '../utils/progressStorage'
+import { quests } from '../data/quests'
 
 const UserContext = createContext(null)
 
@@ -16,7 +18,7 @@ export const useUser = () => {
 
 export const UserProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth()
-  
+
   // Fetch real data from Firestore
   const { userData, loading: userDataLoading, error: userDataError } = useUserData(user?.uid)
   const { progress, loading: progressLoading, error: progressError } = useUserProgress(user?.uid)
@@ -28,7 +30,9 @@ export const UserProvider = ({ children }) => {
   // Combine error states
   const error = userDataError || progressError || submissionsError
 
-  // Calculate user stats from real data
+  // Calculate user stats from real data (prefer Firestore, fallback to localStorage)
+  const localProgress = getProgressSummary()
+
   const userStats = userData ? {
     totalQuests: userData.totalQuests || 0,
     completedQuests: userData.completedQuests || 0,
@@ -37,14 +41,41 @@ export const UserProvider = ({ children }) => {
     rank: userData.rank || null,
     streak: userData.streak || 0,
     achievements: userData.achievements || [],
-    recentActivity: submissions.slice(0, 10).map(sub => ({
+    recentActivity: submissions.length > 0 ? submissions.slice(0, 10).map(sub => ({
       id: sub.id,
       type: 'quest',
       name: sub.questTitle || 'Quest',
       date: sub.timestamp?.toDate?.()?.toLocaleDateString?.() || 'N/A',
       xp: sub.xpEarned || 0,
-    })),
-  } : null
+    })) : localProgress.completedQuests.slice(0, 5).map(id => {
+      const q = quests.find(quest => quest.id === id)
+      return {
+        id,
+        type: 'quest',
+        name: q?.title || 'Quest',
+        date: 'Recently',
+        xp: q?.xp || 0
+      }
+    }),
+  } : {
+    // Complete local fallback if no Firestore user data
+    totalQuests: 15, // total quests in system
+    completedQuests: localProgress.completedCount,
+    totalXP: localProgress.xp,
+    level: localProgress.level,
+    streak: localProgress.streak,
+    achievements: [],
+    recentActivity: localProgress.completedQuests.slice(0, 5).map(id => {
+      const q = quests.find(quest => quest.id === id)
+      return {
+        id,
+        type: 'quest',
+        name: q?.title || 'Quest',
+        date: 'Recently',
+        xp: q?.xp || 0
+      }
+    }),
+  }
 
   const value = {
     userData,

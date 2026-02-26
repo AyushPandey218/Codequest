@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { STORAGE_KEYS } from '../utils/constants'
 
 const AuthContext = createContext(null)
@@ -14,25 +14,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
-    const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA)
-
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData))
-        setIsAuthenticated(true)
-      } catch (error) {
-        console.error('Error parsing user data:', error)
-        logout()
-      }
-    }
-
-    setIsLoading(false)
-  }, [])
+  const [isLoading, setIsLoading] = useState(false)
 
   const login = async (email, password) => {
     try {
@@ -88,7 +70,7 @@ export const AuthProvider = ({ children }) => {
       setUser(mockUser)
       setIsAuthenticated(true)
 
-      return { success: true }
+      return { success: true, isAdmin: mockUser.role === 'admin' }
     } catch (error) {
       console.error('Login error:', error)
       return { success: false, error: error.message }

@@ -1,4 +1,4 @@
-import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, Link, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
 
@@ -7,9 +7,14 @@ import { useState } from 'react'
  * Used for: Dashboard, Quests, Leaderboard, Profile, Settings, etc.
  */
 const DashboardLayout = () => {
-  const { user, logout, isAdmin } = useAuth()
+  const { user, isAuthenticated, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // Guard: redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/auth/login" replace />
+  }
 
   const handleLogout = () => {
     logout()
@@ -164,7 +169,7 @@ const DashboardLayout = () => {
                   </div>
                   <div className="hidden sm:block">
                     <p className="text-sm font-bold text-white">{user?.username || 'User'}</p>
-                    <p className="text-xs text-text-muted">Level {user?.level || 1}</p>
+                    <p className="text-xs text-text-muted">Level {user?.level ?? '—'}</p>
                   </div>
                 </div>
               </Link>

@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import RootLayout from '../layouts/RootLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import DashboardLayout from '../layouts/DashboardLayout'
+import AdminLayout from '../layouts/AdminLayout'
 
 // Auth Pages
 import Login from '../pages/auth/Login'
@@ -45,7 +46,10 @@ import ContactSupport from '../pages/community/ContactSupport'
 
 // Admin Pages
 import AdminQuestManager from '../pages/admin/AdminQuestManager'
-import AdminRoute from '../components/common/AdminRoute'
+import AdminDashboard from '../pages/admin/AdminDashboard'
+import AdminUsers from '../pages/admin/AdminUsers'
+import AdminModeration from '../pages/admin/AdminModeration'
+import AdminAnalytics from '../pages/admin/AdminAnalytics'
 
 // Legal Pages
 import TermsOfService from '../pages/legal/TermsPage'
@@ -68,7 +72,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/app/dashboard" replace />,
+        element: <Navigate to="/auth/login" replace />,
       },
 
       // Auth Routes
@@ -171,12 +175,12 @@ const router = createBrowserRouter([
           },
           // Profile Routes
           {
-            path: 'profile/:userId',
-            element: <UserProfile />,
-          },
-          {
             path: 'profile/edit',
             element: <EditProfile />,
+          },
+          {
+            path: 'profile/:userId',
+            element: <UserProfile />,
           },
           {
             path: 'settings/account',
@@ -185,17 +189,6 @@ const router = createBrowserRouter([
           {
             path: 'settings/app',
             element: <AppSettings />,
-          },
-          // Admin Routes (protected - admin only)
-          {
-            path: 'admin',
-            element: <AdminRoute />,
-            children: [
-              {
-                path: 'quests',
-                element: <AdminQuestManager />,
-              },
-            ],
           },
           // Community Routes
           {
@@ -226,6 +219,37 @@ const router = createBrowserRouter([
       {
         path: '*',
         element: <PlaceholderPage title="404 - Page Not Found" />,
+      },
+    ],
+  },
+  // Dedicated Admin Panel Routes
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/admin/dashboard" replace />,
+      },
+      {
+        path: 'dashboard',
+        element: <AdminDashboard />,
+      },
+      {
+        path: 'users',
+        element: <AdminUsers />,
+      },
+      {
+        path: 'quests',
+        element: <AdminQuestManager />,
+      },
+      {
+        path: 'moderation',
+        element: <AdminModeration />,
+      },
+      {
+        path: 'analytics',
+        element: <AdminAnalytics />,
       },
     ],
   },
