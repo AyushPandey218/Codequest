@@ -26,6 +26,9 @@ import QuestCoding from '../pages/quests/QuestCoding'
 import CodeWalkthrough from '../pages/quests/CodeWalkthrough'
 import DebuggingChallenge from '../pages/quests/DebuggingChallenge'
 import ProjectModules from '../pages/quests/ProjectModules'
+import ModuleDetail from '../pages/quests/ModuleDetail'
+import LessonView from '../pages/quests/LessonView'
+
 
 // Clash Pages
 import CodeClashLobby from '../pages/clash/CodeClashLobby'
@@ -159,6 +162,14 @@ const router = createBrowserRouter([
           {
             path: 'modules',
             element: <ProjectModules />,
+          },
+          {
+            path: 'modules/:moduleId',
+            element: <ModuleDetail />,
+          },
+          {
+            path: 'modules/:moduleId/lessons/:lessonId',
+            element: <LessonView />,
           },
           // Clash Routes
           {

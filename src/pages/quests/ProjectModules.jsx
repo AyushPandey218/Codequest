@@ -4,6 +4,7 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
 import ProgressBar from '../../components/common/ProgressBar'
+import { modules } from '../../data/modules'
 
 const ProjectModules = () => {
   const [activeFilter, setActiveFilter] = useState('all')
@@ -16,93 +17,6 @@ const ProjectModules = () => {
     { id: 'algorithms', label: 'Algorithms', icon: 'psychology' },
   ]
 
-  const modules = [
-    {
-      id: 1,
-      title: 'Full-Stack Web App',
-      description: 'Build a complete CRUD application with authentication, database, and REST API.',
-      category: 'web',
-      difficulty: 'hard',
-      duration: '8-10 hours',
-      lessons: 12,
-      completedLessons: 8,
-      xp: 500,
-      tags: ['React', 'Node.js', 'MongoDB'],
-      icon: '🌐',
-      color: 'from-blue-500 to-cyan-500',
-    },
-    {
-      id: 2,
-      title: 'Python Data Analysis',
-      description: 'Analyze real-world datasets using pandas, numpy, and create visualizations.',
-      category: 'data',
-      difficulty: 'medium',
-      duration: '6-8 hours',
-      lessons: 10,
-      completedLessons: 0,
-      xp: 400,
-      tags: ['Pandas', 'NumPy', 'Matplotlib'],
-      icon: '📊',
-      color: 'from-purple-500 to-pink-500',
-    },
-    {
-      id: 3,
-      title: 'Algorithm Visualizer',
-      description: 'Create interactive visualizations for sorting and searching algorithms.',
-      category: 'algorithms',
-      difficulty: 'expert',
-      duration: '10-12 hours',
-      lessons: 15,
-      completedLessons: 15,
-      xp: 600,
-      tags: ['Algorithms', 'Visualization', 'JavaScript'],
-      icon: '🎨',
-      color: 'from-orange-500 to-red-500',
-    },
-    {
-      id: 4,
-      title: 'REST API with Authentication',
-      description: 'Build a secure REST API with JWT authentication and authorization.',
-      category: 'web',
-      difficulty: 'medium',
-      duration: '5-7 hours',
-      lessons: 8,
-      completedLessons: 3,
-      xp: 350,
-      tags: ['Node.js', 'Express', 'JWT'],
-      icon: '🔐',
-      color: 'from-green-500 to-emerald-500',
-    },
-    {
-      id: 5,
-      title: 'Machine Learning Basics',
-      description: 'Introduction to ML with scikit-learn, including classification and regression.',
-      category: 'data',
-      difficulty: 'hard',
-      duration: '12-15 hours',
-      lessons: 18,
-      completedLessons: 0,
-      xp: 700,
-      tags: ['ML', 'Scikit-learn', 'Python'],
-      icon: '🤖',
-      color: 'from-indigo-500 to-purple-500',
-    },
-    {
-      id: 6,
-      title: 'Dynamic Programming Mastery',
-      description: 'Master DP patterns with classic problems and optimization techniques.',
-      category: 'algorithms',
-      difficulty: 'expert',
-      duration: '8-10 hours',
-      lessons: 12,
-      completedLessons: 5,
-      xp: 550,
-      tags: ['DP', 'Optimization', 'Problem Solving'],
-      icon: '🧮',
-      color: 'from-yellow-500 to-orange-500',
-    },
-  ]
-
   const getDifficultyColor = (difficulty) => {
     const colors = {
       easy: 'success',
@@ -113,9 +27,10 @@ const ProjectModules = () => {
     return colors[difficulty] || 'default'
   }
 
-  const filteredModules = modules.filter(module => 
+  const filteredModules = modules.filter(module =>
     activeFilter === 'all' || module.category === activeFilter
   )
+
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -189,11 +104,10 @@ const ProjectModules = () => {
             <button
               key={filter.id}
               onClick={() => setActiveFilter(filter.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                activeFilter === filter.id
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                  : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeFilter === filter.id
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                }`}
             >
               <span className="material-symbols-outlined text-lg">{filter.icon}</span>
               {filter.label}
@@ -291,7 +205,7 @@ const ProjectModules = () => {
                 </div>
 
                 {/* Action Button */}
-                <Link to={`/app/quests/${module.id}`}>
+                <Link to={`/app/modules/${module.id}`}>
                   <Button
                     variant={isCompleted ? 'outline' : 'primary'}
                     size="md"
@@ -336,8 +250,8 @@ const ProjectModules = () => {
               About Project Modules
             </h3>
             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-              Project modules are comprehensive learning paths that combine multiple quests into real-world projects. 
-              Complete all lessons in a module to earn bonus XP and unlock certificates. Each module is designed to 
+              Project modules are comprehensive learning paths that combine multiple quests into real-world projects.
+              Complete all lessons in a module to earn bonus XP and unlock certificates. Each module is designed to
               give you hands-on experience with industry-standard tools and practices.
             </p>
           </div>
