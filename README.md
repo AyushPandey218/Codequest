@@ -2,17 +2,14 @@
 
 > Unlock Creativity, Master Coding, Conquer Challenges Instantly
 
-```{=html}
 <p align="center">
-```
-`<img src="https://img.shields.io/badge/React-18-blue?logo=react" />`{=html}
-`<img src="https://img.shields.io/badge/Vite-Latest-purple?logo=vite" />`{=html}
-`<img src="https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwind-css" />`{=html}
-`<img src="https://img.shields.io/badge/JavaScript-ES6-yellow?logo=javascript" />`{=html}
-`<img src="https://img.shields.io/badge/Status-Active-success" />`{=html}
-```{=html}
+  <img src="https://img.shields.io/badge/React-18-blue?logo=react" />
+  <img src="https://img.shields.io/badge/Vite-Latest-purple?logo=vite" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwind-css" />
+  <img src="https://img.shields.io/badge/JavaScript-ES6-yellow?logo=javascript" />
+  <img src="https://img.shields.io/badge/Status-Active-success" />
 </p>
-```
+
 
 ------------------------------------------------------------------------
 
