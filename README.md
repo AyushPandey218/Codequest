@@ -1,5 +1,6 @@
-# CODEQUEST
-
+<p align="center">
+  # CODEQUEST
+</p>
 > Unlock Creativity, Master Coding, Conquer Challenges Instantly
 
 <p align="center">
