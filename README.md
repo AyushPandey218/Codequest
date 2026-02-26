@@ -3,7 +3,7 @@
 > Unlock Creativity, Master Coding, Conquer Challenges Instantly
 
 ```{=html}
-<p align="center">
+<palign="center">
 ```
 `<img src="https://img.shields.io/badge/React-18-blue?logo=react" />`{=html}
 `<img src="https://img.shields.io/badge/Vite-Latest-purple?logo=vite" />`{=html}
