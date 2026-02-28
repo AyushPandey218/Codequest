@@ -69,8 +69,8 @@ const Login = () => {
 
         <div className="relative z-10 p-12">
           <Link to="/" className="flex items-center gap-3 text-white group">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-2xl">terminal</span>
+            <div className="flex size-10 items-center justify-center group-hover:scale-110 transition-transform">
+              <img src="/logo.png" alt="CodeQuest Logo" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
             </div>
             <h2 className="text-2xl font-black tracking-tight">Code<span className="text-primary tracking-tighter">Quest</span></h2>
           </Link>
@@ -116,8 +116,8 @@ const Login = () => {
 
         <div className="flex lg:hidden justify-center mb-12 relative z-10">
           <Link to="/" className="flex items-center gap-3 text-white">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-primary">
-              <span className="material-symbols-outlined text-2xl text-white">terminal</span>
+            <div className="flex size-12 items-center justify-center">
+              <img src="/logo.png" alt="CodeQuest Logo" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
             </div>
             <h2 className="text-3xl font-black tracking-tight">CodeQuest</h2>
           </Link>

@@ -18,8 +18,8 @@ const LoadingScreen = ({ message = 'Initializing CodeQuest...' }) => {
                     <div className="absolute inset-0 border-t-4 border-primary rounded-2xl animate-spin shadow-[0_0_15px_rgba(79,70,229,0.5)]"></div>
 
                     {/* Inner Logo */}
-                    <div className="absolute inset-0 flex items-center justify-center text-primary">
-                        <span className="material-symbols-outlined text-4xl font-bold">terminal</span>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <img src="./logo.png" alt="Loading" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
                     </div>
                 </div>
 

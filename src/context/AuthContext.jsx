@@ -12,6 +12,8 @@ import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment 
 import { auth, db, googleProvider } from '../config/firebase'
 import { STORAGE_KEYS } from '../utils/constants'
 import { checkAchievements } from '../utils/achievementChecker'
+import { Capacitor } from '@capacitor/core'
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication'
 
 const AuthContext = createContext(null)
 
@@ -129,8 +131,15 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider)
-      const firebaseUser = result.user
+      let firebaseUser
+
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithGoogle()
+        firebaseUser = result.user
+      } else {
+        const result = await signInWithPopup(auth, googleProvider)
+        firebaseUser = result.user
+      }
 
       // Check if user document exists in Firestore
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))

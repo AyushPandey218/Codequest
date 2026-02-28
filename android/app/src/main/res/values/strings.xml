@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CodeQuest</string>
+    <string name="title_activity_main">CodeQuest</string>
+    <string name="package_name">com.codequest.app</string>
+    <string name="custom_url_scheme">com.codequest.app</string>
+    <string name="default_web_client_id">70979255661-dkg6k5sut7jblfi05vpbqhhh0ivagg3m.apps.googleusercontent.com</string>
+</resources>

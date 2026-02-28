@@ -81,8 +81,8 @@ Address: 123 Code Street, San Francisco, CA 94105, USA`,
         {/* Header */}
         <div className="text-center mb-12">
           <Link to="/" className="inline-flex items-center gap-3 text-slate-900 dark:text-white mb-6 hover:opacity-80 transition-opacity">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-xl">terminal</span>
+            <div className="flex size-10 items-center justify-center">
+              <img src="/logo.png" alt="CodeQuest" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
             </div>
             <h2 className="text-2xl font-bold">CodeQuest</h2>
           </Link>

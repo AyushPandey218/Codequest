@@ -61,9 +61,7 @@ const DashboardLayout = () => {
         {/* Logo */}
         <div className="p-6 border-b border-border-dark">
           <Link to="/app/dashboard" className="flex items-center gap-3 text-white hover:opacity-80 transition-opacity">
-            <div className="flex items-center justify-center size-9 rounded-lg bg-primary/20 text-primary border border-primary/30">
-              <span className="material-symbols-outlined text-xl">terminal</span>
-            </div>
+            <img src="/logo.png" alt="CodeQuest Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
             <h2 className="text-xl font-bold">CodeQuest</h2>
           </Link>
         </div>

@@ -25,8 +25,8 @@ const Signup = () => {
 
         <div className="relative z-10 p-12">
           <Link to="/" className="flex items-center gap-3 text-white">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/20 text-primary backdrop-blur-sm">
-              <span className="material-symbols-outlined text-2xl">terminal</span>
+            <div className="flex size-10 items-center justify-center">
+              <img src="/logo.png" alt="CodeQuest" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
             </div>
             <h2 className="text-2xl font-bold tracking-tight">CodeQuest</h2>
           </Link>
@@ -59,8 +59,8 @@ const Signup = () => {
       <div className="flex w-full flex-col justify-center px-4 py-12 lg:w-1/2 lg:px-20 xl:px-32 relative bg-background-light dark:bg-background-dark">
         <div className="flex lg:hidden justify-center mb-8">
           <Link to="/" className="flex items-center gap-3 text-slate-900 dark:text-white">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-2xl">terminal</span>
+            <div className="flex size-10 items-center justify-center">
+              <img src="/logo.png" alt="CodeQuest" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
             </div>
             <h2 className="text-2xl font-bold tracking-tight">CodeQuest</h2>
           </Link>

@@ -35,9 +35,7 @@ const AdminLayout = () => {
                 {/* Logo */}
                 <div className="p-6 border-b border-red-900/30">
                     <Link to="/admin/dashboard" className="flex items-center gap-3 text-white hover:opacity-80 transition-opacity">
-                        <div className="flex items-center justify-center size-9 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30">
-                            <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
-                        </div>
+                        <img src="/logo.png" alt="CodeQuest Admin Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
                         <div>
                             <h2 className="text-lg font-bold text-white">CodeQuest</h2>
                             <p className="text-[10px] text-red-400 font-semibold uppercase tracking-widest">Admin Panel</p>
