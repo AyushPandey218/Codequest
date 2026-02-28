@@ -1,171 +1,184 @@
-# CodeQuest React
+<p align="center">
+  <h1 align="center">🚀 CODEQUEST</h1>
 
-A modern, gamified coding learning platform built with React, Vite, and TailwindCSS.
+</p>
 
-## 🚀 Getting Started
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-blue?logo=react" />
+  <img src="https://img.shields.io/badge/Vite-Latest-purple?logo=vite" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwind-css" />
+  <img src="https://img.shields.io/badge/JavaScript-ES6-yellow?logo=javascript" />
+  <img src="https://img.shields.io/badge/Status-Active-success" />
+</p>
+
+
+------------------------------------------------------------------------
+
+## 📚 Table of Contents
+
+-   [Overview](#overview)
+-   [Why CodeQuest?](#why-codequest)
+-   [Getting Started](#getting-started)
+    -   [Prerequisites](#prerequisites)
+    -   [Installation](#installation)
+-   [Usage](#usage)
+-   [Testing](#testing)
+-   [Project Structure](#project-structure)
+-   [Future Improvements](#future-improvements)
+-   [Contributors](#contributors)
+-   [License](#license)
+
+------------------------------------------------------------------------
+
+## 📖 Overview
+
+CodeQuest is an immersive developer tool that creates an interactive,
+gamified coding platform built with a modern React architecture.
+
+It enables users to:
+
+-   Practice coding challenges in-browser
+-   Write and execute code interactively
+-   Progress through structured quest-based levels
+-   Learn programming concepts in a fun and engaging way
+
+------------------------------------------------------------------------
+
+## 🚀 Why CodeQuest?
+
+This project aims to empower developers and learners with a flexible,
+scalable environment for coding challenges.
+
+### 🔹 Modern Architecture
+
+-   Built with **React + Vite**
+-   Modular and scalable component structure
+-   Optimized development workflow
+
+### 🔹 Multi-language Code Execution
+
+-   Supports multiple languages via integrated editor
+-   Real-time code feedback
+-   Structured problem-solving interface
+
+### 🔹 Customizable Styling
+
+-   Styled with **TailwindCSS**
+-   Dark mode support
+-   Responsive design for all screen sizes
+
+### 🔹 Progress & Gamification
+
+-   Track solved challenges
+-   Structured quest progression
+-   Engaging UI/UX experience
+
+------------------------------------------------------------------------
+
+## 🛠 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm/yarn/pnpm
+Make sure you have the following installed:
+
+-   **Node.js** (v16 or higher)
+-   **npm** or **yarn**
+
+Check versions:
+
+``` bash
+node -v
+npm -v
+```
+
+------------------------------------------------------------------------
 
 ### Installation
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+1️⃣ Clone the repository:
 
-2. **Start development server:**
-   ```bash
-   npm run dev
-   ```
-
-3. **Open browser:**
-   Navigate to `http://localhost:3000`
-
-### Build for Production
-
-```bash
-npm run build
-npm run preview
+``` bash
+git clone https://github.com/AyushPandey218/Codequest
 ```
+
+2️⃣ Navigate to the project directory:
+
+``` bash
+cd Codequest
+```
+
+3️⃣ Install dependencies:
+
+``` bash
+npm install
+```
+
+------------------------------------------------------------------------
+
+## ▶️ Usage
+
+Run the project locally:
+
+``` bash
+npm run dev
+```
+
+The app will start on:
+
+    http://localhost:5173
+
+------------------------------------------------------------------------
+
+## 🧪 Testing
+
+Run tests (if configured):
+
+``` bash
+npm run test
+```
+
+> Currently uses mock data for authentication and progress tracking.
+
+------------------------------------------------------------------------
 
 ## 📁 Project Structure
 
-```
-codequest-react/
-├── src/
-│   ├── components/      # Reusable UI components
-│   │   ├── common/      # Button, Input, Card, etc.
-│   │   ├── forms/       # Form-specific components
-│   │   └── code/        # Code editor components
-│   ├── layouts/         # Layout wrappers
-│   │   ├── RootLayout.jsx
-│   │   ├── AuthLayout.jsx
-│   │   └── DashboardLayout.jsx
-│   ├── pages/           # Page components
-│   │   ├── auth/        # Authentication pages
-│   │   ├── dashboard/   # Dashboard pages
-│   │   ├── quests/      # Quest pages
-│   │   ├── clash/       # Code clash pages
-│   │   ├── profile/     # Profile pages
-│   │   ├── community/   # Community pages
-│   │   ├── settings/    # Settings pages
-│   │   └── legal/       # Legal pages
-│   ├── features/        # Feature-specific components
-│   ├── context/         # Global state (Context API)
-│   │   ├── AuthContext.jsx
-│   │   └── UserContext.jsx
-│   ├── hooks/           # Custom React hooks
-│   ├── router/          # React Router configuration
-│   ├── utils/           # Helper functions
-│   │   ├── constants.js
-│   │   └── helpers.js
-│   ├── styles/          # Global styles
-│   │   └── index.css
-│   ├── App.jsx
-│   └── main.jsx
-├── public/              # Static assets
-├── index.html
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-└── postcss.config.js
-```
+    Codequest/
+    │
+    ├── public/
+    ├── src/
+    │   ├── components/
+    │   ├── layouts/
+    │   ├── pages/
+    │   ├── context/
+    │   ├── assets/
+    │   └── App.jsx
+    │
+    ├── package.json
+    ├── vite.config.js
+    └── tailwind.config.js
 
-## 🎨 Design System
+------------------------------------------------------------------------
 
-### Colors
-- **Primary**: `#2b2bee` (vibrant blue)
-- **Background Dark**: `#101022`
-- **Card Dark**: `#1c1c27`
-- **Border Dark**: `#282839`
-- **Text Secondary**: `#9d9db9`
+## 🔮 Future Improvements
 
-### Typography
-- **Display Font**: Space Grotesk
-- **Body Font**: Noto Sans
+-   🔐 Backend integration for real authentication
+-   ☁️ Database support for storing progress
+-   🏆 Leaderboards
+-   🧩 More coding challenges
+-   🧪 Expanded testing coverage
+-   🌍 Deployment to production
 
-### Icons
-- Material Symbols Outlined
+------------------------------------------------------------------------
 
-## 🧩 Components
+## 👨‍💻 Contributors
 
-### Common Components
-- `Button` - Customizable button with variants (primary, secondary, outline, ghost, danger)
-- `Input` - Input field with icon support and validation states
-- `Card` - Base card component with variants (default, glass, elevated, bordered)
+-   Ayush Pandey
 
-### Layouts
-- `RootLayout` - Base layout for all pages
-- `AuthLayout` - Layout for authentication pages (login, signup, etc.)
-- `DashboardLayout` - Main app layout with sidebar navigation
+------------------------------------------------------------------------
 
-## 🔐 State Management
 
-### Context API
-- **AuthContext**: Manages user authentication (login, logout, signup)
-- **UserContext**: Manages user progress, stats, and achievements
 
-### Custom Hooks
-- `useLocalStorage`: Sync React state with localStorage
 
-## 🛣️ Routing
 
-Built with React Router v6. Main routes:
-
-- `/auth/*` - Authentication pages
-- `/app/*` - Protected app pages (requires login)
-- `/legal/*` - Legal pages (terms, privacy)
-
-## 🔧 Technologies
-
-- **React 18** - UI library
-- **Vite** - Build tool
-- **TailwindCSS** - Utility-first CSS framework
-- **React Router v6** - Client-side routing
-- **Context API** - State management
-
-## 📝 Development Notes
-
-### Mock Data
-Currently using mock data for:
-- User authentication
-- User progress and stats
-- Quests and challenges
-- Leaderboard
-
-Replace with actual API calls in production.
-
-### Responsive Design
-All components are responsive and mobile-friendly.
-
-### Dark Mode
-Dark mode is enabled by default (primary design).
-
-## 🚧 TODO
-
-See `REACT_CONVERSION_PLAN.md` for detailed conversion roadmap.
-
-### Phase 1: ✅ Foundation (Complete)
-- [x] Project setup
-- [x] Base components (Button, Input, Card)
-- [x] Layouts (Root, Auth, Dashboard)
-- [x] Context providers (Auth, User)
-- [x] Routing structure
-
-### Phase 2: 🚧 Page Conversion (In Progress)
-- [ ] Auth pages (8 pages)
-- [ ] Dashboard pages (3 pages)
-- [ ] Quest pages (5 pages)
-- [ ] Clash pages (3 pages)
-- [ ] Profile & Settings (5 pages)
-- [ ] Community & Legal (4 pages)
-
-## 📄 License
-
-This project is private and proprietary.
-
----
-
-Built with ❤️ using React + Vite + TailwindCSS
