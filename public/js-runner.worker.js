@@ -56,11 +56,54 @@ self.onmessage = function (e) {
             return parts
         }
 
-        const fn = new Function(source + '\n; return solution;')
+        function findLastExecutable(code) {
+            // Regex to find function/class names
+            const matches = Array.from(code.matchAll(/(?:function\s+([a-zA-Z0-9_$]+)|class\s+([a-zA-Z0-9_$]+)|(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:async\s+)?(?:function|\([^)]*\)\s*=>))/g));
+            if (matches.length > 0) {
+                const last = matches[matches.length - 1];
+                return last[1] || last[2] || last[3];
+            }
+            return null;
+        }
+
+        const targetName = findLastExecutable(source)
+        const wrapper = `
+            ${source}
+            const target = typeof solution !== "undefined" ? solution : (typeof ${targetName} !== "undefined" ? ${targetName} : undefined);
+            return target;
+        `
+        const fn = new Function(wrapper)
         const solutionFn = fn()
 
+        if (!solutionFn || (typeof solutionFn !== 'function' && typeof solutionFn !== 'object')) {
+            throw new Error('No executable function or class found. Please define a function (e.g., "function solution(...) { ... }").')
+        }
+
         const args = parseArgs(stdin)
-        const result = solutionFn(...args)
+        let result
+        if (typeof solutionFn === 'function') {
+            try {
+                // Try normal function call
+                result = solutionFn(...args)
+            } catch (err) {
+                // If it's a class constructor, instantiate and call first method
+                if (err.message.includes("class constructor") || err.message.includes("invoked without 'new'")) {
+                    const instance = new solutionFn()
+                    const method = Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
+                        .find(m => m !== 'constructor' && typeof instance[m] === 'function')
+                    if (method) result = instance[method](...args)
+                    else throw err
+                } else {
+                    throw err
+                }
+            }
+        } else if (typeof solutionFn === 'object') {
+            // Already an instance or object literal
+            const method = Object.getOwnPropertyNames(solutionFn)
+                .find(m => typeof solutionFn[m] === 'function')
+            if (method) result = solutionFn[method](...args)
+            else result = solutionFn
+        }
 
         if (result !== undefined) {
             if (Array.isArray(result)) {

@@ -1,23 +1,6 @@
 import { useState, useEffect } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../config/firebase'
-import { getProgressSummary } from '../utils/progressStorage'
-
-// Get user data from localStorage progress storage
-const getLocalUserData = (uid) => {
-  const summary = getProgressSummary()
-  return {
-    id: uid,
-    xp: summary.xp,
-    level: summary.level,
-    rank: 156, // Still mock rank for now
-    streak: 7, // Still mock streak for now
-    totalQuests: 50,
-    completedQuests: summary.completedCount,
-    achievements: ['first-quest', 'week-streak', 'python-master'],
-    createdAt: new Date(),
-  }
-}
 
 /**
  * Hook to fetch user data from Firestore
@@ -36,24 +19,22 @@ export const useUserData = (uid) => {
       return
     }
 
-    // Set local progress data immediately
-    setUserData(getLocalUserData(uid))
-    setLoading(false)
+    setLoading(true)
 
-    // Then try to fetch from Firestore (will replace mock data if available)
+    // Fetch from Firestore
     const unsubscribe = onSnapshot(
       doc(db, 'users', uid),
       (docSnapshot) => {
         if (docSnapshot.exists()) {
           setUserData({ id: docSnapshot.id, ...docSnapshot.data() })
+        } else {
+          setUserData(null)
         }
-        // If doesn't exist, keep mock data
         setLoading(false)
       },
       (err) => {
-        console.warn('Firestore unavailable, using mock data:', err.message)
-        // Keep mock data on error
-        setError(null)
+        console.error('Firestore error fetching user data:', err.message)
+        setError(err.message)
         setLoading(false)
       }
     )

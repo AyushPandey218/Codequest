@@ -4,11 +4,18 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
 import Button from '../../components/common/Button'
+import { db } from '../../config/firebase'
+import { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { useAuth } from '../../context/AuthContext'
+import { useQuestList } from '../../hooks/useQuestList'
 
 const CodeClashLobby = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { quests } = useQuestList()
   const [selectedMode, setSelectedMode] = useState('ranked')
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium')
+  const [isLobbySearching, setIsLobbySearching] = useState(false)
 
   const modes = [
     {
@@ -83,11 +90,87 @@ const CodeClashLobby = () => {
     { label: 'Win Streak', value: '5', icon: 'local_fire_department', color: 'text-orange-500' },
   ]
 
-  const handleQuickMatch = () => {
-    // Simulate matchmaking
-    setTimeout(() => {
-      navigate('/app/clash/1/live')
-    }, 1500)
+  const handleQuickMatch = async () => {
+    if (!user) return
+    setIsLobbySearching(true)
+
+    try {
+      // 1. Find a quest for this difficulty
+      const easyQuests = quests.filter(q => q.difficulty.toLowerCase() === selectedDifficulty)
+      if (easyQuests.length === 0) {
+        alert('No quests found for this difficulty!')
+        setIsLobbySearching(false)
+        return
+      }
+      const randomQuest = easyQuests[Math.floor(Math.random() * easyQuests.length)]
+
+      // 2. Look for open matches (status: waiting, difficulty: selectedDifficulty)
+      const q = query(
+        collection(db, 'clashes'),
+        where('status', '==', 'waiting'),
+        where('difficulty', '==', selectedDifficulty),
+        where('questId', '==', randomQuest.id)
+      )
+
+      const querySnapshot = await getDocs(q)
+
+      if (!querySnapshot.empty) {
+        // Join the first available match
+        const matchDoc = querySnapshot.docs[0]
+        const clashId = matchDoc.id
+
+        await updateDoc(doc(db, 'clashes', clashId), {
+          [`players.${user.uid}`]: {
+            username: user.username || 'User',
+            avatar: user.avatar || null,
+            score: 0,
+            testsPassed: 0,
+            totalTests: randomQuest.testCases?.length || 5,
+            isYou: false // In the hook we derive this correctly
+          },
+          status: 'ongoing' // Match starts when 2 people join (for now)
+        })
+
+        navigate(`/app/clash/${clashId}/live`)
+      } else {
+        // Create a new match
+        const newClash = {
+          questId: randomQuest.id,
+          questTitle: randomQuest.title,
+          difficulty: selectedDifficulty,
+          mode: selectedMode,
+          status: 'waiting',
+          createdAt: serverTimestamp(),
+          players: {
+            [user.uid]: {
+              username: user.username || 'User',
+              avatar: user.avatar || null,
+              score: 0,
+              testsPassed: 0,
+              totalTests: randomQuest.testCases?.length || 5,
+              isHost: true
+            }
+          },
+          activityFeed: [
+            {
+              user: 'System',
+              action: `Match created by ${user.username || 'User'}`,
+              icon: 'info',
+              color: 'text-blue-500',
+              timestamp: new Date().toISOString()
+            }
+          ]
+        }
+
+        const docRef = await addDoc(collection(db, 'clashes'), newClash)
+        navigate(`/app/clash/${docRef.id}/live`)
+      }
+    } catch (err) {
+      console.error('Matchmaking error:', err)
+      alert('Failed to find match: ' + err.message)
+    } finally {
+      setIsLobbySearching(false)
+    }
   }
 
   return (
@@ -147,11 +230,10 @@ const CodeClashLobby = () => {
                 <button
                   key={mode.id}
                   onClick={() => setSelectedMode(mode.id)}
-                  className={`p-6 rounded-xl border-2 transition-all text-left ${
-                    selectedMode === mode.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-slate-200 dark:border-border-dark hover:border-primary/50'
-                  }`}
+                  className={`p-6 rounded-xl border-2 transition-all text-left ${selectedMode === mode.id
+                    ? 'border-primary bg-primary/5'
+                    : 'border-slate-200 dark:border-border-dark hover:border-primary/50'
+                    }`}
                 >
                   <div className={`size-12 rounded-xl ${mode.bgColor} flex items-center justify-center mb-4`}>
                     <span className={`material-symbols-outlined text-2xl ${mode.color}`}>
@@ -179,11 +261,10 @@ const CodeClashLobby = () => {
                 <button
                   key={difficulty}
                   onClick={() => setSelectedDifficulty(difficulty)}
-                  className={`flex-1 px-6 py-4 rounded-xl font-bold capitalize transition-all ${
-                    selectedDifficulty === difficulty
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                      : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
-                  }`}
+                  className={`flex-1 px-6 py-4 rounded-xl font-bold capitalize transition-all ${selectedDifficulty === difficulty
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                    }`}
                 >
                   {difficulty}
                 </button>
@@ -208,8 +289,10 @@ const CodeClashLobby = () => {
                 onClick={handleQuickMatch}
                 icon="bolt"
                 className="group"
+                isLoading={isLobbySearching}
+                disabled={isLobbySearching}
               >
-                Quick Match
+                {isLobbySearching ? 'Searching...' : 'Quick Match'}
               </Button>
             </div>
           </Card>
@@ -300,11 +383,10 @@ const CodeClashLobby = () => {
                       <Badge variant="default" size="sm">
                         Lvl {player.level}
                       </Badge>
-                      <span className={`text-xs ${
-                        player.status === 'Available' ? 'text-green-600 dark:text-green-400' :
+                      <span className={`text-xs ${player.status === 'Available' ? 'text-green-600 dark:text-green-400' :
                         player.status === 'In Queue' ? 'text-yellow-600 dark:text-yellow-400' :
-                        'text-slate-500'
-                      }`}>
+                          'text-slate-500'
+                        }`}>
                         {player.status}
                       </span>
                     </div>
@@ -332,11 +414,10 @@ const CodeClashLobby = () => {
               ].map((match, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg border ${
-                    match.result === 'win'
-                      ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
-                      : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
-                  }`}
+                  className={`p-3 rounded-lg border ${match.result === 'win'
+                    ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>

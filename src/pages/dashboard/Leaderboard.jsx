@@ -10,27 +10,42 @@ import Button from '../../components/common/Button'
 
 const Leaderboard = () => {
   const { user } = useAuth()
-  const { leaderboard, loading, error } = useLeaderboard(100)
-  const { userData } = useUser()
+  const { leaderboard, loading, error, refresh } = useLeaderboard(100, user?.uid)
+  const { userStats } = useUser()
   const [timeFilter, setTimeFilter] = useState('weekly')
   const [categoryFilter, setCategoryFilter] = useState('all')
 
+  // Normalize each entries' data from Firestore field names
+  const safeNum = (val) => {
+    const n = parseFloat(val)
+    return isNaN(n) ? 0 : Math.floor(n)
+  }
+
+  const normalizedLeaderboard = leaderboard.map(p => ({
+    ...p,
+    xp: safeNum(p.xp),
+    questsCompleted: safeNum(p.questsCompleted) || safeNum(p.totalCompletedQuests),
+  }))
+
   // Get top 3 for podium
-  const topThree = leaderboard.slice(0, 3).map(player => ({
+  const topThree = normalizedLeaderboard.slice(0, 3).map(player => ({
     ...player,
     badge: player.rank === 1 ? 'Gold' : player.rank === 2 ? 'Silver' : 'Bronze'
   }))
+  // Podium display order: 2nd, 1st, 3rd
+  const podiumOrder = [topThree[1], topThree[0], topThree[2]].filter(Boolean)
 
   // Get remaining players for list (ranks 4+)
-  const leaderboardList = leaderboard.slice(3)
+  const leaderboardList = normalizedLeaderboard.slice(3)
 
-  // Find current user's rank
-  const currentUserRank = leaderboard.find(p => p.isCurrentUser) || {
-    rank: userData?.rank || '?',
-    username: user?.username || 'You',
-    avatar: user?.avatar,
-    xp: userData?.xp || 0,
-    questsCompleted: userData?.completedQuests || 0,
+  // Find current user's rank in the leaderboard
+  const currentUserEntry = normalizedLeaderboard.find(p => p.isCurrentUser)
+  const currentUserRank = currentUserEntry || {
+    rank: '?',
+    username: user?.username || user?.displayName || 'You',
+    avatar: user?.avatar || user?.photoURL,
+    xp: userStats?.totalXP || 0,
+    questsCompleted: userStats?.completedQuests || 0,
   }
 
   const getPodiumHeight = (rank) => {
@@ -92,6 +107,15 @@ const Leaderboard = () => {
             Compete with students worldwide
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          icon="refresh"
+          onClick={refresh}
+          isLoading={loading}
+        >
+          Refresh
+        </Button>
       </div>
 
       {/* Filters */}
@@ -108,8 +132,8 @@ const Leaderboard = () => {
                   key={filter}
                   onClick={() => setTimeFilter(filter)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${timeFilter === filter
-                      ? 'bg-primary text-white'
-                      : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                    ? 'bg-primary text-white'
+                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
                     }`}
                 >
                   {filter.charAt(0).toUpperCase() + filter.slice(1).replace('-', ' ')}
@@ -129,8 +153,8 @@ const Leaderboard = () => {
                   key={filter}
                   onClick={() => setCategoryFilter(filter)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${categoryFilter === filter
-                      ? 'bg-primary text-white'
-                      : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                    ? 'bg-primary text-white'
+                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
                     }`}
                 >
                   {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -146,13 +170,15 @@ const Leaderboard = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 pointer-events-none" />
 
         <div className="relative flex items-end justify-center gap-4 md:gap-8">
-          {/* Reorder to show 2nd, 1st, 3rd */}
-          {[topThree[0], topThree[1], topThree[2]].map((leader) => (
+          {podiumOrder.map((leader) => (
             <div
               key={leader.rank}
               className="flex flex-col items-center group"
-              style={{ order: leader.rank === 1 ? 2 : leader.rank === 2 ? 1 : 3 }}
             >
+              {/* Crown for #1 */}
+              {leader.rank === 1 && (
+                <span className="text-3xl mb-1">👑</span>
+              )}
               {/* Avatar */}
               <div className="relative mb-4">
                 <Avatar
@@ -177,10 +203,11 @@ const Leaderboard = () => {
               <Link to={`/app/profile/${leader.username}`}>
                 <h3 className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors">
                   {leader.username}
+                  {leader.isCurrentUser && <span className="ml-1 text-primary text-xs">(You)</span>}
                 </h3>
               </Link>
               <p className="text-sm text-slate-600 dark:text-text-secondary mb-2">
-                {leader.questsCompleted} quests
+                {leader.questsCompleted} quest{leader.questsCompleted !== 1 ? 's' : ''} done
               </p>
               <Badge variant="warning" icon="stars">
                 {leader.xp.toLocaleString()} XP
@@ -201,20 +228,20 @@ const Leaderboard = () => {
       {/* Your Rank */}
       <Card variant="elevated" className="p-6 bg-primary/5 border-primary/20 animate-slide-up animate-delay-300">
         <div className="flex items-center gap-4">
-          <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
+          <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
             #{currentUserRank.rank}
           </div>
-          <Avatar src={currentUserRank.avatar} name={currentUserRank.username} size="lg" ring ringColor="ring-primary" />
+          <Avatar src={currentUserRank.avatar || user?.avatar || user?.photoURL} name={currentUserRank.username} size="lg" ring ringColor="ring-primary" />
           <div className="flex-1">
             <h3 className="font-bold text-slate-900 dark:text-white">
-              {currentUserRank.username} (You)
+              {currentUserRank.username} <span className="text-primary text-sm">(You)</span>
             </h3>
             <p className="text-sm text-slate-600 dark:text-text-secondary">
-              {currentUserRank.questsCompleted} quests completed
+              {currentUserRank.questsCompleted || userStats?.completedQuests || 0} quests completed
             </p>
           </div>
           <Badge variant="warning" icon="stars" size="md">
-            {currentUserRank.xp.toLocaleString()} XP
+            {(currentUserRank.xp || userStats?.totalXP || 0).toLocaleString()} XP
           </Badge>
         </div>
       </Card>
@@ -259,10 +286,11 @@ const Leaderboard = () => {
                 <Link to={`/app/profile/${leader.username}`}>
                   <h3 className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors">
                     {leader.username}
+                    {leader.isCurrentUser && <span className="ml-1 text-primary text-sm">(You)</span>}
                   </h3>
                 </Link>
                 <p className="text-sm text-slate-600 dark:text-text-secondary">
-                  {leader.questsCompleted} quests completed
+                  {leader.questsCompleted} quest{leader.questsCompleted !== 1 ? 's' : ''} completed
                 </p>
               </div>
 

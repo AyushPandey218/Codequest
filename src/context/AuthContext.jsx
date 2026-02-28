@@ -1,5 +1,17 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  updateProfile as firebaseUpdateProfile,
+  sendEmailVerification
+} from 'firebase/auth'
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment } from 'firebase/firestore'
+import { auth, db, googleProvider } from '../config/firebase'
 import { STORAGE_KEYS } from '../utils/constants'
+import { checkAchievements } from '../utils/achievementChecker'
 
 const AuthContext = createContext(null)
 
@@ -14,63 +26,53 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Fetch additional user data from Firestore
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+        const userData = userDoc.exists() ? userDoc.data() : null
+
+        const mergedUser = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          bio: userData?.bio || '',
+          university: userData?.university || '',
+          website: userData?.website || '',
+          ...userData
+        }
+
+        setUser(mergedUser)
+        setIsAuthenticated(true)
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mergedUser))
+      } else {
+        setUser(null)
+        setIsAuthenticated(false)
+        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.USER_DATA)
+      }
+      setIsLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   const login = async (email, password) => {
     try {
-      let mockUser
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const firebaseUser = userCredential.user
 
-      // Admin account
-      if (email === 'admin@codequest.com' && password === 'admin123') {
-        mockUser = {
-          id: 'admin-user-001',
-          username: 'Admin',
-          email: email,
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
-          level: 99,
-          xp: 99999,
-          rank: 1,
-          role: 'admin'
-        }
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+      const userData = userDoc.exists() ? userDoc.data() : null
+
+      return {
+        success: true,
+        isAdmin: userData?.role === 'admin'
       }
-      // Demo user account
-      else if (email === 'demo@codequest.com' && password === 'demo123') {
-        mockUser = {
-          id: 'demo-user-123',
-          username: 'DemoUser',
-          email: email,
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo',
-          level: 12,
-          xp: 2450,
-          rank: 42,
-          role: 'user'
-        }
-      }
-      // Default user (for any other email)
-      else {
-        mockUser = {
-          id: '1',
-          username: email.split('@')[0],
-          email: email,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-          level: 12,
-          xp: 2450,
-          rank: 42,
-          role: 'user'
-        }
-      }
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Store auth data
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'mock_token_12345')
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mockUser))
-
-      setUser(mockUser)
-      setIsAuthenticated(true)
-
-      return { success: true, isAdmin: mockUser.role === 'admin' }
     } catch (error) {
       console.error('Login error:', error)
       return { success: false, error: error.message }
@@ -79,26 +81,31 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (username, email, password) => {
     try {
-      // TODO: Replace with actual API call
-      const mockUser = {
-        id: Math.random().toString(36).substr(2, 9),
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      const firebaseUser = userCredential.user
+
+      // Set initial profile in Firebase Auth
+      await firebaseUpdateProfile(firebaseUser, {
+        displayName: username,
+        photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
+      })
+
+      // Send the verification email immediately
+      await sendEmailVerification(firebaseUser)
+
+      // Create user document in Firestore
+      const initialUserData = {
         username: username,
         email: email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+        role: 'user',
         level: 1,
         xp: 0,
-        rank: null,
+        streak: 0,
+        createdAt: serverTimestamp(),
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
       }
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Store auth data
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'mock_token_12345')
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mockUser))
-
-      setUser(mockUser)
-      setIsAuthenticated(true)
+      await setDoc(doc(db, 'users', firebaseUser.uid), initialUserData)
 
       return { success: true }
     } catch (error) {
@@ -107,17 +114,122 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
-    localStorage.removeItem(STORAGE_KEYS.USER_DATA)
-    setUser(null)
-    setIsAuthenticated(false)
+  const resendVerification = async () => {
+    try {
+      if (auth.currentUser && !auth.currentUser.emailVerified) {
+        await sendEmailVerification(auth.currentUser)
+        return { success: true }
+      }
+      return { success: false, error: 'User not found or already verified.' }
+    } catch (error) {
+      console.error('Resend verification error:', error)
+      return { success: false, error: error.message }
+    }
   }
 
-  const updateProfile = (updates) => {
-    const updatedUser = { ...user, ...updates }
-    setUser(updatedUser)
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser))
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      const firebaseUser = result.user
+
+      // Check if user document exists in Firestore
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+
+      let isAdmin = false
+      if (!userDoc.exists()) {
+        // Create initial profile for new Google user
+        const username = firebaseUser.displayName || firebaseUser.email.split('@')[0]
+        const initialUserData = {
+          username: username,
+          email: firebaseUser.email,
+          role: 'user',
+          level: 1,
+          xp: 0,
+          streak: 0,
+          createdAt: serverTimestamp(),
+          avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+          bio: '',
+          university: '',
+          website: ''
+        }
+        await setDoc(doc(db, 'users', firebaseUser.uid), initialUserData)
+      } else {
+        isAdmin = userDoc.data()?.role === 'admin'
+        // Sync Google photoURL to avatar if it changed or is missing
+        if (firebaseUser.photoURL && userDoc.data()?.avatar !== firebaseUser.photoURL) {
+          await updateDoc(doc(db, 'users', firebaseUser.uid), {
+            avatar: firebaseUser.photoURL
+          })
+        }
+      }
+
+      return { success: true, isAdmin }
+    } catch (error) {
+      console.error('Google login error:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await signOut(auth)
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
+  const updateProfile = async (updates) => {
+    if (!user?.uid) return
+
+    try {
+      await updateDoc(doc(db, 'users', user.uid), updates)
+      setUser(prev => ({ ...prev, ...updates }))
+    } catch (error) {
+      console.error('Update profile error:', error)
+    }
+  }
+
+  const updateXP = async (xpAmount) => {
+    if (!user?.uid) return
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        xp: increment(xpAmount)
+      })
+      setUser(prev => ({ ...prev, xp: (prev.xp || 0) + xpAmount }))
+    } catch (error) {
+      console.error('Update XP error:', error)
+    }
+  }
+
+  const completeLesson = async (moduleId, lessonId, xpReward = 50) => {
+    if (!user?.uid) return
+
+    try {
+      const progressRef = doc(db, 'moduleProgress', `${user.uid}_${moduleId}`)
+      const progressDoc = await getDoc(progressRef)
+
+      if (!progressDoc.exists()) {
+        await setDoc(progressRef, {
+          uid: user.uid,
+          moduleId: moduleId,
+          completedLessons: [lessonId],
+          status: 'started',
+          lastUpdated: serverTimestamp()
+        })
+        await updateXP(xpReward)
+      } else {
+        const data = progressDoc.data()
+        if (!data.completedLessons.includes(lessonId)) {
+          await updateDoc(progressRef, {
+            completedLessons: arrayUnion(lessonId),
+            lastUpdated: serverTimestamp()
+          })
+          await updateXP(xpReward)
+        }
+      }
+    } catch (error) {
+      console.error('Complete lesson error:', error)
+    }
   }
 
   const isAdmin = user?.role === 'admin'
@@ -129,8 +241,12 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     login,
     signup,
+    loginWithGoogle,
     logout,
     updateProfile,
+    resendVerification,
+    updateXP,
+    completeLesson,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

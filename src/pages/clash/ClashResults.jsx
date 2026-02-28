@@ -5,66 +5,28 @@ import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
 import Button from '../../components/common/Button'
 import ProgressBar from '../../components/common/ProgressBar'
+import { useClash } from '../../hooks/useClash'
+import { useQuest } from '../../hooks/useQuest'
+import { useAuth } from '../../context/AuthContext'
 
 const ClashResults = () => {
   const { clashId } = useParams()
+  const { user } = useAuth()
+  const { clash, players, loading: clashLoading } = useClash(clashId)
+  const { quest, loading: questLoading } = useQuest(clash?.questId)
   const [activeTab, setActiveTab] = useState('summary')
 
-  const results = {
-    yourRank: 1,
-    yourScore: 95,
-    xpEarned: 150,
-    bonusXP: 50,
-    matchDuration: '8:23',
-    difficulty: 'Medium',
-  }
+  const yourPlayer = players.find(p => p.isYou)
+  const yourRank = players.findIndex(p => p.isYou) + 1
 
-  const players = [
-    {
-      rank: 1,
-      username: 'You',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=you',
-      score: 95,
-      testsPassed: 5,
-      totalTests: 5,
-      timeCompleted: '8:23',
-      accuracy: 100,
-      isYou: true,
-    },
-    {
-      rank: 2,
-      username: 'CodeNinja_42',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ninja',
-      score: 87,
-      testsPassed: 4,
-      totalTests: 5,
-      timeCompleted: '9:15',
-      accuracy: 80,
-      isYou: false,
-    },
-    {
-      rank: 3,
-      username: 'PyMaster_99',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pymaster',
-      score: 78,
-      testsPassed: 4,
-      totalTests: 5,
-      timeCompleted: '9:45',
-      accuracy: 80,
-      isYou: false,
-    },
-    {
-      rank: 4,
-      username: 'AlgoWizard',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wizard',
-      score: 65,
-      testsPassed: 3,
-      totalTests: 5,
-      timeCompleted: '10:00',
-      accuracy: 60,
-      isYou: false,
-    },
-  ]
+  const results = {
+    yourRank: yourRank || '-',
+    yourScore: yourPlayer?.score || 0,
+    xpEarned: Math.min(yourPlayer?.score || 0, 500),
+    bonusXP: yourRank === 1 ? 50 : 0,
+    matchDuration: 'Completed',
+    difficulty: quest?.difficulty || clash?.difficulty || 'Medium',
+  }
 
   const achievements = [
     { title: 'First Place', icon: 'emoji_events', color: 'text-yellow-500', earned: true },
@@ -73,25 +35,7 @@ const ClashResults = () => {
     { title: 'Code Master', icon: 'verified', color: 'text-blue-500', earned: false },
   ]
 
-  const solution = `def solve(nums):
-    """
-    Calculate the sum of all elements in an array.
-    Time Complexity: O(n)
-    Space Complexity: O(1)
-    """
-    total = 0
-    for num in nums:
-        total += num
-    return total
-
-# Alternative solution using built-in function
-def solve_v2(nums):
-    return sum(nums)
-
-# Test cases
-print(solve([1, 2, 3, 4, 5]))  # Output: 15
-print(solve([]))                # Output: 0
-print(solve([-1, -2, 3]))       # Output: 0`
+  const solution = quest?.solution?.Python3 || `def solve(nums):\n    # Solution details pending migration\n    return sum(nums)`
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -146,11 +90,10 @@ print(solve([-1, -2, 3]))       # Output: 0`
           {achievements.map((achievement, index) => (
             <div
               key={index}
-              className={`p-4 rounded-xl border-2 text-center transition-all ${
-                achievement.earned
+              className={`p-4 rounded-xl border-2 text-center transition-all ${achievement.earned
                   ? 'bg-slate-50 dark:bg-[#282839] border-slate-200 dark:border-border-dark'
                   : 'bg-slate-100/50 dark:bg-[#1c1c27]/50 border-slate-200/50 dark:border-border-dark/50 opacity-50 grayscale'
-              }`}
+                }`}
             >
               <div className={`size-16 rounded-full ${achievement.earned ? 'bg-slate-200 dark:bg-[#323267]' : 'bg-slate-300 dark:bg-[#2a2a3a]'} flex items-center justify-center mx-auto mb-3`}>
                 <span className={`material-symbols-outlined text-3xl ${achievement.color}`}>
@@ -177,11 +120,10 @@ print(solve([-1, -2, 3]))       # Output: 0`
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-medium text-sm capitalize transition-colors ${
-                activeTab === tab
+              className={`px-6 py-3 font-medium text-sm capitalize transition-colors ${activeTab === tab
                   ? 'text-primary border-b-2 border-primary bg-primary/5'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -277,23 +219,21 @@ print(solve([-1, -2, 3]))       # Output: 0`
           {/* Rankings Tab */}
           {activeTab === 'rankings' && (
             <div className="space-y-4">
-              {players.map((player) => (
+              {players.map((player, idx) => (
                 <Card
-                  key={player.rank}
+                  key={player.uid}
                   variant="bordered"
-                  className={`p-4 ${
-                    player.isYou ? 'bg-primary/5 border-primary' : ''
-                  }`}
+                  className={`p-4 ${player.isYou ? 'bg-primary/5 border-primary' : ''
+                    }`}
                 >
                   <div className="flex items-center gap-4">
                     {/* Rank */}
-                    <div className={`size-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${
-                      player.rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-orange-600 text-white' :
-                      player.rank === 2 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-white' :
-                      player.rank === 3 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white' :
-                      'bg-slate-200 dark:bg-[#323267] text-slate-600 dark:text-slate-300'
-                    }`}>
-                      {player.rank}
+                    <div className={`size-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-600 text-white' :
+                        idx === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-white' :
+                          idx === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white' :
+                            'bg-slate-200 dark:bg-[#323267] text-slate-600 dark:text-slate-300'
+                      }`}>
+                      {idx + 1}
                     </div>
 
                     {/* Avatar & Info */}
@@ -306,11 +246,9 @@ print(solve([-1, -2, 3]))       # Output: 0`
                         )}
                       </h3>
                       <div className="flex items-center gap-4 mt-1 text-sm text-slate-600 dark:text-text-secondary">
-                        <span>{player.testsPassed}/{player.totalTests} tests</span>
+                        <span>{player.testsPassed || 0}/{player.totalTests || 5} tests</span>
                         <span>•</span>
-                        <span>{player.accuracy}% accuracy</span>
-                        <span>•</span>
-                        <span>{player.timeCompleted}</span>
+                        <span>{player.score || 0} points</span>
                       </div>
                     </div>
 

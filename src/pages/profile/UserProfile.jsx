@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { getProgressSummary } from '../../utils/progressStorage'
+import { useUser } from '../../context/UserContext'
+import { getLevelProgress } from '../../utils/progressStorage'
 import { quests } from '../../data/quests'
 import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
 import Button from '../../components/common/Button'
+import { achievements as allAchievements } from '../../data/achievements'
+import { useLeaderboard } from '../../hooks/useLeaderboard'
 
 /**
  * User Profile Page - Rebuilt to match the premium dark theme design
@@ -16,46 +19,76 @@ const UserProfile = () => {
   const navigate = useNavigate()
   const { userId } = useParams()
   const { user: currentUser } = useAuth()
+  const { userStats, userProgress, submissions, isLoading } = useUser()
 
-  // Get real progress data from storage
-  const [progress, setProgress] = useState(() => getProgressSummary())
   const [activeHistoryTab, setActiveHistoryTab] = useState('All')
 
   // Determine if viewing own profile
   const isOwnProfile = !userId || userId === currentUser?.username
 
-  // Profile data mapping - mix of real and "realistic" mock for cosmetic stats
+  // Fetch real global rank from leaderboard
+  const { leaderboard } = useLeaderboard(100, isOwnProfile ? currentUser?.uid : null)
+  const realRank = leaderboard.find(l => l.id === currentUser?.uid)?.rank || userStats?.rank || '100+'
+  // Compute an percentile (mocked if not rank 1)
+  const percentile = typeof realRank === 'number' ? Math.max(1, 100 - realRank) : 50
+
+  // 12-day Activity Chart Data
+  const recent12Days = (() => {
+    if (!submissions || !submissions.length) return Array(12).fill(0)
+    const result = []
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const dateStr = d.toISOString().split('T')[0]
+      const count = submissions.filter(s => {
+        if (!s.timestamp) return false
+        const sDate = s.timestamp?.toDate ? s.timestamp.toDate() : new Date(s.timestamp)
+        return sDate.toISOString().split('T')[0] === dateStr
+      }).length
+      result.push(count)
+    }
+    return result
+  })()
+  const maxActivity = Math.max(...recent12Days, 1)
+
+  // Profile data mapping - real data from Firestore/Auth
   const profile = {
-    username: isOwnProfile ? (currentUser?.username || 'User') : userId,
+    username: isOwnProfile ? (currentUser?.displayName || currentUser?.username || 'User') : userId,
     handle: `@${(isOwnProfile ? currentUser?.username : userId)?.toLowerCase().replace(/\s/g, '_')}_dev`,
     avatar: isOwnProfile ? currentUser?.avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
-    bio: 'CS Student | Coding Enthusiast | Building the future one line at a time 🚀',
-    location: 'San Francisco, CA',
-    joinDate: 'Joined September 2024',
-    github: `github.com/${(isOwnProfile ? currentUser?.username : userId)?.toLowerCase()}`,
-    level: progress.level,
-    xp: progress.xp,
-    totalXPNeeded: (progress.level) * 200 + 200, // Based on XP_PER_LEVEL = 200
-    levelTitle: progress.level > 20 ? 'Logic Legend' : progress.level > 10 ? 'Algorithm Architect' : 'Code Initiate',
-    streak: progress.streak,
-    completedCount: progress.completedCount,
-    badges: Math.floor(progress.completedCount / 2) + 1,
-    codingHours: progress.completedCount * 2 + 5,
-    globalRank: 42 + (100 - progress.level),
-    percentile: Math.min(99, 85 + progress.level / 2)
+    bio: isOwnProfile ? (currentUser?.bio || 'No bio yet') : 'CS Student | Coding Enthusiast | Building the future one line at a time 🚀',
+    location: isOwnProfile ? (currentUser?.university || 'Global') : 'San Francisco, CA',
+    joinDate: isOwnProfile ? (currentUser?.createdAt?.toDate ? `Joined ${currentUser.createdAt.toDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : 'Joined September 2024') : 'Joined September 2024',
+    github: isOwnProfile ? (currentUser?.website?.replace('https://', '') || `github.com/${currentUser?.username?.toLowerCase()}`) : `github.com/${userId?.toLowerCase()}`,
+    level: userStats?.level || 1,
+    xp: userStats?.totalXP || 0,
+    totalXPNeeded: (userStats?.level || 1) * 200, // Fixed cost per level for now
+    levelTitle: (userStats?.level || 1) > 20 ? 'Logic Legend' : (userStats?.level || 1) > 10 ? 'Algorithm Architect' : 'Code Initiate',
+    streak: userStats?.streak || 0,
+    completedCount: userStats?.completedQuests || 0,
+    badges: userStats?.achievements?.length || 0,
+    codingHours: (userStats?.completedQuests || 0) * 2 + 5,
+    globalRank: realRank,
+    percentile: percentile
   }
 
   // Get quest history (the real ones completed)
   const historyQuests = quests
-    .filter(q => progress.completedQuests.includes(q.id))
+    .filter(q => userProgress[q.id]?.completed)
     .map(q => ({
       ...q,
-      date: 'Oct 24, 2024', // Mock date for now or could derive from activityHistory keys
+      date: userProgress[q.id]?.completedAt ? new Date(userProgress[q.id].completedAt).toLocaleDateString() : 'N/A',
       score: '100%',
       status: 'SUCCESS'
     }))
 
-  // Filter quests based on tab
+  // Get real earned achievements data
+  const earnedAchievements = (userStats?.achievements || [])
+    .map(id => allAchievements.find(a => a.id === id))
+    .filter(Boolean)
+
+  // Recent Badges section update
+  const recentBadges = earnedAchievements.slice(-3).reverse()
   const filteredHistory = historyQuests.filter(q => {
     if (activeHistoryTab === 'Completed') return true // All in this list are completed
     return true
@@ -80,9 +113,9 @@ const UserProfile = () => {
                 src={profile.avatar}
                 name={profile.username}
                 size="xl"
-                className="size-32 border-2 border-primary/50 relative z-10"
+                online={true}
+                className="relative z-10 ring-2 ring-primary/50"
               />
-              <div className="absolute bottom-1 right-1 size-5 bg-green-500 border-4 border-[#12122a] rounded-full"></div>
             </div>
 
             {/* User Details */}
@@ -181,7 +214,7 @@ const UserProfile = () => {
             <div className="relative h-3 bg-white/5 rounded-full overflow-hidden mb-2">
               <div
                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-purple-500 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)] transition-all duration-1000 ease-out"
-                style={{ width: `${(progress.levelProgress * 100) || 0}%` }}
+                style={{ width: `${(getLevelProgress(userStats?.totalXP || 0) * 100) || 0}%` }}
               ></div>
             </div>
             <div className="flex justify-between text-[10px] uppercase tracking-tighter text-slate-500 font-bold">
@@ -217,42 +250,88 @@ const UserProfile = () => {
                 <h3 className="font-bold">Recent Badges</h3>
                 <button className="text-xs text-primary font-bold hover:underline">View All</button>
               </div>
-              <div className="flex justify-around items-center">
-                {[
-                  { name: 'Bug Hunter', icon: 'bug_report', bg: 'bg-orange-500/10', text: 'text-orange-400' },
-                  { name: 'Clean Code', icon: 'code', bg: 'bg-blue-500/10', text: 'text-blue-400' },
-                  { name: 'Speedster', icon: 'bolt', bg: 'bg-purple-500/10', text: 'text-purple-400' },
-                ].map((badge, i) => (
+              <div className="flex justify-around items-center gap-4 flex-wrap">
+                {recentBadges.length > 0 ? recentBadges.map((badge, i) => (
                   <div key={i} className="flex flex-col items-center gap-3 group">
-                    <div className={`size-16 rounded-full ${badge.bg} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform`}>
-                      <span className={`material-symbols-outlined text-3xl ${badge.text}`}>{badge.icon}</span>
+                    <div className={`size-16 rounded-full ${badge.bgColor || 'bg-primary/10'} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform`}>
+                      <span className={`material-symbols-outlined text-3xl ${badge.color || 'text-primary'}`}>{badge.icon}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">{badge.name}</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase text-center max-w-[80px]">{badge.name}</span>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-slate-500 text-xs italic">No badges earned yet</div>
+                )}
               </div>
             </Card>
 
-            {/* activity (Bar Chart Mock) */}
+            {/* activity (Bar Chart) */}
             <Card className="bg-[#12122a] border-white/5 p-6">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="font-bold">Activity</h3>
-                <button className="text-[10px] text-slate-500 font-bold uppercase py-1 px-3 bg-[#1d1d35] rounded-lg">Last 30 Days</button>
+                <button className="text-[10px] text-slate-500 font-bold uppercase py-1 px-3 bg-[#1d1d35] rounded-lg">Last 12 Days</button>
               </div>
               <div className="flex items-end justify-between h-24 gap-1 px-2 mb-4">
-                {[35, 60, 45, 80, 55, 90, 70, 40, 65, 85, 50, 75].map((val, i) => (
+                {recent12Days.map((val, i) => (
                   <div
                     key={i}
-                    className={`w-full rounded-t-sm transition-all duration-500 ${i === 5 ? 'bg-primary' : 'bg-primary/20 hover:bg-primary/40'}`}
-                    style={{ height: `${val}%` }}
-                  ></div>
+                    className={`w-full rounded-t-sm transition-all duration-500 relative group cursor-pointer ${val > 0 ? 'bg-primary/80 hover:bg-primary' : 'bg-white/5 hover:bg-white/10'}`}
+                    style={{ height: `${Math.max((val / maxActivity) * 100, 5)}%` }}
+                  >
+                    {/* Tooltip */}
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10 pointer-events-none">
+                      {val} quest{val !== 1 ? 's' : ''}
+                    </div>
+                  </div>
                 ))}
               </div>
               <p className="text-[11px] text-slate-500 font-medium text-center italic">
-                {profile.completedCount} quests completed in the last 30 days.
+                {recent12Days.reduce((a, b) => a + b, 0)} quests completed in the last 12 days.
               </p>
             </Card>
           </div>
+
+          {/* Achievements Gallery */}
+          <Card className="bg-[#12122a] border-white/5 p-6">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="font-bold text-xl flex items-center gap-2">
+                <span className="material-symbols-outlined text-yellow-500">military_tech</span>
+                Achievements Gallery
+              </h3>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                {earnedAchievements.length} / {allAchievements.length} Unlocked
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+              {allAchievements.map((achievement, i) => {
+                const isEarned = userStats?.achievements?.includes(achievement.id)
+                return (
+                  <div key={i} className={`flex flex-col items-center gap-3 group ${!isEarned ? 'opacity-30 grayscale' : ''}`}>
+                    <div className={`size-16 rounded-2xl ${isEarned ? achievement.bgColor : 'bg-white/5'} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-all duration-300 relative`}>
+                      <span className={`material-symbols-outlined text-3xl ${isEarned ? achievement.color : 'text-slate-500'}`}>
+                        {achievement.icon}
+                      </span>
+                      {isEarned && (
+                        <div className="absolute -top-1 -right-1 size-4 bg-green-500 rounded-full border-2 border-[#12122a] flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[8px] text-white font-bold">check</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-[10px] font-bold uppercase tracking-tight ${isEarned ? 'text-white' : 'text-slate-500'}`}>
+                        {achievement.name}
+                      </p>
+                      {isEarned && (
+                        <p className="text-[8px] text-slate-500 font-medium leading-tight mt-0.5 line-clamp-2">
+                          {achievement.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
 
           {/* Quest History Table */}
           <Card className="bg-[#12122a] border-white/5 overflow-hidden">

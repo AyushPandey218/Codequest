@@ -6,7 +6,6 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
 import ProgressBar from '../../components/common/ProgressBar'
-import { getCompletedQuests } from '../../utils/progressStorage'
 
 const QuestSelection = () => {
   const [activeCategory, setActiveCategory] = useState('all')
@@ -14,7 +13,9 @@ const QuestSelection = () => {
 
   const { quests, loading, error } = useQuestList()
   const { userProgress } = useUser()
-  const completedQuestIds = getCompletedQuests()
+  const completedQuestIds = new Set(
+    Object.keys(userProgress).filter(id => userProgress[id].completed)
+  )
 
   const categories = [
     { id: 'all', label: 'All Quests', icon: 'grid_view' },
@@ -157,8 +158,8 @@ const QuestSelection = () => {
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeCategory === category.id
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
                   }`}
               >
                 <span className="material-symbols-outlined text-lg">{category.icon}</span>
@@ -179,8 +180,8 @@ const QuestSelection = () => {
                 key={difficulty}
                 onClick={() => setActiveDifficulty(difficulty)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${activeDifficulty === difficulty
-                    ? 'bg-primary text-white'
-                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                  ? 'bg-primary text-white'
+                  : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
                   }`}
               >
                 {difficulty}

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTestCases } from '../../hooks/useTestCases'
+import { useClash } from '../../hooks/useClash'
+import { useQuest } from '../../hooks/useQuest'
 import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
@@ -10,12 +12,22 @@ import CodeEditor from '../../components/code/CodeEditor'
 import { getLanguageFilename } from '../../utils/languageExtensions'
 import LanguageSelector from '../../components/code/LanguageSelector'
 import { executeCode } from '../../utils/codeExecutor'
+import { db } from '../../config/firebase'
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore'
+import { useAuth } from '../../context/AuthContext'
+import { getLevelFromXP } from '../../utils/progressStorage'
 
 const LiveCodeClash = () => {
   const { clashId } = useParams()
   const navigate = useNavigate()
-  const { testCases } = useTestCases(clashId) // Use real test cases from Firestore
-  const [timeLeft, setTimeLeft] = useState(600) // 10 minutes in seconds
+  const { user } = useAuth()
+
+  const { clash, players, activityFeed, updateScore, addActivity, loading: clashLoading } = useClash(clashId)
+  const questId = clash?.questId
+  const { quest, loading: questLoading } = useQuest(questId)
+  const { testCases } = useTestCases(questId)
+
+  const [timeLeft, setTimeLeft] = useState(600)
   const [selectedLanguage, setSelectedLanguage] = useState('Python3')
   const [monacoLanguage, setMonacoLanguage] = useState('python')
   const [code, setCode] = useState(`def solution(arr):
@@ -25,51 +37,17 @@ const LiveCodeClash = () => {
   const [testsPassed, setTestsPassed] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
 
-  // Real-ish Opponent Simulation
-  const [players, setPlayers] = useState([
-    {
-      username: 'You',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=you',
-      score: 0,
-      testsPassed: 0,
-      isYou: true,
-    },
-    {
-      username: 'CodeNinja_42',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ninja',
-      score: 0,
-      testsPassed: 0,
-      isYou: false,
-    },
-    {
-      username: 'PyMaster_99',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pymaster',
-      score: 0,
-      testsPassed: 0,
-      isYou: false,
-    },
-    {
-      username: 'AlgoWizard',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wizard',
-      score: 0,
-      testsPassed: 0,
-      isYou: false,
-    },
-  ])
-
-  const [activityFeed, setActivityFeed] = useState([
-    { user: 'System', action: 'The clash has begun!', time: 'now', icon: 'info', color: 'text-blue-500' },
-  ])
-
   const problem = {
-    title: 'Array Sum Challenge',
-    description: 'Calculate the sum of all elements in an array efficiently.',
-    difficulty: 'Medium',
-    testCases: 5,
+    title: quest?.title || clash?.questTitle || 'Loading...',
+    description: quest?.description || 'Please wait while we fetch the problem details.',
+    difficulty: quest?.difficulty || clash?.difficulty || 'Medium',
+    testCases: quest?.testCases?.length || clash?.players?.[user?.uid]?.totalTests || 5,
   }
 
-  // Timer & AI Opponent Simulation
+  // Timer logic
   useEffect(() => {
+    if (clash?.status !== 'ongoing') return
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0) {
@@ -79,47 +57,22 @@ const LiveCodeClash = () => {
         }
         return prev - 1
       })
-
-      // Randomly update AI opponents every ~5 seconds
-      if (Math.random() > 0.8) {
-        setPlayers(prev => {
-          const next = [...prev]
-          const aiIndex = Math.floor(Math.random() * 3) + 1 // ignore user at index 0
-          const ai = next[aiIndex]
-
-          if (ai.testsPassed < problem.testCases) {
-            ai.testsPassed += 1
-            ai.score += 25
-
-            // Add to activity feed
-            setActivityFeed(f => [
-              {
-                user: ai.username,
-                action: `passed ${ai.testsPassed}/${problem.testCases} tests`,
-                time: 'just now',
-                icon: 'check_circle',
-                color: 'text-green-500'
-              },
-              ...f.slice(0, 9)
-            ])
-          }
-          return next
-        })
-      }
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [clashId, navigate])
+  }, [clash?.status, clashId, navigate])
 
-  // Sync user stats in players list
+  // Sync user stats to Firestore when tests pass
   useEffect(() => {
-    setPlayers(prev => {
-      const next = [...prev]
-      next[0].testsPassed = testsPassed
-      next[0].score = testsPassed * 25
-      return next
-    })
-  }, [testsPassed])
+    if (testsPassed > 0) {
+      updateScore(testsPassed, problem.testCases)
+
+      // Notify other players if you pass all tests
+      if (testsPassed === problem.testCases) {
+        addActivity('passed all tests!', 'emoji_events', 'text-yellow-500')
+      }
+    }
+  }, [testsPassed, problem.testCases])
 
   // Track if user has modified code
   const handleCodeChange = (newCode) => {
@@ -183,10 +136,28 @@ const LiveCodeClash = () => {
     }
   }
 
-  const handleSubmit = () => {
-    // Award XP based on final score
+  const handleSubmit = async () => {
+    if (!user) return
     const finalScore = testsPassed * 25
-    markQuestComplete(`clash_${clashId}`, finalScore)
+    const xpReward = Math.min(finalScore, 500) // Cap XP from clash
+
+    // Record submission
+    await addDoc(collection(db, 'submissions'), {
+      uid: user.uid,
+      questId: `clash_${clashId}`,
+      questTitle: `Clash: ${problem.title}`,
+      score: finalScore,
+      timestamp: serverTimestamp(),
+      xpEarned: xpReward
+    })
+
+    // Update user XP
+    const levelBefore = getLevelFromXP(user.xp || 0)
+    await updateDoc(doc(db, 'users', user.uid), {
+      xp: increment(xpReward)
+    })
+
+    addActivity('submitted their solution', 'publish', 'text-blue-400')
     navigate(`/app/clash/${clashId}/results`)
   }
 
@@ -240,15 +211,15 @@ const LiveCodeClash = () => {
               <div
                 key={index}
                 className={`p-3 rounded-xl transition-all ${player.isYou
-                    ? 'bg-primary/10 border-2 border-primary'
-                    : 'bg-slate-50 dark:bg-[#282839]'
+                  ? 'bg-primary/10 border-2 border-primary'
+                  : 'bg-slate-50 dark:bg-[#282839]'
                   }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`size-8 rounded-full flex items-center justify-center font-bold text-sm ${index === 0 ? 'bg-yellow-500 text-white' :
-                      index === 1 ? 'bg-slate-400 text-white' :
-                        index === 2 ? 'bg-orange-600 text-white' :
-                          'bg-slate-200 dark:bg-[#323267] text-slate-600 dark:text-slate-300'
+                    index === 1 ? 'bg-slate-400 text-white' :
+                      index === 2 ? 'bg-orange-600 text-white' :
+                        'bg-slate-200 dark:bg-[#323267] text-slate-600 dark:text-slate-300'
                     }`}>
                     {index + 1}
                   </div>

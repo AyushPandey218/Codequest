@@ -7,7 +7,7 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import ProgressBar from '../../components/common/ProgressBar'
 import Button from '../../components/common/Button'
-import { getProgressSummary } from '../../utils/progressStorage'
+import { getLevelProgress, getXPToNextLevel } from '../../utils/progressStorage'
 
 const Dashboard = () => {
   const { user } = useAuth()
@@ -15,41 +15,40 @@ const Dashboard = () => {
   const { quests, loading: questsLoading } = useQuestList()
 
   // Real XP & level data from localStorage
-  const [progress, setProgress] = useState(() => getProgressSummary())
   // Animate the XP bar (start at 0, fill to real value)
   const [barValue, setBarValue] = useState(0)
 
   useEffect(() => {
-    const summary = getProgressSummary()
-    setProgress(summary)
+    if (!userStats) return
+    const levelProgress = getLevelProgress(userStats.totalXP)
     // Delay bar fill for smooth animation on mount
-    const t = setTimeout(() => setBarValue(Math.round(summary.levelProgress * 100)), 300)
+    const t = setTimeout(() => setBarValue(Math.round(levelProgress * 100)), 300)
     return () => clearTimeout(t)
-  }, [])
+  }, [userStats])
 
   // Stats Grid — real data from localStorage
   const stats = [
     {
       label: 'XP Earned',
-      value: progress.xp.toLocaleString(),
+      value: (userStats?.totalXP || 0).toLocaleString(),
       icon: 'stars',
       color: 'text-yellow-400'
     },
     {
       label: 'Quests Completed',
-      value: progress.completedCount,
+      value: userStats?.completedQuests || 0,
       icon: 'task_alt',
       color: 'text-green-400'
     },
     {
       label: 'Current Level',
-      value: `Lvl ${progress.level}`,
+      value: `Lvl ${userStats?.level || 1}`,
       icon: 'military_tech',
       color: 'text-blue-400'
     },
     {
       label: 'Day Streak',
-      value: `${progress.streak || 0} days`,
+      value: `${userStats?.streak || 0} days`,
       icon: 'local_fire_department',
       color: 'text-orange-400'
     },
@@ -324,10 +323,10 @@ const Dashboard = () => {
           <Card variant="elevated" className="p-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                Level {progress.level}
+                Level {userStats?.level || 1}
               </h3>
               <Badge variant="primary">
-                {progress.xp.toLocaleString()} XP
+                {(userStats?.totalXP || 0).toLocaleString()} XP
               </Badge>
             </div>
 
@@ -355,10 +354,10 @@ const Dashboard = () => {
 
             <div className="flex items-center justify-between">
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {Math.round(barValue)}% to Level {progress.level + 1}
+                {Math.round(barValue)}% to Level {(userStats?.level || 1) + 1}
               </p>
               <p className="text-xs font-semibold text-primary">
-                {progress.xpToNextLevel} XP needed
+                {getXPToNextLevel(userStats?.totalXP || 0)} XP needed
               </p>
             </div>
           </Card>

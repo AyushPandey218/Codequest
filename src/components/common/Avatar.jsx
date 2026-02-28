@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { cn } from '../../utils/helpers'
 import { getInitials } from '../../utils/helpers'
 
@@ -23,6 +24,8 @@ const Avatar = ({
   className = '',
   ...props
 }) => {
+  const [imageError, setImageError] = useState(false)
+
   const sizes = {
     xs: 'size-6 text-xs',
     sm: 'size-8 text-sm',
@@ -44,11 +47,12 @@ const Avatar = ({
       )}
       {...props}
     >
-      {src ? (
+      {(src && !imageError) ? (
         <img
           src={src}
           alt={alt}
           className="size-full object-cover"
+          onError={() => setImageError(true)}
         />
       ) : (
         <div className="size-full bg-primary/20 flex items-center justify-center text-primary font-bold">

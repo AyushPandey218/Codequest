@@ -1,13 +1,5 @@
 import { useState } from 'react'
-
-const mockUsers = [
-    { id: '1', username: 'coder_xyz', email: 'coder@xyz.com', level: 23, role: 'user', status: 'active', joined: 'Jan 12, 2025' },
-    { id: '2', username: 'devKing', email: 'dev@king.io', level: 51, role: 'user', status: 'active', joined: 'Nov 5, 2024' },
-    { id: '3', username: 'bugHunter', email: 'bug@hunt.dev', level: 9, role: 'user', status: 'suspended', joined: 'Feb 1, 2025' },
-    { id: '4', username: 'algoMaster', email: 'algo@master.ai', level: 38, role: 'user', status: 'active', joined: 'Dec 20, 2024' },
-    { id: '5', username: 'newbie_01', email: 'newbie@mail.com', level: 1, role: 'user', status: 'active', joined: 'Feb 25, 2025' },
-    { id: '6', username: 'py_wizard', email: 'py@wizard.com', level: 44, role: 'user', status: 'active', joined: 'Oct 14, 2024' },
-]
+import { useAdminUsers } from '../../hooks/useAdminUsers'
 
 const Badge = ({ status }) => {
     const map = {
@@ -24,8 +16,9 @@ const Badge = ({ status }) => {
 const AdminUsers = () => {
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
+    const { users, isLoading } = useAdminUsers()
 
-    const filtered = mockUsers.filter(u => {
+    const filtered = users.filter(u => {
         const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
         const matchesFilter = filter === 'all' || u.status === filter
         return matchesSearch && matchesFilter
@@ -56,8 +49,8 @@ const AdminUsers = () => {
                             key={f}
                             onClick={() => setFilter(f)}
                             className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all ${filter === f
-                                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                    : 'bg-[#12122a] text-slate-400 border border-white/10 hover:text-white'
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                : 'bg-[#12122a] text-slate-400 border border-white/10 hover:text-white'
                                 }`}
                         >
                             {f}
@@ -137,7 +130,7 @@ const AdminUsers = () => {
                     </table>
                 </div>
                 <div className="px-5 py-3 border-t border-white/5 text-xs text-slate-500">
-                    Showing {filtered.length} of {mockUsers.length} users
+                    Showing {filtered.length} of {users.length} users
                 </div>
             </div>
         </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { getProgressSummary } from '../../utils/progressStorage'
+import { useUser } from '../../context/UserContext'
+import { getLevelProgress } from '../../utils/progressStorage'
 import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
@@ -15,9 +16,7 @@ import Input from '../../components/common/Input'
 const EditProfile = () => {
   const navigate = useNavigate()
   const { user, updateProfile } = useAuth()
-
-  // Real progress for sidebar status
-  const [progress, setProgress] = useState(() => getProgressSummary())
+  const { userStats } = useUser()
   const [isSaving, setIsSaving] = useState(false)
 
   // Form state
@@ -25,9 +24,9 @@ const EditProfile = () => {
     username: user?.username || '',
     displayName: user?.displayName || user?.username || '',
     email: user?.email || '',
-    bio: 'Computer Science student passionate about AI and Web Development. Always looking for a coding buddy for the next hackathon! 🚀',
-    university: 'Tech State University',
-    website: 'https://',
+    bio: user?.bio || '',
+    university: user?.university || '',
+    website: user?.website || '',
   })
 
   const [avatar, setAvatar] = useState(user?.avatar || '')
@@ -49,14 +48,13 @@ const EditProfile = () => {
     e.preventDefault()
     setIsSaving(true)
 
-    // Simulate save
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    updateProfile({
-      ...user,
+    await updateProfile({
       username: formData.username,
       displayName: formData.displayName,
-      avatar: avatar
+      avatar: avatar,
+      bio: formData.bio,
+      university: formData.university,
+      website: formData.website
     })
 
     setIsSaving(false)
@@ -130,15 +128,15 @@ const EditProfile = () => {
 
             <div className="mb-6">
               <div className="flex justify-between items-end mb-2">
-                <span className="text-sm font-bold">Level {progress.level}</span>
+                <span className="text-sm font-bold">Level {userStats?.level || 1}</span>
                 <span className="text-[11px] font-bold text-primary">
-                  {progress.xp.toLocaleString()} / {(progress.level * 200 + 200).toLocaleString()} XP
+                  {(userStats?.totalXP || 0).toLocaleString()} / {((userStats?.level || 1) * 200).toLocaleString()} XP
                 </span>
               </div>
               <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary shadow-[0_0_10px_rgba(79,70,229,0.5)] transition-all duration-1000"
-                  style={{ width: `${progress.levelProgress * 100}%` }}
+                  style={{ width: `${getLevelProgress(userStats?.totalXP || 0) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -146,7 +144,7 @@ const EditProfile = () => {
             <div className="flex flex-wrap gap-2">
               <Badge variant="primary" className="bg-primary/10 text-[10px] py-1 px-3 uppercase tracking-tighter">Python Pro</Badge>
               <Badge variant="success" className="bg-green-500/10 text-[10px] py-1 px-3 uppercase tracking-tighter">Bug Hunter</Badge>
-              <Badge variant="warning" className="bg-orange-500/10 text-[10px] py-1 px-3 uppercase tracking-tighter">{progress.streak} Day Streak</Badge>
+              <Badge variant="warning" className="bg-orange-500/10 text-[10px] py-1 px-3 uppercase tracking-tighter">{userStats?.streak || 0} Day Streak</Badge>
             </div>
           </Card>
         </div>

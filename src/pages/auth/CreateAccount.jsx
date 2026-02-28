@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 
 const CreateAccount = () => {
   const navigate = useNavigate()
-  const { signup } = useAuth()
+  const location = useLocation()
+  const prefilledEmail = location.state?.email || ''
+
+  const { signup, loginWithGoogle } = useAuth()
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
+    email: prefilledEmail,
     password: '',
     confirmPassword: '',
   })
@@ -45,13 +48,25 @@ const CreateAccount = () => {
 
     setIsLoading(true)
     const result = await signup(formData.username, formData.email, formData.password)
-    
+
     if (result.success) {
-      navigate('/auth/email-verification-sent')
+      navigate('/auth/email-verification-sent', { state: { email: formData.email } })
     } else {
       setError(result.error || 'Signup failed. Please try again.')
     }
-    
+
+    setIsLoading(false)
+  }
+
+  const handleGoogleLogin = async () => {
+    setError('')
+    setIsLoading(true)
+    const result = await loginWithGoogle()
+    if (result.success) {
+      navigate(result.isAdmin ? '/admin/dashboard' : '/app/dashboard')
+    } else {
+      setError(result.error || 'Google login failed.')
+    }
     setIsLoading(false)
   }
 
@@ -216,6 +231,7 @@ const CreateAccount = () => {
               </button>
               <button
                 type="button"
+                onClick={handleGoogleLogin}
                 className="flex items-center justify-center gap-2 h-11 rounded-lg bg-[#282839] border border-[#3b3b54] hover:bg-[#3b3b54] hover:border-white/20 transition-all text-white text-sm font-medium group"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -3,10 +3,22 @@ import { modules } from '../../data/modules'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
+import { useAuth } from '../../context/AuthContext'
+import { useUser } from '../../context/UserContext'
 
 const LessonView = () => {
     const { moduleId, lessonId } = useParams()
     const navigate = useNavigate()
+    const { moduleProgress, userStats, checkAndAwardAchievements } = useUser()
+    const { completeLesson } = useAuth()
+
+    const checkAchievementsAsync = async (extra = {}) => {
+        if (!userStats) return
+        await checkAndAwardAchievements({
+            ...userStats,
+            ...extra
+        })
+    }
 
     const module = modules.find(m => m.id === parseInt(moduleId))
     const lessonIndex = module?.lessonList?.findIndex(l => l.id === parseInt(lessonId))
@@ -116,7 +128,15 @@ const LessonView = () => {
                 {nextLesson ? (
                     <Button
                         variant="primary"
-                        onClick={() => navigate(`/app/modules/${moduleId}/lessons/${nextLesson.id}`)}
+                        onClick={async () => {
+                            await completeLesson(module.id, lesson.id)
+                            const currentProgress = moduleProgress?.[module.id]
+                            const isFinished = (currentProgress?.completedLessons?.length || 0) + 1 >= module.lessonList.length
+                            await checkAchievementsAsync({
+                                completedModules: userStats.completedModules + (isFinished ? 1 : 0)
+                            })
+                            navigate(`/app/modules/${moduleId}/lessons/${nextLesson.id}`)
+                        }}
                         icon="navigate_next"
                         iconPosition="right"
                     >
@@ -125,7 +145,15 @@ const LessonView = () => {
                 ) : (
                     <Button
                         variant="success"
-                        onClick={() => navigate(`/app/modules/${moduleId}`)}
+                        onClick={async () => {
+                            await completeLesson(module.id, lesson.id)
+                            const currentProgress = moduleProgress?.[module.id]
+                            const isFinished = (currentProgress?.completedLessons?.length || 0) + 1 >= module.lessonList.length
+                            await checkAchievementsAsync({
+                                completedModules: userStats.completedModules + (isFinished ? 1 : 0)
+                            })
+                            navigate(`/app/modules/${moduleId}`)
+                        }}
                         icon="verified"
                     >
                         Complete Module

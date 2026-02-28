@@ -5,9 +5,11 @@ import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
 import ProgressBar from '../../components/common/ProgressBar'
 import { modules } from '../../data/modules'
+import { useUser } from '../../context/UserContext'
 
 const ProjectModules = () => {
   const [activeFilter, setActiveFilter] = useState('all')
+  const { moduleProgress } = useUser()
 
   const filters = [
     { id: 'all', label: 'All Modules', icon: 'grid_view' },
@@ -68,7 +70,10 @@ const ProjectModules = () => {
             <span className="material-symbols-outlined text-orange-500">pending</span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {modules.filter(m => m.completedLessons > 0 && m.completedLessons < m.lessons).length}
+            {modules.filter(m => {
+              const compCount = moduleProgress[m.id]?.completedLessons?.length || 0
+              return compCount > 0 && compCount < m.lessons
+            }).length}
           </p>
         </Card>
 
@@ -80,7 +85,7 @@ const ProjectModules = () => {
             <span className="material-symbols-outlined text-green-500">check_circle</span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {modules.filter(m => m.completedLessons === m.lessons).length}
+            {modules.filter(m => (moduleProgress[m.id]?.completedLessons?.length || 0) === m.lessons).length}
           </p>
         </Card>
 
@@ -119,9 +124,10 @@ const ProjectModules = () => {
       {/* Modules Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredModules.map(module => {
-          const progress = (module.completedLessons / module.lessons) * 100
-          const isCompleted = module.completedLessons === module.lessons
-          const isStarted = module.completedLessons > 0
+          const completedCount = moduleProgress[module.id]?.completedLessons?.length || 0
+          const progress = (completedCount / module.lessons) * 100
+          const isCompleted = completedCount === module.lessons
+          const isStarted = completedCount > 0
 
           return (
             <Card
@@ -181,7 +187,7 @@ const ProjectModules = () => {
                         Progress
                       </span>
                       <span className="text-sm font-bold text-slate-900 dark:text-white">
-                        {module.completedLessons}/{module.lessons} lessons
+                        {completedCount}/{module.lessons} lessons
                       </span>
                     </div>
                     <ProgressBar value={progress} />

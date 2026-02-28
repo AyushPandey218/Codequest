@@ -2,31 +2,6 @@ import { useState, useEffect } from 'react'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
-// Mock user progress data for instant loading
-const MOCK_PROGRESS = {
-  '1': {
-    completed: true,
-    passedTests: 10,
-    totalTests: 10,
-    lastAttempt: new Date(),
-    language: 'python',
-  },
-  '2': {
-    completed: false,
-    passedTests: 5,
-    totalTests: 8,
-    lastAttempt: new Date(),
-    language: 'javascript',
-  },
-  '4': {
-    completed: true,
-    passedTests: 12,
-    totalTests: 12,
-    lastAttempt: new Date(),
-    language: 'javascript',
-  },
-}
-
 /**
  * Hook to fetch user progress across all quests
  * @param {string} uid - User ID
@@ -44,11 +19,9 @@ export const useUserProgress = (uid) => {
       return
     }
 
-    // Set mock data immediately for instant UI
-    setProgress(MOCK_PROGRESS)
-    setLoading(false)
+    setLoading(true)
 
-    // Then try to fetch from Firestore (will replace mock data if available)
+    // Fetch from Firestore
     const q = query(
       collection(db, 'submissions'),
       where('uid', '==', uid)
@@ -57,13 +30,16 @@ export const useUserProgress = (uid) => {
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
+        const progressMap = {}
         if (!querySnapshot.empty) {
-          const progressMap = {}
           querySnapshot.forEach((doc) => {
             const data = doc.data()
             // Store the latest submission for each quest
-            if (!progressMap[data.questId] || 
-                data.timestamp > progressMap[data.questId].timestamp) {
+            const existing = progressMap[data.questId]
+            const currentTimestamp = data.timestamp?.toMillis ? data.timestamp.toMillis() : (data.timestamp ? new Date(data.timestamp).getTime() : Date.now())
+            const existingTimestamp = existing?.lastAttempt?.toMillis ? existing.lastAttempt.toMillis() : (existing?.lastAttempt ? new Date(existing.lastAttempt).getTime() : 0)
+
+            if (!existing || currentTimestamp > existingTimestamp) {
               progressMap[data.questId] = {
                 completed: data.passedTests === data.totalTests,
                 passedTests: data.passedTests,
@@ -74,15 +50,13 @@ export const useUserProgress = (uid) => {
               }
             }
           })
-          setProgress(progressMap)
         }
-        // If empty, keep mock data
+        setProgress(progressMap)
         setLoading(false)
       },
       (err) => {
-        console.warn('Firestore unavailable, using mock data:', err.message)
-        // Keep mock data on error
-        setError(null)
+        console.error('Firestore error fetching user progress:', err.message)
+        setError(err.message)
         setLoading(false)
       }
     )

@@ -1,12 +1,5 @@
 import { useState } from 'react'
-
-const initialReports = [
-    { id: 1, type: 'Community Post', reporter: 'user_42', target: 'py_wizard', content: 'This solution is stolen from GitHub!', severity: 'high', time: '14 min ago', status: 'pending' },
-    { id: 2, type: 'Code Clash Comment', reporter: 'newUser99', target: 'algoMaster', content: 'Contains offensive language in game chat.', severity: 'medium', time: '1h ago', status: 'pending' },
-    { id: 3, type: 'Profile Bio', reporter: 'admin_bot', target: 'spammer_x', content: 'Spam/advertisement links in bio.', severity: 'high', time: '2h ago', status: 'pending' },
-    { id: 4, type: 'Quest Comment', reporter: 'coder_xyz', target: 'random_user', content: 'Misleading hint that breaks the challenge.', severity: 'low', time: '5h ago', status: 'resolved' },
-    { id: 5, type: 'Community Post', reporter: 'devKing', target: 'unknown_01', content: 'Sharing full test-case answers publicly.', severity: 'medium', time: '1d ago', status: 'resolved' },
-]
+import { useReports } from '../../hooks/useReports'
 
 const SeverityBadge = ({ severity }) => {
     const map = {
@@ -22,11 +15,8 @@ const SeverityBadge = ({ severity }) => {
 }
 
 const AdminModeration = () => {
-    const [reports, setReports] = useState(initialReports)
+    const { reports, isLoading, resolveReport, dismissReport } = useReports()
     const [tab, setTab] = useState('pending')
-
-    const resolve = (id) => setReports(r => r.map(x => x.id === id ? { ...x, status: 'resolved' } : x))
-    const dismiss = (id) => setReports(r => r.filter(x => x.id !== id))
 
     const shown = reports.filter(r => r.status === tab)
 
@@ -98,13 +88,13 @@ const AdminModeration = () => {
                             {report.status === 'pending' && (
                                 <div className="flex gap-2 shrink-0">
                                     <button
-                                        onClick={() => resolve(report.id)}
+                                        onClick={() => resolveReport(report.id)}
                                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 transition-colors"
                                     >
                                         Resolve
                                     </button>
                                     <button
-                                        onClick={() => dismiss(report.id)}
+                                        onClick={() => dismissReport(report.id)}
                                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-slate-400 border border-white/10 hover:text-white transition-colors"
                                     >
                                         Dismiss

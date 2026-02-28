@@ -1,10 +1,25 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import Button from '../../components/common/Button'
+import { useAuth } from '../../context/AuthContext'
 
 const EmailVerificationSent = () => {
-  const handleResendEmail = () => {
-    // TODO: Implement resend email functionality
-    alert('Verification email resent!')
+  const location = useLocation()
+  const { resendVerification } = useAuth()
+  const email = location.state?.email || 'your email address'
+  const [isSending, setIsSending] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleResendEmail = async () => {
+    setIsSending(true)
+    setMessage('')
+    const result = await resendVerification()
+    if (result.success) {
+      setMessage('Verification email resent! Check your inbox.')
+    } else {
+      setMessage(result.error || 'Failed to resend. Please try again.')
+    }
+    setIsSending(false)
   }
 
   return (
@@ -33,17 +48,24 @@ const EmailVerificationSent = () => {
         <p className="text-slate-600 dark:text-slate-300 text-base font-normal leading-relaxed mb-6">
           We've sent a verification link to{' '}
           <strong className="text-slate-900 dark:text-white font-bold bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">
-            j***@uni.edu
+            {email}
           </strong>
           . <br className="hidden sm:block" />
           Please click the link to unlock your coding journey.
         </p>
 
         {/* Gamification Banner */}
-        <div className="w-full bg-primary/5 border border-primary/20 rounded-lg p-3 mb-8 flex items-center justify-center gap-2">
+        <div className="w-full bg-primary/5 border border-primary/20 rounded-lg p-3 mb-6 flex items-center justify-center gap-2">
           <span className="material-symbols-outlined text-primary text-sm">emoji_events</span>
           <span className="text-sm font-medium text-primary">Your quest awaits activation...</span>
         </div>
+
+        {/* Status Message */}
+        {message && (
+          <p className={`text-sm mb-6 ${message.includes('Failed') ? 'text-red-400' : 'text-green-400'}`}>
+            {message}
+          </p>
+        )}
 
         {/* Buttons */}
         <div className="w-full flex flex-col gap-3">
@@ -51,9 +73,17 @@ const EmailVerificationSent = () => {
             variant="primary"
             size="lg"
             onClick={handleResendEmail}
-            className="w-full"
+            disabled={isSending}
+            className="w-full flex justify-center items-center gap-2"
           >
-            Resend Email
+            {isSending ? (
+              <>
+                <span className="material-symbols-outlined animate-spin text-lg">sync</span>
+                Sending...
+              </>
+            ) : (
+              'Resend Email'
+            )}
           </Button>
 
           <Link

@@ -4,10 +4,12 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
 import ProgressBar from '../../components/common/ProgressBar'
+import { useUser } from '../../context/UserContext'
 
 const ModuleDetail = () => {
     const { moduleId } = useParams()
     const navigate = useNavigate()
+    const { moduleProgress } = useUser()
     const module = modules.find(m => m.id === parseInt(moduleId))
 
     if (!module) {
@@ -21,9 +23,11 @@ const ModuleDetail = () => {
         )
     }
 
-    const progress = (module.completedLessons / module.lessons) * 100
-    const isStarted = module.completedLessons > 0
-    const isCompleted = module.completedLessons === module.lessons
+    const currentModuleProgress = moduleProgress[module.id]?.completedLessons || []
+    const completedCount = currentModuleProgress.length
+    const progress = (completedCount / module.lessons) * 100
+    const isStarted = completedCount > 0
+    const isCompleted = completedCount === module.lessons
 
     const getDifficultyColor = (difficulty) => {
         const colors = {
@@ -35,7 +39,7 @@ const ModuleDetail = () => {
         return colors[difficulty] || 'default'
     }
 
-    const uncompletedLesson = module.lessonList?.find(l => !l.isCompleted) || module.lessonList?.[0]
+    const uncompletedLesson = module.lessonList?.find(l => !currentModuleProgress.includes(l.id)) || module.lessonList?.[0]
 
     const handleStartModule = () => {
         if (uncompletedLesson) {
@@ -128,13 +132,13 @@ const ModuleDetail = () => {
                                 >
                                     <Card
                                         variant="elevated"
-                                        className={`p-4 border-l-4 ${lesson.isCompleted ? 'border-l-green-500' : 'border-l-slate-200 dark:border-l-[#282839]'}`}
+                                        className={`p-4 border-l-4 ${currentModuleProgress.includes(lesson.id) ? 'border-l-green-500' : 'border-l-slate-200 dark:border-l-[#282839]'}`}
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className={`size-10 rounded-full flex items-center justify-center font-bold ${lesson.isCompleted
-                                                        ? 'bg-green-100 dark:bg-green-900/20 text-green-600'
-                                                        : 'bg-slate-100 dark:bg-[#1a1a2e] text-slate-400'
+                                                <div className={`size-10 rounded-full flex items-center justify-center font-bold ${currentModuleProgress.includes(lesson.id)
+                                                    ? 'bg-green-100 dark:bg-green-900/20 text-green-600'
+                                                    : 'bg-slate-100 dark:bg-[#1a1a2e] text-slate-400'
                                                     }`}>
                                                     {index + 1}
                                                 </div>
@@ -145,9 +149,9 @@ const ModuleDetail = () => {
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <span className="text-xs text-slate-400 font-medium">{lesson.duration}</span>
-                                                {lesson.isCompleted ? (
+                                                {currentModuleProgress.includes(lesson.id) ? (
                                                     <span className="material-symbols-outlined text-green-500">check_circle</span>
-                                                ) : index === module.completedLessons ? (
+                                                ) : index === completedCount ? (
                                                     <span className="material-symbols-outlined text-primary">play_circle</span>
                                                 ) : (
                                                     <span className="material-symbols-outlined text-slate-300">lock</span>
@@ -178,7 +182,7 @@ const ModuleDetail = () => {
                             <ProgressBar value={progress} />
                         </div>
                         <p className="text-sm text-slate-500 dark:text-text-secondary">
-                            {module.completedLessons} of {module.lessons} lessons completed
+                            {completedCount} of {module.lessons} lessons completed
                         </p>
                     </Card>
 

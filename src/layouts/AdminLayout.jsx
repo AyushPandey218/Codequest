@@ -1,12 +1,14 @@
 import { Outlet, Link, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
+import LoadingScreen from '../components/common/LoadingScreen'
 
 const AdminLayout = () => {
-    const { user, isAdmin, isAuthenticated, logout } = useAuth()
+    const { user, isAdmin, isAuthenticated, isLoading, logout } = useAuth()
     const navigate = useNavigate()
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
+    if (isLoading) return <LoadingScreen />
     if (!isAuthenticated) return <Navigate to="/auth/login" replace />
     if (!isAdmin) return <Navigate to="/app/dashboard" replace />
 

@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom'
+import { useAdminStats } from '../../hooks/useAdminStats'
 
-const StatCard = ({ icon, label, value, sub, color }) => (
+const StatCard = ({ icon, label, value, sub, color, isLoading }) => (
     <div className={`bg-[#12122a] border ${color.border} rounded-2xl p-5 flex items-center gap-4`}>
         <div className={`size-12 rounded-xl flex items-center justify-center ${color.bg}`}>
             <span className={`material-symbols-outlined text-2xl ${color.text}`}>{icon}</span>
         </div>
         <div>
-            <p className="text-2xl font-bold text-white">{value}</p>
+            <p className="text-2xl font-bold text-white">
+                {isLoading ? <span className="animate-pulse w-8 bg-white/20 h-6 inline-block rounded"></span> : value}
+            </p>
             <p className="text-sm text-slate-400">{label}</p>
             {sub && <p className="text-xs text-green-400 mt-0.5">{sub}</p>}
         </div>
@@ -31,15 +34,9 @@ const QuickLink = ({ to, icon, label, desc, color }) => (
     </Link>
 )
 
-const recentActivity = [
-    { icon: 'person_add', text: 'New user registered: coder_xyz', time: '2m ago', color: 'text-blue-400' },
-    { icon: 'flag', text: 'Content flagged in Community Forum', time: '14m ago', color: 'text-red-400' },
-    { icon: 'military_tech', text: 'Quest "Binary Trees" published', time: '1h ago', color: 'text-yellow-400' },
-    { icon: 'star', text: 'User "DevKing" reached Level 50', time: '2h ago', color: 'text-purple-400' },
-    { icon: 'report', text: 'Abuse report submitted by user_42', time: '3h ago', color: 'text-orange-400' },
-]
-
 const AdminDashboard = () => {
+    const { totalUsers, activeQuests, completionsToday, recentActivity, isLoading } = useAdminStats()
+
     return (
         <div className="space-y-8">
             {/* Header */}
@@ -53,29 +50,29 @@ const AdminDashboard = () => {
                 <StatCard
                     icon="group"
                     label="Total Users"
-                    value="1,284"
-                    sub="↑ 12 this week"
+                    value={totalUsers}
+                    isLoading={isLoading}
                     color={{ border: 'border-blue-500/20', bg: 'bg-blue-500/15', text: 'text-blue-400' }}
                 />
                 <StatCard
                     icon="military_tech"
                     label="Active Quests"
-                    value="38"
-                    sub="↑ 3 new"
+                    value={activeQuests}
+                    isLoading={isLoading}
                     color={{ border: 'border-yellow-500/20', bg: 'bg-yellow-500/15', text: 'text-yellow-400' }}
                 />
                 <StatCard
                     icon="flag"
                     label="Pending Reports"
-                    value="7"
+                    value="0"
                     sub="Needs review"
                     color={{ border: 'border-red-500/20', bg: 'bg-red-500/15', text: 'text-red-400' }}
                 />
                 <StatCard
                     icon="trending_up"
                     label="Completions Today"
-                    value="203"
-                    sub="↑ 18% vs yesterday"
+                    value={completionsToday}
+                    isLoading={isLoading}
                     color={{ border: 'border-green-500/20', bg: 'bg-green-500/15', text: 'text-green-400' }}
                 />
             </div>
@@ -119,13 +116,19 @@ const AdminDashboard = () => {
                 <div className="space-y-3">
                     <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Recent Activity</h2>
                     <div className="bg-[#12122a] border border-white/5 rounded-2xl divide-y divide-white/5">
-                        {recentActivity.map((item, i) => (
-                            <div key={i} className="flex items-center gap-3 px-4 py-3">
-                                <span className={`material-symbols-outlined text-lg ${item.color}`}>{item.icon}</span>
-                                <p className="text-sm text-slate-300 flex-1">{item.text}</p>
-                                <span className="text-xs text-slate-600 whitespace-nowrap">{item.time}</span>
-                            </div>
-                        ))}
+                        {isLoading ? (
+                            <div className="p-8 text-center text-slate-500 animate-pulse">Loading activity...</div>
+                        ) : recentActivity.length > 0 ? (
+                            recentActivity.map((item, i) => (
+                                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                                    <span className={`material-symbols-outlined text-lg ${item.color}`}>{item.icon}</span>
+                                    <p className="text-sm text-slate-300 flex-1">{item.text}</p>
+                                    <span className="text-xs text-slate-600 whitespace-nowrap">{item.time}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="p-8 text-center text-slate-500">No recent activity</div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
+import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 
 // Firebase configuration
 // Replace these with your actual Firebase project credentials
@@ -21,5 +21,6 @@ export const db = getFirestore(app)
 
 // Initialize Auth
 export const auth = getAuth(app)
+export const googleProvider = new GoogleAuthProvider()
 
 export default app

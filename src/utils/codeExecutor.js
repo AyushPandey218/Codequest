@@ -47,6 +47,29 @@ import ast, sys, json
 
 ${userCode}
 
+def _get_target():
+    if 'solution' in locals():
+        return locals()['solution']
+
+    try:
+        # Use AST to find the last defined function or class
+        tree = ast.parse(${JSON.stringify(userCode)})
+        for node in reversed(tree.body):
+            if isinstance(node, ast.FunctionDef):
+                if node.name in locals():
+                    return locals()[node.name]
+            elif isinstance(node, ast.ClassDef):
+                if node.name in locals():
+                    cls = locals()[node.name]
+                    # For classes, look for the first public method
+                    for item in node.body:
+                        if isinstance(item, ast.FunctionDef) and not item.name.startswith('_'):
+                            return getattr(cls(), item.name)
+                    return cls
+    except Exception:
+        pass
+    return None
+
 def parse_input(raw):
     raw = raw.strip()
     parts = []
@@ -76,14 +99,18 @@ def parse_input(raw):
                 parts.append(token)
     return parts
 
+target = _get_target()
+if not target:
+    raise NameError('No executable function or class found. Please define at least one function.')
+
 args = parse_input(${JSON.stringify(input)})
-result = solution(*args)
-if isinstance(result, list):
-    print(result)
-elif isinstance(result, bool):
+result = target(*args)
+
+if isinstance(result, (list, bool)) or result is not None:
     print(result)
 else:
-    print(result)
+    # If result is None but function finished, we might still want to print something or nothing
+    pass
 `
 
 // ─── Execute Python via Pyodide ────────────────────────────────────────────

@@ -2,37 +2,6 @@ import { useState, useEffect } from 'react'
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
-// Mock submissions data for instant loading
-const MOCK_SUBMISSIONS = [
-  {
-    id: '1',
-    questTitle: 'Python Basics',
-    questId: '1',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-    xpEarned: 100,
-    passedTests: 10,
-    totalTests: 10,
-  },
-  {
-    id: '2',
-    questTitle: 'JavaScript Functions',
-    questId: '2',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-    xpEarned: 150,
-    passedTests: 5,
-    totalTests: 8,
-  },
-  {
-    id: '3',
-    questTitle: 'Build a REST API',
-    questId: '4',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
-    xpEarned: 350,
-    passedTests: 12,
-    totalTests: 12,
-  },
-]
-
 /**
  * Hook to fetch user submissions from Firestore
  * @param {string} uid - User ID
@@ -50,39 +19,46 @@ export const useSubmissions = (uid) => {
       return
     }
 
-    // Set mock data immediately for instant UI
-    setSubmissions(MOCK_SUBMISSIONS)
-    setLoading(false)
+    setLoading(true)
 
-    // Then try to fetch from Firestore (will replace mock data if available)
-    const q = query(
-      collection(db, 'submissions'),
-      where('uid', '==', uid),
-      orderBy('timestamp', 'desc')
-    )
+    // Fetch from Firestore
+    try {
+      const q = query(
+        collection(db, 'submissions'),
+        where('uid', '==', uid)
+      )
 
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        if (!querySnapshot.empty) {
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
           const submissionsData = []
           querySnapshot.forEach((doc) => {
             submissionsData.push({ id: doc.id, ...doc.data() })
           })
-          setSubmissions(submissionsData)
-        }
-        // If empty, keep mock data
-        setLoading(false)
-      },
-      (err) => {
-        console.warn('Firestore unavailable, using mock data:', err.message)
-        // Keep mock data on error
-        setError(null)
-        setLoading(false)
-      }
-    )
 
-    return () => unsubscribe()
+          // Sort client-side to avoid index requirement
+          submissionsData.sort((a, b) => {
+            const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (a.timestamp ? new Date(a.timestamp).getTime() : 0)
+            const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (b.timestamp ? new Date(b.timestamp).getTime() : 0)
+            return timeB - timeA
+          })
+
+          setSubmissions(submissionsData)
+          setLoading(false)
+        },
+        (err) => {
+          console.error('Firestore error fetching submissions:', err.message)
+          setError(err.message)
+          setLoading(false)
+        }
+      )
+
+      return () => unsubscribe()
+    } catch (err) {
+      console.error('Query setup error:', err)
+      setError(err.message)
+      setLoading(false)
+    }
   }, [uid])
 
   return { submissions, loading, error }

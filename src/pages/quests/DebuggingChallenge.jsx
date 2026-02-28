@@ -4,71 +4,37 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
 import LevelUpToast from '../../components/common/LevelUpToast'
-import {
-  isQuestCompleted,
-  markQuestComplete,
-  getLevelFromXP,
-  getUserXP
-} from '../../utils/progressStorage'
-import { quests } from '../../data/quests'
+import { getLevelFromXP } from '../../utils/progressStorage'
+import { useAuth } from '../../context/AuthContext'
+import { useUser } from '../../context/UserContext'
+import { useQuest } from '../../hooks/useQuest'
+import { db } from '../../config/firebase'
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore'
 
 const DebuggingChallenge = () => {
   const { questId } = useParams()
+  const { user } = useAuth()
+  const { userProgress } = useUser()
+  const { quest, loading, error: questError } = useQuest(questId)
+
   const [foundBugs, setFoundBugs] = useState([])
   const [attempts, setAttempts] = useState(0)
   const [isCompleted, setIsCompleted] = useState(false)
   const [levelUpData, setLevelUpData] = useState(null)
 
-  const quest = quests.find(q => q.id === questId)
-  const xpReward = 50 // Fixed reward for debugging challenges
+  const debugQuestId = `debug_${questId}`
+  const alreadyCompleted = userProgress[debugQuestId]?.completed
+  const xpReward = quest?.xp || 50
 
   useEffect(() => {
-    if (isQuestCompleted(`debug_${questId}`)) {
+    if (alreadyCompleted && quest?.debugData?.bugs) {
       setIsCompleted(true)
-      setFoundBugs(bugs.map(b => b.id))
+      setFoundBugs(quest.debugData.bugs.map(b => b.id))
     }
-  }, [questId])
+  }, [alreadyCompleted, quest])
 
-  const bugs = [
-    {
-      id: 1,
-      line: 3,
-      type: 'Logic Error',
-      hint: 'Check the comparison operator',
-      description: 'Should use >= instead of >',
-    },
-    {
-      id: 2,
-      line: 7,
-      type: 'Syntax Error',
-      hint: 'Missing closing parenthesis',
-      description: 'Add ) at the end',
-    },
-    {
-      id: 3,
-      line: 12,
-      type: 'Type Error',
-      hint: 'Variable type mismatch',
-      description: 'Convert string to integer',
-    },
-  ]
-
-  const code = `def calculate_average(numbers):
-    total = 0
-    if len(numbers) > 0:  # BUG 1: Should be >= 
-        return 0
-    
-    for num in numbers:
-        total += int(num  # BUG 2: Missing )
-    
-    average = total / len(numbers)
-    
-    # BUG 3: result is string, should be number
-    result = str(average)
-    return result
-
-numbers = [10, 20, 30, 40, 50]
-print(calculate_average(numbers))`
+  const bugs = quest?.debugData?.bugs || []
+  const code = quest?.debugData?.code || ''
 
   const handleBugClick = (lineNumber) => {
     if (isCompleted) return
@@ -88,17 +54,31 @@ print(calculate_average(numbers))`
     }
   }
 
-  const handleCompletion = () => {
+  const handleCompletion = async () => {
     setIsCompleted(true)
     const debugQuestId = `debug_${questId}`
 
-    if (!isQuestCompleted(debugQuestId)) {
-      const levelBefore = getLevelFromXP(getUserXP())
-      markQuestComplete(debugQuestId, xpReward)
-      const levelAfter = getLevelFromXP(getUserXP())
+    if (user?.uid) {
+      // Save submission
+      await addDoc(collection(db, 'submissions'), {
+        uid: user.uid,
+        questId: debugQuestId,
+        questTitle: `Debug: ${quest?.title || 'Unknown'}`,
+        attempts,
+        timestamp: serverTimestamp(),
+        xpEarned: alreadyCompleted ? 0 : xpReward
+      })
 
-      if (levelAfter > levelBefore) {
-        setLevelUpData({ newLevel: levelAfter, xpEarned: xpReward })
+      if (!alreadyCompleted) {
+        const levelBefore = getLevelFromXP(user.xp || 0)
+        await updateDoc(doc(db, 'users', user.uid), {
+          xp: increment(xpReward)
+        })
+        const levelAfter = getLevelFromXP((user.xp || 0) + xpReward)
+
+        if (levelAfter > levelBefore) {
+          setLevelUpData({ newLevel: levelAfter, xpEarned: xpReward })
+        }
       }
     }
   }
@@ -187,10 +167,10 @@ print(calculate_average(numbers))`
                     <div
                       key={index}
                       className={`flex gap-4 py-2 px-2 rounded cursor-pointer transition-all ${isBugFound
-                          ? 'bg-green-500/20 border-l-4 border-green-500'
-                          : hasBug
-                            ? 'hover:bg-red-500/10'
-                            : 'hover:bg-slate-700/20'
+                        ? 'bg-green-500/20 border-l-4 border-green-500'
+                        : hasBug
+                          ? 'hover:bg-red-500/10'
+                          : 'hover:bg-slate-700/20'
                         }`}
                       onClick={() => handleBugClick(lineNumber)}
                     >
@@ -245,14 +225,14 @@ print(calculate_average(numbers))`
                     key={bug.id}
                     variant="bordered"
                     className={`p-4 transition-all ${isFound
-                        ? 'bg-green-50 dark:bg-green-900/10 border-green-500'
-                        : 'bg-slate-50 dark:bg-[#282839]'
+                      ? 'bg-green-50 dark:bg-green-900/10 border-green-500'
+                      : 'bg-slate-50 dark:bg-[#282839]'
                       }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`size-6 rounded-full flex items-center justify-center flex-shrink-0 ${isFound
-                          ? 'bg-green-500'
-                          : 'bg-slate-300 dark:bg-slate-600'
+                        ? 'bg-green-500'
+                        : 'bg-slate-300 dark:bg-slate-600'
                         }`}>
                         {isFound ? (
                           <span className="material-symbols-outlined text-white text-sm">

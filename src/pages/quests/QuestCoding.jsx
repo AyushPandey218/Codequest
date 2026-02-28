@@ -10,14 +10,18 @@ import CodeEditor from '../../components/code/CodeEditor'
 import { getLanguageFilename } from '../../utils/languageExtensions'
 import LanguageSelector from '../../components/code/LanguageSelector'
 import { executeCode } from '../../utils/codeExecutor'
-import { markQuestComplete, isQuestCompleted, getLevelFromXP, getUserXP } from '../../utils/progressStorage'
+import { getLevelFromXP } from '../../utils/progressStorage'
 import LevelUpToast from '../../components/common/LevelUpToast'
+import { db } from '../../config/firebase'
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore'
+import { useAuth } from '../../context/AuthContext'
+import { useUser } from '../../context/UserContext'
 
 const QuestCoding = () => {
   const { questId } = useParams()
   const navigate = useNavigate()
-  const { quest, loading: questLoading, error: questError } = useQuest(questId)
-  const { testCases, loading: testCasesLoading, error: testCasesError } = useTestCases(questId)
+  const { user, checkAndAwardAchievements: _deprecated_auth_check } = useAuth()
+  const { userStats, submissions, checkAndAwardAchievements } = useUser()
 
   const [activeTab, setActiveTab] = useState('instructions')
   const [selectedLanguage, setSelectedLanguage] = useState('Python3')
@@ -31,7 +35,11 @@ const QuestCoding = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [completionData, setCompletionData] = useState(null)
   const [levelUpData, setLevelUpData] = useState(null) // { newLevel, xpEarned }
-  const alreadyCompleted = isQuestCompleted(questId)
+
+  const alreadyCompleted = userProgress[questId]?.completed
+
+  const { quest, loading: questLoading, error: questError } = useQuest(questId)
+  const { testCases, loading: testCasesLoading, error: testCasesError } = useTestCases(questId)
 
   // Load starter code when quest loads
   useEffect(() => {
@@ -112,24 +120,95 @@ const QuestCoding = () => {
       const result = await executeCode({ code, selectedLanguage, testCases })
       if (result.success) {
         setTestResults(result.results)
-        if (result.results.passed === result.results.total) {
-          // All passed — save completion, detect level-up
-          const levelBefore = getLevelFromXP(getUserXP())
-          const progress = markQuestComplete(questId, quest?.xp || 0)
-          const levelAfter = getLevelFromXP(getUserXP())
-          setCompletionData(progress)
-          setShowSuccessModal(true)
-          // Show level-up toast if player levelled up
-          if (!progress.alreadyCompleted && levelAfter > levelBefore) {
-            setTimeout(() => {
-              setLevelUpData({ newLevel: levelAfter, xpEarned: quest?.xp || 0 })
-            }, 1200) // slight delay so it doesn't clash with the success modal
+
+        // Save submission to Firestore
+        if (user?.uid) {
+          const submissionData = {
+            uid: user.uid,
+            questId: questId,
+            questTitle: quest?.title || 'Unknown Quest',
+            code: code,
+            language: selectedLanguage,
+            passedTests: result.results.passed,
+            totalTests: result.results.total,
+            timestamp: serverTimestamp(),
+            xpEarned: (result.results.passed === result.results.total && !alreadyCompleted) ? (quest?.xp || 0) : 0
+          }
+          await addDoc(collection(db, 'submissions'), submissionData)
+
+          if (result.results.passed === result.results.total) {
+            // All passed — update user profile in Firestore
+            const xpEarned = alreadyCompleted ? 0 : (quest?.xp || 0)
+            const levelBefore = getLevelFromXP(userStats?.totalXP || 0)
+
+            // Atomically increment XP in Firestore
+            if (xpEarned > 0) {
+              await updateDoc(doc(db, 'users', user.uid), {
+                xp: increment(xpEarned),
+              })
+
+              const newXP = (userStats?.totalXP || 0) + xpEarned
+              const levelAfter = getLevelFromXP(newXP)
+
+              // Check for achievements with granular stats
+              const isNewCompletion = !alreadyCompleted;
+
+              // Check if this language was already used successfully for this quest
+              const previouslySuccessfulInThisLang = submissions.some(s =>
+                s.questId === questId &&
+                s.language === selectedLanguage &&
+                s.passedTests === s.totalTests &&
+                s.totalTests > 0
+              );
+
+              // Check if this language was ever used successfully anywhere else
+              const languageEverUsedSuccessfully = submissions.some(s =>
+                s.language === selectedLanguage &&
+                s.passedTests === s.totalTests &&
+                s.totalTests > 0
+              );
+
+              const newLanguagesCount = userStats.languagesUsed + (languageEverUsedSuccessfully ? 0 : 1);
+
+              await checkAndAwardAchievements({
+                ...userStats,
+                totalXP: newXP,
+                level: levelAfter,
+                completedQuests: userStats.completedQuests + (isNewCompletion ? 1 : 0),
+                expertQuests: userStats.expertQuests + (isNewCompletion && quest.difficulty === 'Expert' ? 1 : 0),
+                webQuests: userStats.webQuests + (isNewCompletion && (quest.category === 'Web' || quest.category === 'Web Dev') ? 1 : 0),
+                dataQuests: userStats.dataQuests + (isNewCompletion && (quest.category === 'Data' || quest.category === 'Data Analysis') ? 1 : 0),
+                algoQuests: userStats.algoQuests + (isNewCompletion && (quest.category === 'Algorithms' || quest.category === 'DSA') ? 1 : 0),
+                languagesUsed: newLanguagesCount
+              })
+
+              setCompletionData({
+                xpEarned,
+                xpAfter: newXP,
+                alreadyCompleted: alreadyCompleted
+              })
+              setShowSuccessModal(true)
+
+              if (levelAfter > levelBefore) {
+                setTimeout(() => {
+                  setLevelUpData({ newLevel: levelAfter, xpEarned })
+                }, 1200)
+              }
+            } else {
+              setCompletionData({
+                xpEarned: 0,
+                xpAfter: userStats?.totalXP || 0,
+                alreadyCompleted: true
+              })
+              setShowSuccessModal(true)
+            }
           }
         }
       } else {
         setExecutionError(result.error)
       }
     } catch (error) {
+      console.error('Submission error:', error)
       setExecutionError(error.message || 'Failed to execute code')
     } finally {
       setIsSubmitting(false)

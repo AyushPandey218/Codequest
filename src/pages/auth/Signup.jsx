@@ -1,6 +1,19 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import Button from '../../components/common/Button'
+import Input from '../../components/common/Input'
 
 const Signup = () => {
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+
+  const handleSignupInitiation = (e) => {
+    e.preventDefault()
+    if (email) {
+      navigate('/auth/create-account', { state: { email } })
+    }
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-row overflow-hidden">
       {/* Left Panel: Hero/Visual (Desktop only) */}
@@ -74,15 +87,56 @@ const Signup = () => {
             </div>
           </div>
 
-          <div className="text-center py-12">
-            <p className="text-slate-500 dark:text-slate-400 mb-4">
-              Sign up content will redirect to Create Account page
-            </p>
-            <Link to="/auth/create-account">
-              <button className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-6 bg-primary hover:bg-blue-600 text-white text-base font-bold transition-all shadow-lg shadow-primary/25">
-                Create an Account
-              </button>
-            </Link>
+          <form onSubmit={handleSignupInitiation} className="space-y-4">
+            <div>
+              <Input
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full text-lg py-4"
+                icon="mail"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full h-14 text-base mt-2 shadow-lg shadow-primary/25"
+            >
+              Continue with Email
+            </Button>
+          </form>
+
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200 dark:border-slate-700/50"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-background-light dark:bg-background-dark px-4 text-slate-500">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              variant="secondary"
+              className="w-full bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+              onClick={() => { }}
+            >
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2" />
+              Google
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+              onClick={() => { }}
+            >
+              <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub" className="h-5 w-5 mr-2 dark:invert" />
+              GitHub
+            </Button>
           </div>
 
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
