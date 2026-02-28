@@ -45,6 +45,7 @@ import AppSettings from '../pages/settings/AppSettings'
 
 // Community Pages
 import CommunityForum from '../pages/community/CommunityForum'
+import PostView from '../pages/community/PostView'
 import ContactSupport from '../pages/community/ContactSupport'
 
 // Admin Pages
@@ -205,6 +206,10 @@ const router = createBrowserRouter([
           {
             path: 'community',
             element: <CommunityForum />,
+          },
+          {
+            path: 'community/post/:id',
+            element: <PostView />,
           },
           {
             path: 'support',

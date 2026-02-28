@@ -4,96 +4,57 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
 import Button from '../../components/common/Button'
+import { useCommunity } from '../../hooks/useCommunity'
+import { useAuth } from '../../context/AuthContext'
 
 const CommunityForum = () => {
+  const { user } = useAuth()
+  const { posts, trendingTopics, stats, isLoading, createPost } = useCommunity()
+
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // New Post Form State
+  const [newPost, setNewPost] = useState({ title: '', content: '', category: 'discussion', tags: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handlePostSubmit = async (e) => {
+    e.preventDefault()
+    if (!user) return alert('Must be logged in to post!')
+    setIsSubmitting(true)
+    try {
+      await createPost({
+        title: newPost.title,
+        content: newPost.content,
+        category: newPost.category,
+        author: user.displayName || user.username || 'Anonymous',
+        tags: newPost.tags.split(',').map(t => t.trim()).filter(Boolean),
+      })
+      setIsModalOpen(false)
+      setNewPost({ title: '', content: '', category: 'discussion', tags: '' })
+    } catch (error) {
+      console.error(error)
+      alert("Failed to create post")
+    }
+    setIsSubmitting(false)
+  }
+
+  // Calculate dynamic category counts
+  const getCategoryCount = (categoryId) => {
+    if (categoryId === 'all') return posts.length
+    return posts.filter(p => p.category === categoryId).length
+  }
 
   const categories = [
-    { id: 'all', label: 'All Topics', icon: 'forum', count: 234 },
-    { id: 'help', label: 'Help & Support', icon: 'help', count: 56 },
-    { id: 'discussion', label: 'General Discussion', icon: 'chat', count: 89 },
-    { id: 'showcase', label: 'Showcase', icon: 'stars', count: 45 },
-    { id: 'tips', label: 'Tips & Tricks', icon: 'lightbulb', count: 44 },
+    { id: 'all', label: 'All Topics', icon: 'forum', count: getCategoryCount('all') },
+    { id: 'help', label: 'Help & Support', icon: 'help', count: getCategoryCount('help') },
+    { id: 'discussion', label: 'General Discussion', icon: 'chat', count: getCategoryCount('discussion') },
+    { id: 'showcase', label: 'Showcase', icon: 'stars', count: getCategoryCount('showcase') },
+    { id: 'tips', label: 'Tips & Tricks', icon: 'lightbulb', count: getCategoryCount('tips') },
   ]
 
-  const posts = [
-    {
-      id: 1,
-      title: 'How to approach dynamic programming problems?',
-      author: 'CodeSeeker',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=seeker',
-      category: 'help',
-      replies: 23,
-      views: 342,
-      likes: 45,
-      timeAgo: '2 hours ago',
-      tags: ['algorithms', 'dynamic-programming'],
-      hasAnswer: true,
-    },
-    {
-      id: 2,
-      title: 'My first completed project! 🎉',
-      author: 'DevNewbie',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=newbie',
-      category: 'showcase',
-      replies: 15,
-      views: 189,
-      likes: 67,
-      timeAgo: '5 hours ago',
-      tags: ['javascript', 'react', 'project'],
-      hasAnswer: false,
-    },
-    {
-      id: 3,
-      title: 'Best practices for code optimization',
-      author: 'PerformanceGuru',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=guru',
-      category: 'tips',
-      replies: 31,
-      views: 567,
-      likes: 89,
-      timeAgo: '1 day ago',
-      tags: ['optimization', 'best-practices'],
-      hasAnswer: true,
-    },
-    {
-      id: 4,
-      title: 'Error handling in Python: try-except vs assertions',
-      author: 'PyDeveloper',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pydev',
-      category: 'discussion',
-      replies: 18,
-      views: 234,
-      likes: 34,
-      timeAgo: '2 days ago',
-      tags: ['python', 'error-handling'],
-      hasAnswer: true,
-    },
-    {
-      id: 5,
-      title: 'Need help with binary search tree implementation',
-      author: 'AlgoStudent',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student',
-      category: 'help',
-      replies: 12,
-      views: 156,
-      likes: 23,
-      timeAgo: '3 days ago',
-      tags: ['data-structures', 'trees'],
-      hasAnswer: false,
-    },
-  ]
-
-  const trendingTopics = [
-    { tag: 'algorithms', count: 156 },
-    { tag: 'python', count: 134 },
-    { tag: 'javascript', count: 123 },
-    { tag: 'react', count: 98 },
-    { tag: 'dynamic-programming', count: 87 },
-  ]
-
-  const filteredPosts = posts.filter(post => 
+  const filteredPosts = posts.filter(post =>
     (activeCategory === 'all' || post.category === activeCategory) &&
     (searchQuery === '' || post.title.toLowerCase().includes(searchQuery.toLowerCase()))
   )
@@ -110,7 +71,7 @@ const CommunityForum = () => {
             Ask questions, share knowledge, and connect with fellow coders
           </p>
         </div>
-        <Button variant="primary" icon="add">
+        <Button variant="primary" icon="add" onClick={() => setIsModalOpen(true)}>
           New Post
         </Button>
       </div>
@@ -138,11 +99,10 @@ const CommunityForum = () => {
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeCategory === category.id
-                    ? 'bg-primary text-white'
-                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeCategory === category.id
+                  ? 'bg-primary text-white'
+                  : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                  }`}
               >
                 <span className="material-symbols-outlined text-lg">{category.icon}</span>
                 {category.label}
@@ -159,75 +119,88 @@ const CommunityForum = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Posts List */}
         <div className="lg:col-span-2 space-y-4">
-          {filteredPosts.map(post => (
-            <Card key={post.id} variant="elevated" hover className="p-6">
-              <div className="flex gap-4">
-                <Avatar src={post.avatar} name={post.author} size="lg" />
-                
-                <div className="flex-1 min-w-0">
-                  {/* Post Header */}
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors cursor-pointer mb-1">
-                        {post.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-text-secondary">
-                        <span className="font-medium">{post.author}</span>
-                        <span>•</span>
-                        <span>{post.timeAgo}</span>
+          {isLoading ? (
+            <Card variant="elevated" className="p-12 text-center text-slate-500 animate-pulse">Loading posts...</Card>
+          ) : (
+            <>
+              {filteredPosts.map(post => (
+                <Card key={post.id} variant="elevated" hover className="p-6">
+                  <div className="flex gap-4">
+                    <Avatar src={post.avatar} name={post.author} size="lg" />
+
+                    <div className="flex-1 min-w-0">
+                      {/* Post Header */}
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="flex-1">
+                          <Link to={`/app/community/post/${post.id}`}>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors cursor-pointer mb-1">
+                              {post.title}
+                            </h3>
+                          </Link>
+                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-text-secondary">
+                            <span className="font-medium">{post.author}</span>
+                            <span>•</span>
+                            <span>{post.timeAgo}</span>
+                          </div>
+                        </div>
+                        {post.hasAnswer && (
+                          <Badge variant="success" size="sm" icon="check_circle">
+                            Answered
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {post.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 rounded-md bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 text-xs font-medium"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Stats & Actions */}
+                      <div className="flex items-center justify-between mt-1 border-t border-slate-100 dark:border-[#323267] pt-3">
+                        <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-text-secondary">
+                          <div className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-lg">chat</span>
+                            <span>{post.replies} replies</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-lg">visibility</span>
+                            <span>{post.views} views</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-lg">favorite</span>
+                            <span>{post.likes} likes</span>
+                          </div>
+                        </div>
+                        <Link to={`/app/community/post/${post.id}`}>
+                          <Button variant="outline" size="sm">View Thread</Button>
+                        </Link>
                       </div>
                     </div>
-                    {post.hasAnswer && (
-                      <Badge variant="success" size="sm" icon="check_circle">
-                        Answered
-                      </Badge>
-                    )}
                   </div>
+                </Card>
+              ))}
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {post.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 rounded-md bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 text-xs font-medium"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Stats */}
-                  <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-text-secondary">
-                    <div className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-lg">chat</span>
-                      <span>{post.replies} replies</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-lg">visibility</span>
-                      <span>{post.views} views</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-lg">favorite</span>
-                      <span>{post.likes} likes</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-
-          {filteredPosts.length === 0 && (
-            <Card variant="elevated" className="p-12 text-center">
-              <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600 mb-4 block">
-                search_off
-              </span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                No posts found
-              </h3>
-              <p className="text-slate-600 dark:text-text-secondary">
-                Try adjusting your search or filters
-              </p>
-            </Card>
+              {filteredPosts.length === 0 && (
+                <Card variant="elevated" className="p-12 text-center">
+                  <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600 mb-4 block">
+                    search_off
+                  </span>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                    No posts found
+                  </h3>
+                  <p className="text-slate-600 dark:text-text-secondary">
+                    Try adjusting your search or filters
+                  </p>
+                </Card>
+              )}
+            </>
           )}
         </div>
 
@@ -240,6 +213,9 @@ const CommunityForum = () => {
               Trending Topics
             </h3>
             <div className="space-y-2">
+              {!isLoading && trendingTopics.length === 0 && (
+                <p className="text-sm text-slate-500">No trending topics yet.</p>
+              )}
               {trendingTopics.map((topic, index) => (
                 <button
                   key={index}
@@ -267,7 +243,7 @@ const CommunityForum = () => {
                   Total Posts
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  1,234
+                  {stats.totalPosts}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -275,7 +251,7 @@ const CommunityForum = () => {
                   Active Users
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  567
+                  {stats.activeUsers}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -283,7 +259,7 @@ const CommunityForum = () => {
                   Today's Posts
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  23
+                  {stats.todaysPosts}
                 </span>
               </div>
             </div>
@@ -305,6 +281,81 @@ const CommunityForum = () => {
           </Card>
         </div>
       </div>
+
+      {/* New Post Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <Card variant="elevated" className="w-full max-w-lg p-6 relative">
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Create New Post</h2>
+
+            {!user ? (
+              <div className="text-center py-6">
+                <p className="text-slate-400 mb-4">You must be logged in to create a post.</p>
+                <Link to="/auth/login">
+                  <Button variant="primary">Go to Login</Button>
+                </Link>
+              </div>
+            ) : (
+              <form onSubmit={handlePostSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
+                  <input
+                    required
+                    type="text"
+                    value={newPost.title}
+                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-[#282839] border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="e.g. Need help with dynamic programming"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category</label>
+                  <select
+                    value={newPost.category}
+                    onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-[#282839] border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="discussion">General Discussion</option>
+                    <option value="help">Help & Support</option>
+                    <option value="showcase">Showcase</option>
+                    <option value="tips">Tips & Tricks</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={newPost.tags}
+                    onChange={(e) => setNewPost({ ...newPost, tags: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-[#282839] border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="e.g. react, algorithm, bug"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Content</label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={newPost.content}
+                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-[#282839] border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    placeholder="Describe your issue or share your thoughts here..."
+                  />
+                </div>
+                <div className="pt-2 flex justify-end gap-3">
+                  <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                  <Button type="submit" variant="primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Posting...' : 'Create Post'}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
