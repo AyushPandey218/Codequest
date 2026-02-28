@@ -76,6 +76,33 @@ scalable environment for coding challenges.
 
 ------------------------------------------------------------------------
 
+## 💻 Technology Stack
+
+CodeQuest leverages a modern and robust stack to provide a seamless, high-performance learning experience.
+
+### Core Frameworks & Build Tools
+- **[React 18](https://react.dev/)**: The core library for building the interactive user interface, utilizing React Hooks and functional components for scalable state management.
+- **[Vite](https://vitejs.dev/)**: Next-generation frontend tooling providing lightning-fast Hot Module Replacement (HMR) and optimized production builds.
+
+### Styling & UI
+- **[Tailwind CSS (v3)](https://tailwindcss.com/)**: Utility-first CSS framework for rapid UI development, responsive layouts, and consistent theming.
+- **[@tailwindcss/forms](https://github.com/tailwindlabs/tailwindcss-forms)**: Plugin to provide base styles for form elements, ensuring consistency across browsers.
+- **PostCSS & Autoprefixer**: CSS transformation tools for cross-browser compatibility and parsing CSS features.
+
+### Routing & Navigation
+- **[React Router DOM v6](https://reactrouter.com/)**: Enables declarative routing, layout wrapping, and dynamic URL matching across different quest, admin, and community pages.
+
+### Code Editor Integration
+- **[@monaco-editor/react](https://github.com/suren-atoyan/monaco-react)**: Integrates the powerful Monaco Editor (the same editor that powers VS Code) into React, providing syntax highlighting, autocomplete, and real-time code editing capabilities for the in-browser coding challenges.
+
+### Backend & Authentication Services
+- **[Firebase](https://firebase.google.com/)**: Used for integrating robust backend services such as user authentication, cloud functions, and real-time database capabilities.
+
+### Code Quality & Linting
+- **[ESLint](https://eslint.org/)**: Ensures code quality and maintains consistent coding standards across the JavaScript/JSX codebase.
+
+------------------------------------------------------------------------
+
 ## 🛠 Getting Started
 
 ### Prerequisites
