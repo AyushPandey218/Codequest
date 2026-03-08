@@ -19,55 +19,34 @@ const LiveCodeClash = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const { clash, players, activityFeed, updateScore, addActivity, loading: clashLoading } = useClash(clashId)
+  const { clash, players, loading: clashLoading, error: clashError } = useClash(clashId)
   const questId = clash?.questId
   const { quest, loading: questLoading } = useQuest(questId)
-  const { testCases } = useTestCases(questId)
+  const { testCases, loading: testCasesLoading } = useTestCases(questId)
 
-  const [timeLeft, setTimeLeft] = useState(300) // 5:00 based on screenshot
+  const [timeLeft, setTimeLeft] = useState(300)
   const [selectedLanguage, setSelectedLanguage] = useState('JavaScript')
   const [monacoLanguage, setMonacoLanguage] = useState('javascript')
   const [activeTab, setActiveTab] = useState('Description')
-  const [code, setCode] = useState(`/**
- * Definition for a binary tree node.
- * function TreeNode(val, left, right) {
- *     this.val = (val===undefined ? 0 : val)
- *     this.left = (left===undefined ? null : left)
- *     this.right = (right===undefined ? null : right)
- * }
- */
-/**
- * @param {TreeNode} root
- * @return {TreeNode}
- */
-var invertTree = function(root) {
-    // Your code goes here
-    if (!root) return null;
-
-    let temp = root.left;
-    root.left = root.right;
-    root.right = temp;
-
-    invertTree(root.left);
-    invertTree(root.right);
-
-    return root;
-};`)
+  const [code, setCode] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [testsPassed, setTestsPassed] = useState(0)
   const [consoleVisible, setConsoleVisible] = useState(true)
-  const [showNotification, setShowNotification] = useState(true)
+  const [showNotification, setShowNotification] = useState(false)
 
-  const problem = {
-    title: quest?.title || clash?.questTitle || 'Invert Binary Tree',
-    difficulty: quest?.difficulty || clash?.difficulty || 'Hard',
-    totalTests: testCases?.length || 5,
-  }
+  // Initialize code from quest data
+  useEffect(() => {
+    if (quest?.starterCode?.[selectedLanguage]) {
+      setCode(quest.starterCode[selectedLanguage])
+    } else if (quest && !code) {
+      setCode('// Your code here')
+    }
+  }, [quest, selectedLanguage])
 
   // Timer logic
   useEffect(() => {
     if (clash?.status !== 'ongoing' && !clashLoading) {
-      // For development/demo, we'll keep the timer running if no clash data
+      // Logic for started state
     }
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -107,8 +86,44 @@ var invertTree = function(root) {
     }
   }
 
+  if (clashLoading || questLoading || testCasesLoading) {
+    return (
+      <div className="h-screen w-full bg-[#0a0a1a] flex flex-col items-center justify-center gap-6">
+        <div className="size-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        <p className="text-white/40 font-black uppercase tracking-[0.3em] animate-pulse">Initializing Arena...</p>
+      </div>
+    )
+  }
+
+  if (clashError || !clash || !quest) {
+    return (
+      <div className="h-screen w-screen bg-[#0a0a1a] flex flex-col items-center justify-center gap-8 p-6 text-center fixed inset-0">
+        <div className="size-24 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-red-500 text-5xl">warning</span>
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black text-white">Arena Discovery Failed</h2>
+          <p className="text-white/40 max-w-md mx-auto leading-relaxed">
+            {clashError || "We couldn't locate the clash or quest data needed to start this match."}
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          onClick={() => navigate('/app/clash')}
+          className="bg-white/5 border-white/10 text-white hover:bg-white/10 px-10"
+        >
+          Return to Command Center
+        </Button>
+      </div>
+    )
+  }
+
+  const hostPlayer = Object.values(players || {}).find(p => p.isHost)
+  const opponentPlayer = Object.values(players || {}).find(p => !p.isHost && p.uid !== user?.uid) ||
+    (user?.uid === hostPlayer?.uid ? Object.values(players || {}).find(p => !p.isHost) : hostPlayer)
+
   return (
-    <div className="h-screen bg-[#0a0a1a] text-white flex flex-col font-sans overflow-hidden">
+    <div className="h-screen w-screen bg-[#0a0a1a] text-white flex flex-col font-sans overflow-hidden fixed inset-0">
       {/* Top Header */}
       <header className="h-16 bg-[#1a1a2e] border-b border-white/5 px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-6">
@@ -134,7 +149,7 @@ var invertTree = function(root) {
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-black text-white">You</p>
-              <p className="text-[10px] font-bold text-primary uppercase">Lvl 42</p>
+              <p className="text-[10px] font-bold text-primary uppercase">Lvl {user?.level || 1}</p>
             </div>
             <div className="relative">
               <Avatar src={user?.avatar} size="md" className="ring-2 ring-primary/50" />
@@ -155,12 +170,12 @@ var invertTree = function(root) {
           {/* Opponent Status */}
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=opponent" size="md" className="ring-2 ring-orange-500/50" />
+              <Avatar src={opponentPlayer?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${opponentPlayer?.username || 'opponent'}`} size="md" className="ring-2 ring-orange-500/50" />
               <div className="absolute -bottom-1 -right-1 size-3 bg-yellow-500 rounded-full border-2 border-[#1a1a2e]" />
             </div>
             <div>
-              <p className="text-sm font-black text-white">DevSlayer99</p>
-              <p className="text-[10px] font-bold text-orange-400 uppercase">Lvl 38</p>
+              <p className="text-sm font-black text-white">{opponentPlayer?.username || 'Searching...'}</p>
+              <p className="text-[10px] font-bold text-orange-400 uppercase">Lvl {opponentPlayer?.level || '?'}</p>
             </div>
           </div>
         </div>
@@ -180,11 +195,11 @@ var invertTree = function(root) {
       </header>
 
       {/* Main split view */}
-      <main className="flex-1 flex overflow-hidden p-4 gap-4">
+      <main className="flex-1 flex overflow-hidden p-4 gap-4 w-full">
         {/* Left Panel: Problem info */}
-        <section className="w-[400px] flex flex-col shrink-0">
-          <Card className="flex-1 flex flex-col overflow-hidden bg-[#14142b]/60 border-white/5 backdrop-blur-md">
-            <div className="flex bg-[#0f0f1d]/50 p-1 rounded-t-2xl">
+        <section className="w-[450px] flex flex-col shrink-0 min-h-0">
+          <Card className="flex-1 flex flex-col overflow-hidden bg-[#14142b]/60 border-white/5 backdrop-blur-md p-0">
+            <div className="flex bg-[#0f0f1d]/50 p-1 rounded-t-2xl shrink-0">
               {['Description', 'Submissions', 'Discussion'].map(tab => (
                 <button
                   key={tab}
@@ -198,53 +213,57 @@ var invertTree = function(root) {
 
             <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-black text-white">{problem.title}</h2>
-                <Badge variant="danger" className="bg-orange-500/10 text-orange-500 border-orange-500/20 px-3 py-1 font-black uppercase tracking-widest text-[10px]">Hard</Badge>
+                <h2 className="text-2xl font-black text-white">{quest.title}</h2>
+                <Badge variant="danger" className="bg-orange-500/10 text-orange-500 border-orange-500/20 px-3 py-1 font-black uppercase tracking-widest text-[10px]">{quest.difficulty}</Badge>
               </div>
 
               <div className="prose prose-invert prose-sm max-w-none space-y-6">
-                <p className="text-white/70 leading-relaxed font-medium">
-                  Given the <code className="bg-white/5 px-1.5 py-0.5 rounded text-primary">root</code> of a binary tree, invert the tree, and return its root.
-                </p>
+                <div className="text-white/70 leading-relaxed font-medium">
+                  {quest.instructions ? (
+                    quest.instructions.split('\n').map((line, i) => {
+                      if (line.startsWith('## ')) return null; // Title handled above
+                      if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-bold text-white mb-2 mt-4">{line.slice(4)}</h3>
+                      if (line.startsWith('- ')) return <li key={i} className="ml-4 text-white/60">{line.slice(2)}</li>
+                      if (line.startsWith('```')) return null; // Simple parsing ignores code blocks in text
+                      if (line.trim() === '') return <div key={i} className="h-2" />
+                      return <p key={i} className="mb-2">{line}</p>
+                    })
+                  ) : (
+                    <p>{quest.description}</p>
+                  )}
+                </div>
 
-                <div className="space-y-4">
-                  <p className="font-bold text-sm uppercase tracking-widest text-white/40">Example 1:</p>
-                  <div className="bg-[#0f0f1d] rounded-2xl p-6 border border-white/5 space-y-6">
-                    <div className="flex justify-center py-4">
-                      <div className="relative">
-                        <div className="size-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold">4</div>
-                        <div className="absolute top-10 left-[-40px] size-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 text-xs">2</div>
-                        <div className="absolute top-10 right-[-40px] size-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 text-xs">7</div>
-                        <div className="absolute top-4 left-[-15px] w-8 h-[2px] bg-white/10 rotate-[-45deg]" />
-                        <div className="absolute top-4 right-[-15px] w-8 h-[2px] bg-white/10 rotate-[45deg]" />
-                      </div>
-                    </div>
-                    <div className="space-y-2 font-mono text-xs">
-                      <p><span className="text-white/30">Input:</span> <span className="text-white/80">root = [4,2,7,1,3,6,9]</span></p>
-                      <p><span className="text-white/30">Output:</span> <span className="text-green-400">[4,7,2,9,6,3,1]</span></p>
+                {quest.examples && quest.examples.map((ex, idx) => (
+                  <div key={idx} className="space-y-4">
+                    <p className="font-bold text-sm uppercase tracking-widest text-white/40">Example {idx + 1}:</p>
+                    <div className="bg-[#0f0f1d] rounded-2xl p-6 border border-white/5 space-y-2 font-mono text-xs">
+                      <p><span className="text-white/30">Input:</span> <span className="text-white/80">{ex.input}</span></p>
+                      <p><span className="text-white/30">Output:</span> <span className="text-green-400">{ex.output}</span></p>
+                      {ex.explanation && <p className="text-white/40 mt-2 italic">{ex.explanation}</p>}
                     </div>
                   </div>
-                </div>
+                ))}
 
-                <div className="space-y-4 pt-4">
-                  <p className="font-bold text-sm uppercase tracking-widest text-white/40">Constraints:</p>
-                  <ul className="list-disc list-inside text-white/60 space-y-2 text-xs font-medium">
-                    <li>The number of nodes in the tree is in the range [0, 100].</li>
-                    <li>-100 ≤ Node.val ≤ 100</li>
-                  </ul>
-                </div>
+                {quest.constraints && (
+                  <div className="space-y-4 pt-4">
+                    <p className="font-bold text-sm uppercase tracking-widest text-white/40">Constraints:</p>
+                    <ul className="list-disc list-inside text-white/60 space-y-2 text-xs font-medium">
+                      {quest.constraints.map((c, i) => <li key={i}>{c}</li>)}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
         </section>
 
         {/* Right Panel: Editor and console */}
-        <section className="flex-1 flex flex-col gap-4 min-w-0">
+        <section className="flex-1 flex flex-col gap-4 min-w-0 h-full">
           <Card className="flex-1 flex flex-col overflow-hidden bg-[#14142b]/60 border-white/5 backdrop-blur-md p-0">
             <div className="h-12 border-b border-white/5 flex items-center justify-between px-4 bg-[#0f0f1d]/50 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 group cursor-pointer hover:bg-white/5 px-3 py-1.5 rounded-lg transition-all">
-                  <span className="text-xs font-black uppercase tracking-widest text-white/80">JavaScript</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-white/80">{selectedLanguage}</span>
                   <span className="material-symbols-outlined text-white/20 text-sm group-hover:text-white transition-all">expand_more</span>
                 </div>
                 <button className="flex items-center gap-2 text-white/40 hover:text-white transition-all">
@@ -254,15 +273,17 @@ var invertTree = function(root) {
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-tighter text-white/40">Opponent</span>
+                  <span className="text-[10px] font-black uppercase tracking-tighter text-white/40">Opponent Progress</span>
                   <div className="flex gap-0.5">
-                    {[1, 2, 3, 4].map(i => <div key={i} className={`h-3 w-1.5 rounded-sm ${i <= 4 ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-white/5'}`} />)}
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div key={i} className={`h-3 w-1.5 rounded-sm ${i <= (opponentPlayer?.testsPassed || 0) ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-white/5'}`} />
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 relative">
+            <div className="flex-1 relative min-h-0 overflow-hidden">
               <CodeEditor
                 value={code}
                 onChange={setCode}
@@ -282,7 +303,7 @@ var invertTree = function(root) {
 
             {/* Console functionality */}
             {consoleVisible && (
-              <div className="h-40 border-t border-white/5 bg-[#0a0a1a]/80 backdrop-blur-xl flex flex-col shrink-0">
+              <div className="h-48 border-t border-white/5 bg-[#0a0a1a]/80 backdrop-blur-xl flex flex-col shrink-0">
                 <div className="h-10 border-b border-white/5 flex items-center justify-between px-4">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -290,21 +311,31 @@ var invertTree = function(root) {
                       <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Console</span>
                     </div>
                     <div className="h-4 w-[1px] bg-white/10" />
-                    <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">All tests passed (3/3)</span>
+                    <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">
+                      {testsPassed > 0 ? `${testsPassed}/${testCases?.length || 0} Tests Passed` : 'Ready to Run'}
+                    </span>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
-                  {[
-                    { id: 1, time: '4ms' },
-                    { id: 2, time: '2ms' },
-                    { id: 3, time: '3ms' }
-                  ].map(test => (
-                    <div key={test.id} className="flex items-center gap-3 animate-fade-in">
-                      <span className="material-symbols-outlined text-green-500 text-sm">check_circle</span>
-                      <span className="text-white/80">Test Case {test.id}: Passed</span>
-                      <span className="text-white/20">({test.time})</span>
+                <div className="flex-1 overflow-y-auto p-4 space-y-2 font-mono text-[10px]">
+                  {isRunning ? (
+                    <div className="flex items-center gap-3 animate-pulse text-white/40">
+                      <span className="material-symbols-outlined text-sm">sync</span>
+                      <span>Executing tests...</span>
                     </div>
-                  ))}
+                  ) : testsPassed === 0 ? (
+                    <p className="text-white/20 italic">No tests executed yet.</p>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="text-green-400 mb-2 font-black uppercase tracking-widest">[EXECUTION SUCCESSFUL]</p>
+                      {testCases?.slice(0, 3).map((test, i) => (
+                        <div key={i} className="flex items-center gap-3 text-white/60">
+                          <span className="material-symbols-outlined text-green-500 text-xs text-xs">check_circle</span>
+                          <span>{test.description || `Test Case ${i + 1}`}</span>
+                          <span className="text-white/20 ml-auto">{Math.floor(Math.random() * 5) + 1}ms</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -355,13 +386,13 @@ var invertTree = function(root) {
               <span className="material-symbols-outlined text-xs">close</span>
             </button>
             <div className="relative">
-              <Avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=opponent" size="md" className="ring-2 ring-orange-500/30" />
+              <Avatar src={opponentPlayer?.avatar} size="md" className="ring-2 ring-orange-500/30" />
               <div className="absolute -top-1 -right-1 size-5 bg-orange-500 rounded-full flex items-center justify-center border-2 border-[#1a1a2e]">
                 <span className="material-symbols-outlined text-[10px] text-white font-bold">bolt</span>
               </div>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-white">DevSlayer99</p>
+              <p className="text-sm font-bold text-white">{opponentPlayer?.username}</p>
               <p className="text-xs text-white/60 leading-tight">Just solved Test Case #4! Keep up!</p>
             </div>
           </div>

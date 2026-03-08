@@ -172,18 +172,9 @@ const router = createBrowserRouter([
             path: 'modules/:moduleId/lessons/:lessonId',
             element: <LessonView />,
           },
-          // Clash Routes
           {
             path: 'clash',
             element: <CodeClashLobby />,
-          },
-          {
-            path: 'clash/:clashId/live',
-            element: <LiveCodeClash />,
-          },
-          {
-            path: 'clash/:clashId/results',
-            element: <ClashResults />,
           },
           // Profile Routes
           {
@@ -216,6 +207,15 @@ const router = createBrowserRouter([
             element: <ContactSupport />,
           },
         ],
+      },
+      // Clash Routes (Moved outside DashboardLayout for full-screen experience)
+      {
+        path: 'app/clash/:clashId/live',
+        element: <LiveCodeClash />,
+      },
+      {
+        path: 'app/clash/:clashId/results',
+        element: <ClashResults />,
       },
       // Legal Routes
       {

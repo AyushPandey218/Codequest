@@ -129,10 +129,10 @@ const CodeClashLobby = () => {
   const [matchFound, setMatchFound] = useState(false)
 
   const stats = [
-    { label: 'Pilot Rating', value: '1,240', icon: 'trending_up', color: 'text-primary' },
-    { label: 'Battles Won', value: user?.clashesWon || '142', icon: 'emoji_events', color: 'text-yellow-500' },
-    { label: 'Global Rank', value: '#482', icon: 'military_tech', color: 'text-orange-500' },
-    { label: 'Total XP Earned', value: user?.xp?.toLocaleString() || '12.4k', icon: 'bolt', color: 'text-blue-500' },
+    { label: 'Pilot Rating', value: user?.rating || '1,000', icon: 'trending_up', color: 'text-primary' },
+    { label: 'Battles Won', value: user?.clashesWon || '0', icon: 'emoji_events', color: 'text-yellow-500' },
+    { label: 'Level', value: `#${user?.level || '1'}`, icon: 'military_tech', color: 'text-orange-500' },
+    { label: 'Total XP', value: user?.xp?.toLocaleString() || '0', icon: 'bolt', color: 'text-blue-500' },
   ]
 
   const modes = [
@@ -144,15 +144,28 @@ const CodeClashLobby = () => {
   const difficulties = ['easy', 'medium', 'hard']
 
   useEffect(() => {
+    if (!user) return
     const q = query(
       collection(db, 'clashes'),
       where('status', '==', 'waiting')
     )
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setActiveMatches(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+      const now = Date.now()
+      const matches = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(m => {
+          // Hide self
+          if (m.hostUid === user.uid) return false
+
+          // Only show matches with a heartbeat in the last 20 seconds
+          const heartbeat = m.lastHeartbeat?.toDate?.() || new Date(0)
+          return (now - heartbeat.getTime()) < 20000
+        })
+
+      setActiveMatches(matches)
     })
     return () => unsubscribe()
-  }, [])
+  }, [user])
 
   useEffect(() => {
     let interval
@@ -193,6 +206,49 @@ const CodeClashLobby = () => {
     return () => unsubscribe()
   }, [currentMatchId, isLobbySearching, user?.uid, navigate])
 
+  // Heartbeat for host
+  useEffect(() => {
+    let heartbeatInterval
+    if (isLobbySearching && currentMatchId && !matchFound) {
+      heartbeatInterval = setInterval(async () => {
+        try {
+          await updateDoc(doc(db, 'clashes', currentMatchId), {
+            lastHeartbeat: serverTimestamp()
+          })
+        } catch (error) {
+          console.error('Heartbeat error:', error)
+        }
+      }, 5000)
+    }
+    return () => clearInterval(heartbeatInterval)
+  }, [isLobbySearching, currentMatchId, matchFound])
+
+  const cancelMatchmaking = async () => {
+    if (currentMatchId) {
+      try {
+        await updateDoc(doc(db, 'clashes', currentMatchId), {
+          status: 'cancelled'
+        })
+      } catch (error) {
+        console.error('Error cancelling match:', error)
+      }
+    }
+    setIsLobbySearching(false)
+    setCurrentMatchId(null)
+    setMatchFound(false)
+  }
+
+  // Handle unmount/navigation cleanup
+  useEffect(() => {
+    return () => {
+      if (isLobbySearching && currentMatchId) {
+        updateDoc(doc(db, 'clashes', currentMatchId), {
+          status: 'cancelled'
+        })
+      }
+    }
+  }, [isLobbySearching, currentMatchId])
+
   const handleQuickMatch = async () => {
     if (!user) return
     setIsLobbySearching(true)
@@ -206,11 +262,14 @@ const CodeClashLobby = () => {
       }
       const randomQuest = filteredQuests[Math.floor(Math.random() * filteredQuests.length)]
 
+      // Find an active waiting clash (heartbeat in last 15 seconds)
+      const fifteenSecondsAgo = new Date(Date.now() - 15000)
       const q = query(
         collection(db, 'clashes'),
         where('status', '==', 'waiting'),
         where('difficulty', '==', selectedDifficulty),
-        where('questId', '==', randomQuest.id)
+        where('questId', '==', randomQuest.id),
+        where('lastHeartbeat', '>=', fifteenSecondsAgo)
       )
 
       const querySnapshot = await getDocs(q)
@@ -239,6 +298,7 @@ const CodeClashLobby = () => {
           mode: selectedMode,
           status: 'waiting',
           createdAt: serverTimestamp(),
+          lastHeartbeat: serverTimestamp(),
           hostUid: user.uid,
           hostUsername: user.username || 'User',
           hostAvatar: user.avatar || null,
@@ -363,7 +423,7 @@ const CodeClashLobby = () => {
           </div>
 
           <div className="flex justify-center">
-            <Button onClick={() => setIsLobbySearching(false)} variant="outline" className="border-red-500/20 text-red-500 hover:bg-red-500/10">
+            <Button onClick={cancelMatchmaking} variant="outline" className="border-red-500/20 text-red-500 hover:bg-red-500/10">
               Cancel Matchmaking
             </Button>
           </div>
@@ -402,12 +462,12 @@ const CodeClashLobby = () => {
           <section className="relative group overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-[2rem] blur-2xl opacity-50" />
             <Card className="relative p-10 bg-[#14142b]/60 border-white/10 backdrop-blur-xl rounded-[2rem]">
-              <Badge variant="warning" className="mb-4">WEEKEND SPECIAL</Badge>
+              <Badge variant="primary" className="mb-4">UPCOMING EVENT</Badge>
               <h2 className="text-4xl font-black text-white mb-4 leading-tight tracking-tighter">
                 Algorithm <span className="text-primary tracking-tighter italic">Titan</span> Tournament
               </h2>
-              <p className="text-white/60 mb-8 max-w-md font-medium">Earn exclusive legendary badges and double XP this weekend.</p>
-              <Button variant="primary" size="lg" className="px-10 py-5 font-black uppercase tracking-widest hover:scale-105 transition-all">Join Event</Button>
+              <p className="text-white/60 mb-8 max-w-md font-medium">Earn exclusive legendary badges and triple XP in the upcoming tournament.</p>
+              <Button variant="primary" size="lg" className="px-10 py-5 font-black uppercase tracking-widest hover:scale-105 transition-all outline outline-white/10">Register Interest</Button>
             </Card>
           </section>
 
@@ -489,25 +549,14 @@ const CodeClashLobby = () => {
         <aside className="space-y-6">
           <LobbyChat user={user} />
           <Card className="p-6 bg-[#14142b]/60 border-white/10 backdrop-blur-xl rounded-[1.5rem]">
-            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6">Active Pilots</h3>
-            <div className="space-y-4">
-              {[
-                { name: 'SkyNet_X', level: 99, status: 'In Duel', color: 'text-primary' },
-                { name: 'NullPointer', level: 45, status: 'Matching', color: 'text-yellow-500' },
-                { name: 'CryptoDev', level: 22, status: 'Idle', color: 'text-green-500' },
-              ].map((player, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="relative">
-                    <Avatar src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.name}`} size="sm" />
-                    <div className="absolute -bottom-0.5 -right-0.5 size-2 bg-green-500 rounded-full border border-[#14142b]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white mb-0.5">{player.name}</p>
-                    <p className="text-[9px] font-bold text-white/20 uppercase">Level {player.level}</p>
-                  </div>
-                  <span className={`text-[8px] font-black uppercase ${player.color}`}>{player.status}</span>
-                </div>
-              ))}
+            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6">Active Discoveries</h3>
+            <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
+              <div className="size-16 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
+                <span className="material-symbols-outlined text-white/20 text-3xl">radar</span>
+              </div>
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] max-w-[120px] leading-relaxed">
+                Scanning for nearby pilots...
+              </p>
             </div>
           </Card>
         </aside>

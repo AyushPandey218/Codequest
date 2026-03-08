@@ -29,10 +29,7 @@ export const useLeaderboard = (limitCount = 50, currentUserId = null) => {
       querySnapshot.forEach((doc) => {
         const data = doc.data()
 
-        // Filter out the seed/mock users created in migrateData.js
-        if (doc.id === 'demo_codequest_com' || doc.id === 'admin_codequest_com' || data.email === 'demo@codequest.com' || data.email === 'admin@codequest.com') {
-          return;
-        }
+        // Show all users normally
 
         leaderboardData.push({
           id: doc.id,

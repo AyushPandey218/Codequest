@@ -18,15 +18,6 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleDemoLogin = () => {
-    setEmail('demo@codequest.com')
-    setPassword('demo123')
-  }
-
-  const handleAdminLogin = () => {
-    setEmail('admin@codequest.com')
-    setPassword('admin123')
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -199,33 +190,6 @@ const Login = () => {
             >
               Start Coding
             </Button>
-
-            <div className="relative flex items-center py-4">
-              <div className="flex-grow border-t border-white/5"></div>
-              <span className="flex-shrink-0 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary">
-                Pilot Access
-              </span>
-              <div className="flex-grow border-t border-white/5"></div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={handleDemoLogin}
-                className="flex flex-col items-center justify-center gap-1 h-20 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md px-4 transition-all hover:bg-white/10 hover:border-primary/50 group"
-              >
-                <span className="material-symbols-outlined text-primary text-xl group-hover:scale-110 transition-transform">person_play</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">Demo Pilot</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleAdminLogin}
-                className="flex flex-col items-center justify-center gap-1 h-20 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md px-4 transition-all hover:bg-white/10 hover:border-purple-500/50 group"
-              >
-                <span className="material-symbols-outlined text-purple-400 text-xl group-hover:scale-110 transition-transform">admin_panel_settings</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">Staff Access</span>
-              </button>
-            </div>
 
             <div className="relative flex items-center py-4">
               <div className="flex-grow border-t border-white/5"></div>
