@@ -57,7 +57,34 @@ export function useReports() {
                 }
             })
 
-            setReports(fetchedReports)
+            // 2. Fetch Flagged Community Posts
+            const postQ = query(collection(db, 'communityPosts'), orderBy('createdAt', 'desc'))
+            const postSnapshot = await getDocs(postQ)
+
+            const flaggedPosts = postSnapshot.docs
+                .filter(doc => doc.data().flagged === true)
+                .map(doc => {
+                    const data = doc.data()
+                    const createdAt = data.createdAt?.toDate()
+
+                    return {
+                        id: doc.id,
+                        isPost: true,
+                        type: 'Forum Flag',
+                        reporter: 'System/Moderator',
+                        target: data.author || 'Unknown',
+                        content: data.title || 'Untitled Post',
+                        severity: 'medium',
+                        status: 'pending',
+                        time: createdAt ? Math.floor((new Date() - createdAt) / 86400000) + 'd ago' : 'Unknown',
+                        createdAt: createdAt
+                    }
+                })
+
+            const combined = [...fetchedReports, ...flaggedPosts]
+                .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+
+            setReports(combined)
             setIsLoading(false)
         } catch (error) {
             console.error("Error fetching reports:", error)
@@ -65,19 +92,28 @@ export function useReports() {
         }
     }
 
-    const resolveReport = async (reportId) => {
+    const resolveReport = async (reportId, isPost = false) => {
         try {
-            const reportRef = doc(db, 'reports', reportId)
-            await updateDoc(reportRef, { status: 'resolved' })
+            if (isPost) {
+                const postRef = doc(db, 'communityPosts', reportId)
+                await updateDoc(postRef, { flagged: false })
+            } else {
+                const reportRef = doc(db, 'reports', reportId)
+                await updateDoc(reportRef, { status: 'resolved' })
+            }
             setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'resolved' } : r))
         } catch (error) {
             console.error("Error resolving report:", error)
         }
     }
 
-    const dismissReport = async (reportId) => {
+    const dismissReport = async (reportId, isPost = false) => {
         try {
-            await deleteDoc(doc(db, 'reports', reportId))
+            if (isPost) {
+                await deleteDoc(doc(db, 'communityPosts', reportId))
+            } else {
+                await deleteDoc(doc(db, 'reports', reportId))
+            }
             setReports(prev => prev.filter(r => r.id !== reportId))
         } catch (error) {
             console.error("Error dismissing report:", error)

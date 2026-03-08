@@ -88,16 +88,16 @@ const AdminModeration = () => {
                             {report.status === 'pending' && (
                                 <div className="flex gap-2 shrink-0">
                                     <button
-                                        onClick={() => resolveReport(report.id)}
+                                        onClick={() => resolveReport(report.id, report.isPost)}
                                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 transition-colors"
                                     >
-                                        Resolve
+                                        {report.isPost ? 'Keep' : 'Resolve'}
                                     </button>
                                     <button
-                                        onClick={() => dismissReport(report.id)}
+                                        onClick={() => dismissReport(report.id, report.isPost)}
                                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-slate-400 border border-white/10 hover:text-white transition-colors"
                                     >
-                                        Dismiss
+                                        {report.isPost ? 'Delete' : 'Dismiss'}
                                     </button>
                                 </div>
                             )}

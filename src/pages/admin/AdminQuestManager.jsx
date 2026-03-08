@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { quests as initialQuests, questDetails as initialQuestDetails } from '../../data/quests'
+import { db } from '../../config/firebase'
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -445,20 +446,35 @@ function QuestDrawer({ quest, onSave, onClose }) {
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
 const AdminQuestManager = () => {
-    // Merge basic quest list with full details
-    const buildInitialState = () =>
-        initialQuests.map(q => ({
-            ...q,
-            ...(initialQuestDetails[q.id] || {}),
-        }))
-
-    const [quests, setQuests] = useState(buildInitialState)
+    const [quests, setQuests] = useState([])
+    const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [diffFilter, setDiffFilter] = useState('all')
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [editingQuest, setEditingQuest] = useState(null)
     const [deleteTarget, setDeleteTarget] = useState(null)
     const [toasts, setToasts] = useState([])
+
+    useEffect(() => {
+        fetchQuests()
+    }, [])
+
+    const fetchQuests = async () => {
+        setLoading(true)
+        try {
+            const q = query(collection(db, 'quests'), orderBy('createdAt', 'desc'))
+            const querySnapshot = await getDocs(q)
+            const fetchedQuests = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            setQuests(fetchedQuests)
+        } catch (error) {
+            console.error("Error fetching quests:", error)
+            addToast("Failed to fetch quests", "error")
+        }
+        setLoading(false)
+    }
 
     const addToast = (message, type = 'success') => {
         const id = Date.now()
@@ -470,23 +486,41 @@ const AdminQuestManager = () => {
     const openEdit = (q) => { setEditingQuest(q); setDrawerOpen(true) }
     const closeDrawer = () => { setDrawerOpen(false); setEditingQuest(null) }
 
-    const handleSave = (formData) => {
-        if (editingQuest) {
-            setQuests(prev => prev.map(q => q.id === editingQuest.id ? { ...q, ...formData } : q))
-            addToast(`"${formData.title}" updated successfully`)
-        } else {
-            const newId = `q${Date.now()}`
-            setQuests(prev => [...prev, { ...formData, id: newId, createdAt: new Date() }])
-            addToast(`"${formData.title}" added to quest list`)
+    const handleSave = async (formData) => {
+        try {
+            if (editingQuest) {
+                const questRef = doc(db, 'quests', editingQuest.id)
+                await updateDoc(questRef, {
+                    ...formData,
+                    updatedAt: serverTimestamp()
+                })
+                addToast(`"${formData.title}" updated successfully`)
+            } else {
+                await addDoc(collection(db, 'quests'), {
+                    ...formData,
+                    createdAt: serverTimestamp()
+                })
+                addToast(`"${formData.title}" added to quest list`)
+            }
+            fetchQuests() // Refresh list
+            closeDrawer()
+        } catch (error) {
+            console.error("Error saving quest:", error)
+            addToast("Failed to save quest", "error")
         }
-        closeDrawer()
     }
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (!deleteTarget) return
-        setQuests(prev => prev.filter(q => q.id !== deleteTarget.id))
-        addToast(`"${deleteTarget.title}" deleted`, 'error')
-        setDeleteTarget(null)
+        try {
+            await deleteDoc(doc(db, 'quests', deleteTarget.id))
+            addToast(`"${deleteTarget.title}" deleted`, 'error')
+            setDeleteTarget(null)
+            fetchQuests() // Refresh list
+        } catch (error) {
+            console.error("Error deleting quest:", error)
+            addToast("Failed to delete quest", "error")
+        }
     }
 
     const filtered = quests.filter(q => {

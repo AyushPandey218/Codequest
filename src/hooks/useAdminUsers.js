@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, getDocs, orderBy } from 'firebase/firestore'
+import { collection, query, getDocs, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
 export function useAdminUsers() {
@@ -40,5 +40,26 @@ export function useAdminUsers() {
         fetchUsers()
     }, [])
 
-    return { users, isLoading }
+    const updateUserStatus = async (userId, newStatus) => {
+        try {
+            const userRef = doc(db, 'users', userId)
+            await updateDoc(userRef, { status: newStatus })
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: newStatus } : u))
+        } catch (error) {
+            console.error("Error updating user status:", error)
+            throw error
+        }
+    }
+
+    const deleteUser = async (userId) => {
+        try {
+            await deleteDoc(doc(db, 'users', userId))
+            setUsers(prev => prev.filter(u => u.id !== userId))
+        } catch (error) {
+            console.error("Error deleting user:", error)
+            throw error
+        }
+    }
+
+    return { users, isLoading, updateUserStatus, deleteUser, refetch: fetchUsers }
 }

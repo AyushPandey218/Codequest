@@ -76,6 +76,8 @@ export function useCommunity() {
                     tags: data.tags || [],
                     hasAnswer: data.hasAnswer || false,
                     flagged: data.flagged || false,
+                    authorUid: data.authorUid || null,
+                    acceptedReplyId: data.acceptedReplyId || null,
                     createdAt: createdAt
                 })
             })
@@ -108,6 +110,7 @@ export function useCommunity() {
         try {
             const docRef = await addDoc(collection(db, 'communityPosts'), {
                 ...postData,
+                authorUid: postData.authorUid || null,
                 replies: 0,
                 views: 0,
                 likes: 0,
@@ -181,6 +184,7 @@ export function useCommunity() {
                         author: rData.author || 'Anonymous',
                         avatar: rData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rData.author}`,
                         content: rData.content || '',
+                        authorUid: rData.authorUid || null,
                         timeAgo: rt,
                         likes: rData.likes || 0,
                     }
@@ -201,6 +205,8 @@ export function useCommunity() {
                 tags: data.tags || [],
                 hasAnswer: data.hasAnswer || false,
                 flagged: data.flagged || false,
+                authorUid: data.authorUid || null,
+                acceptedReplyId: data.acceptedReplyId || null,
                 replyList: filteredReplies
             }
         } catch (error) {
@@ -244,6 +250,7 @@ export function useCommunity() {
             const replyRef = await addDoc(collection(db, 'communityReplies'), {
                 postId,
                 ...replyData,
+                authorUid: replyData.authorUid || null,
                 likes: 0,
                 createdAt: serverTimestamp()
             })
@@ -268,6 +275,29 @@ export function useCommunity() {
         }
     }
 
+    const markAsResolved = async (postId, replyId, replierUid) => {
+        try {
+            const postRef = doc(db, 'communityPosts', postId)
+            await updateDoc(postRef, {
+                hasAnswer: true,
+                acceptedReplyId: replyId
+            })
+
+            // Award XP to replier
+            if (replierUid) {
+                const userRef = doc(db, 'users', replierUid)
+                await updateDoc(userRef, {
+                    totalXP: increment(50),
+                })
+            }
+
+            await fetchPosts() // Refresh state
+        } catch (error) {
+            console.error("Error marking post as resolved:", error)
+            throw error
+        }
+    }
+
     const flagPost = async (postId) => {
         try {
             await updateDoc(doc(db, 'communityPosts', postId), {
@@ -283,6 +313,6 @@ export function useCommunity() {
 
     return {
         posts, trendingTopics, stats, isLoading, refetch: fetchPosts,
-        createPost, fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost
+        createPost, fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost, markAsResolved
     }
 }

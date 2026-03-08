@@ -9,7 +9,7 @@ import { useClash } from '../../hooks/useClash'
 import { useQuest } from '../../hooks/useQuest'
 import { useAuth } from '../../context/AuthContext'
 import { db } from '../../config/firebase'
-import { doc, updateDoc, increment } from 'firebase/firestore'
+import { doc, updateDoc, increment, arrayUnion, serverTimestamp } from 'firebase/firestore'
 import { getLevelFromXP } from '../../utils/progressStorage'
 import { calculateElo } from '../../utils/eloCalculator'
 
@@ -87,12 +87,18 @@ const ClashResults = () => {
           const newXP = (user.xp || 0) + results.xpEarned
           const newLevel = getLevelFromXP(newXP)
 
+          const langUsed = yourPlayer.language || 'JavaScript'
           await updateDoc(userRef, {
             xp: increment(results.xpEarned),
             rating: increment(results.ratingDelta),
             level: newLevel,
             clashesTotal: increment(1),
             clashesWon: increment(isWinner ? 1 : 0),
+            ratingHistory: arrayUnion({
+              rating: newRating,
+              timestamp: serverTimestamp()
+            }),
+            [`languageStats.${langUsed}`]: increment(1)
           })
           setStatsUpdated(true)
         } catch (err) {

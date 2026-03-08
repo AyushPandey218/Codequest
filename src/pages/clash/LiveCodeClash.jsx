@@ -81,7 +81,7 @@ const LiveCodeClash = () => {
         const total = result.results.total
         setTestsPassed(passed)
         // Sync to Firestore for opponent to see (not a final submit)
-        await updateScore(passed, total, false)
+        await updateScore(passed, total, false, selectedLanguage)
       } else if (result.error) {
         setTestsPassed(0)
       }
@@ -104,7 +104,7 @@ const LiveCodeClash = () => {
     try {
       // Record final score with submission timestamp for first-submit bonus
       const total = testCases?.length || 5
-      await updateScore(testsPassed, total, true)
+      await updateScore(testsPassed, total, true, selectedLanguage)
       navigate(`/app/clash/${clashId}/results`)
     } catch (err) {
       console.error('Error submitting clash:', err)

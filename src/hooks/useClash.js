@@ -45,7 +45,7 @@ export const useClash = (clashId) => {
      * @param {number} testsPassed - Number of tests passed
      * @param {number} totalTests - Total number of tests
      */
-    const updateScore = async (testsPassed, totalTests, isSubmit = false) => {
+    const updateScore = async (testsPassed, totalTests, isSubmit = false, language = 'JavaScript') => {
         if (!clashId || !user) return
 
         try {
@@ -54,6 +54,7 @@ export const useClash = (clashId) => {
                 [`${playerKey}.testsPassed`]: testsPassed,
                 [`${playerKey}.totalTests`]: totalTests,
                 [`${playerKey}.score`]: testsPassed * 100,
+                [`${playerKey}.language`]: language,
                 [`${playerKey}.lastUpdate`]: serverTimestamp(),
             }
 

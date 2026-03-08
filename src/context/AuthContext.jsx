@@ -37,6 +37,16 @@ export const AuthProvider = ({ children }) => {
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
         const userData = userDoc.exists() ? userDoc.data() : null
 
+        if (userData?.status === 'suspended') {
+          await signOut(auth)
+          setUser(null)
+          setIsAuthenticated(false)
+          localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+          localStorage.removeItem(STORAGE_KEYS.USER_DATA)
+          setIsLoading(false)
+          return
+        }
+
         const mergedUser = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
@@ -70,6 +80,10 @@ export const AuthProvider = ({ children }) => {
 
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
       const userData = userDoc.exists() ? userDoc.data() : null
+
+      if (userData?.status === 'suspended') {
+        throw new Error("Your account has been suspended. Please contact support.")
+      }
 
       return {
         success: true,
@@ -107,7 +121,8 @@ export const AuthProvider = ({ children }) => {
         clashesTotal: 0,
         clashesWon: 0,
         createdAt: serverTimestamp(),
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+        status: 'active'
       }
 
       await setDoc(doc(db, 'users', firebaseUser.uid), initialUserData)

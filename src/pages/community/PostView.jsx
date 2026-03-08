@@ -11,7 +11,7 @@ const PostView = () => {
     const { id } = useParams()
     const navigate = useNavigate()
     const { user } = useAuth()
-    const { fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost } = useCommunity()
+    const { fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost, markAsResolved } = useCommunity()
 
     const [post, setPost] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -75,6 +75,18 @@ const PostView = () => {
         }
     }
 
+    const handleMarkResolved = async (replyId, replierUid) => {
+        if (window.confirm('Accept this reply as the final solution? This will reward the author with 50 XP.')) {
+            try {
+                await markAsResolved(id, replyId, replierUid)
+                await loadPost() // Refresh to show solution badge
+            } catch (error) {
+                console.error(error)
+                alert('Failed to mark as resolved')
+            }
+        }
+    }
+
     const handleReplySubmit = async (e) => {
         e.preventDefault()
         if (!user) return alert("Must be logged in to reply.")
@@ -84,6 +96,7 @@ const PostView = () => {
             await addReply(id, {
                 content: replyContent,
                 author: user.displayName || user.username || 'Anonymous',
+                authorUid: user.uid,
                 avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`
             })
             setReplyContent('')
@@ -203,23 +216,52 @@ const PostView = () => {
                     </Card>
                 ) : (
                     <div className="space-y-4">
-                        {post.replyList.map(reply => (
-                            <Card key={reply.id} className="p-5 sm:p-6 bg-[#161632]">
-                                <div className="flex gap-4">
-                                    <Avatar src={reply.avatar} name={reply.author} size="md" />
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 text-sm mb-2">
-                                            <span className="font-bold text-slate-200">{reply.author}</span>
-                                            <span className="text-slate-500">•</span>
-                                            <span className="text-slate-500 text-xs">{reply.timeAgo}</span>
-                                        </div>
-                                        <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                                            {reply.content}
+                        {post.replyList.map(reply => {
+                            const isAccepted = post.acceptedReplyId === reply.id
+                            return (
+                                <Card
+                                    key={reply.id}
+                                    className={`p-5 sm:p-6 transition-all duration-300 ${isAccepted
+                                        ? 'bg-green-500/5 ring-1 ring-green-500/30'
+                                        : 'bg-[#161632]'
+                                        }`}
+                                >
+                                    <div className="flex gap-4">
+                                        <Avatar src={reply.avatar} name={reply.author} size="md" />
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    <span className="font-bold text-slate-200">{reply.author}</span>
+                                                    <span className="text-slate-500">•</span>
+                                                    <span className="text-slate-500 text-xs">{reply.timeAgo}</span>
+                                                    {isAccepted && (
+                                                        <Badge variant="success" size="sm" icon="check_circle" className="ml-2">
+                                                            Solution
+                                                        </Badge>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    {user?.uid === post.authorUid && !post.acceptedReplyId && (
+                                                        <button
+                                                            onClick={() => handleMarkResolved(reply.id, reply.authorUid)}
+                                                            className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold text-green-400 border border-green-500/20 hover:bg-green-500/10 transition-colors"
+                                                            title="Mark as Solution"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">task_alt</span>
+                                                            Accept Solution
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                                                {reply.content}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </Card>
-                        ))}
+                                </Card>
+                            )
+                        })}
                     </div>
                 )}
             </div>

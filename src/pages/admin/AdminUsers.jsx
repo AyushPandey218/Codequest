@@ -16,7 +16,29 @@ const Badge = ({ status }) => {
 const AdminUsers = () => {
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
-    const { users, isLoading } = useAdminUsers()
+    const { users, isLoading, updateUserStatus, deleteUser } = useAdminUsers()
+
+    const handleStatusToggle = async (userId, currentStatus) => {
+        const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended'
+        if (window.confirm(`Are you sure you want to ${newStatus === 'suspended' ? 'suspend' : 'activate'} this user?`)) {
+            try {
+                await updateUserStatus(userId, newStatus)
+            } catch (error) {
+                alert("Failed to update user status")
+            }
+        }
+    }
+
+    const handleDeleteUser = async (user) => {
+        if (user.role === 'admin') return alert("Cannot delete an administrator account.")
+        if (window.confirm(`Permanently delete account for "${user.username}"? This action is irreversible.`)) {
+            try {
+                await deleteUser(user.id)
+            } catch (error) {
+                alert("Failed to delete user")
+            }
+        }
+    }
 
     const filtered = users.filter(u => {
         const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
@@ -102,16 +124,22 @@ const AdminUsers = () => {
                                                 <span className="material-symbols-outlined text-base">visibility</span>
                                             </button>
                                             <button
+                                                onClick={() => handleStatusToggle(user.id, user.status)}
                                                 title={user.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
-                                                className="p-1.5 rounded-lg text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all"
+                                                className={`p-1.5 rounded-lg transition-all ${user.status === 'suspended'
+                                                    ? 'text-green-400 hover:bg-green-500/10'
+                                                    : 'text-orange-400 hover:bg-orange-500/10'
+                                                    }`}
                                             >
                                                 <span className="material-symbols-outlined text-base">
                                                     {user.status === 'suspended' ? 'lock_open' : 'lock'}
                                                 </span>
                                             </button>
                                             <button
+                                                onClick={() => handleDeleteUser(user)}
                                                 title="Delete User"
                                                 className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                disabled={user.role === 'admin'}
                                             >
                                                 <span className="material-symbols-outlined text-base">delete</span>
                                             </button>

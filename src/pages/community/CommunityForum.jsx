@@ -29,6 +29,7 @@ const CommunityForum = () => {
         content: newPost.content,
         category: newPost.category,
         author: user.displayName || user.username || 'Anonymous',
+        authorUid: user.uid,
         tags: newPost.tags.split(',').map(t => t.trim()).filter(Boolean),
       })
       setIsModalOpen(false)

@@ -12,6 +12,54 @@ import { achievements as allAchievements } from '../../data/achievements'
 import { useLeaderboard } from '../../hooks/useLeaderboard'
 
 /**
+ * Simple SVG Line Chart for ELO History
+ */
+const EloChart = ({ data }) => {
+  if (!data || data.length < 2) {
+    return (
+      <div className="h-24 flex items-center justify-center text-slate-500 text-xs italic">
+        Not enough match history to show rating trend.
+      </div>
+    )
+  }
+
+  const height = 100
+  const width = 300
+  const padding = 10
+
+  const minRating = Math.min(...data.map(d => d.rating))
+  const maxRating = Math.max(...data.map(d => d.rating))
+  const range = maxRating - minRating || 100
+
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * (width - padding * 2) + padding
+    const y = height - ((d.rating - minRating) / range) * (height - padding * 2) - padding
+    return { x, y }
+  })
+
+  const linePath = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`
+  const areaPath = `${linePath} L ${points[points.length - 1].x},${height} L ${points[0].x},${height} Z`
+
+  return (
+    <div className="relative h-24 w-full group">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+        <defs>
+          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#4f46e5" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill="url(#chartGradient)" />
+        <path d={linePath} fill="none" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r="3" fill="#4f46e5" className="opacity-0 group-hover:opacity-100 transition-opacity" />
+        ))}
+      </svg>
+    </div>
+  )
+}
+
+/**
  * User Profile Page - Rebuilt to match the premium dark theme design
  * Features Sidebar info and Dashboard-style stats
  */
@@ -69,7 +117,13 @@ const UserProfile = () => {
     badges: userStats?.achievements?.length || 0,
     codingHours: (userStats?.completedQuests || 0) * 2 + 5,
     globalRank: realRank,
-    percentile: percentile
+    percentile: percentile,
+    rating: userStats?.rating || 1000,
+    ratingHistory: userStats?.ratingHistory || [],
+    languageStats: userStats?.languageStats || {},
+    winRate: userStats?.clashesTotal > 0
+      ? ((userStats.clashesWon / userStats.clashesTotal) * 100).toFixed(1)
+      : '0.0'
   }
 
   // Get quest history (the real ones completed)
@@ -228,8 +282,8 @@ const UserProfile = () => {
             {[
               { label: 'Streak', value: `${profile.streak} Days`, icon: 'local_fire_department', color: 'text-orange-500', desc: 'Days active' },
               { label: 'Quests', value: profile.completedCount, icon: 'check_circle', color: 'text-blue-500', desc: 'Completed' },
-              { label: 'Badges', value: profile.badges, icon: 'military_tech', color: 'text-purple-500', desc: 'Earned' },
-              { label: 'Hours', value: profile.codingHours, icon: 'schedule', color: 'text-green-500', desc: 'Coding time' },
+              { label: 'Rating', value: profile.rating, icon: 'military_tech', color: 'text-purple-500', desc: 'ELO Rating' },
+              { label: 'Win Rate', value: `${profile.winRate}%`, icon: 'trending_up', color: 'text-green-500', desc: 'Clash Success' },
             ].map((stat, i) => (
               <Card key={i} className="bg-[#12122a] border-white/5 p-5 hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
@@ -264,31 +318,51 @@ const UserProfile = () => {
               </div>
             </Card>
 
-            {/* activity (Bar Chart) */}
+            {/* ELO History (Line Chart) */}
             <Card className="bg-[#12122a] border-white/5 p-6">
               <div className="flex items-center justify-between mb-8">
-                <h3 className="font-bold">Activity</h3>
-                <button className="text-[10px] text-slate-500 font-bold uppercase py-1 px-3 bg-[#1d1d35] rounded-lg">Last 12 Days</button>
+                <h3 className="font-bold">Rating Progress</h3>
+                <div className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-primary"></div>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">ELO Rating</span>
+                </div>
               </div>
-              <div className="flex items-end justify-between h-24 gap-1 px-2 mb-4">
-                {recent12Days.map((val, i) => (
-                  <div
-                    key={i}
-                    className={`w-full rounded-t-sm transition-all duration-500 relative group cursor-pointer ${val > 0 ? 'bg-primary/80 hover:bg-primary' : 'bg-white/5 hover:bg-white/10'}`}
-                    style={{ height: `${Math.max((val / maxActivity) * 100, 5)}%` }}
-                  >
-                    {/* Tooltip */}
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10 pointer-events-none">
-                      {val} quest{val !== 1 ? 's' : ''}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium text-center italic">
-                {recent12Days.reduce((a, b) => a + b, 0)} quests completed in the last 12 days.
+
+              <EloChart data={profile.ratingHistory} />
+
+              <p className="text-[11px] text-slate-500 font-medium text-center italic mt-4">
+                Global rating over your last {profile.ratingHistory.length} matches.
               </p>
             </Card>
           </div>
+
+          {/* Language Stack Section */}
+          <Card className="bg-[#12122a] border-white/5 p-6">
+            <h3 className="font-bold mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-blue-500 text-xl">terminal</span>
+              Language Proficiency
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {Object.entries(profile.languageStats).length > 0 ? Object.entries(profile.languageStats).map(([lang, count]) => (
+                <div key={lang} className="space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-slate-300">{lang}</span>
+                    <span className="text-slate-500 font-medium">{count} matches</span>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-1000"
+                      style={{ width: `${Math.min(100, (count / (userStats?.clashesTotal || 1)) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )) : (
+                <div className="col-span-2 text-center py-4 text-slate-500 text-sm italic">
+                  No match history yet. Start a Code Clash to see your language stats!
+                </div>
+              )}
+            </div>
+          </Card>
 
           {/* Achievements Gallery */}
           <Card className="bg-[#12122a] border-white/5 p-6">
