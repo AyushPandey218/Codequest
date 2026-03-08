@@ -124,6 +124,9 @@ const CodeClashLobby = () => {
   const [matchmakingTime, setMatchmakingTime] = useState(0)
   const [activeMatches, setActiveMatches] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentMatchId, setCurrentMatchId] = useState(null)
+  const [currentMatchData, setCurrentMatchData] = useState(null)
+  const [matchFound, setMatchFound] = useState(false)
 
   const stats = [
     { label: 'Pilot Rating', value: '1,240', icon: 'trending_up', color: 'text-primary' },
@@ -153,13 +156,42 @@ const CodeClashLobby = () => {
 
   useEffect(() => {
     let interval
-    if (isLobbySearching) {
-      interval = setInterval(() => setMatchmakingTime(prev => prev + 1), 1000)
+    if (isLobbySearching && !matchFound) {
+      interval = setInterval(() => {
+        setMatchmakingTime((prev) => prev + 1)
+      }, 1000)
     } else {
       setMatchmakingTime(0)
     }
     return () => clearInterval(interval)
-  }, [isLobbySearching])
+  }, [isLobbySearching, matchFound])
+
+  // Listener for the specific match the user is hosting/joining
+  useEffect(() => {
+    if (!currentMatchId || !isLobbySearching) return
+
+    const unsubscribe = onSnapshot(doc(db, 'clashes', currentMatchId), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data()
+        const players = data.players || {}
+        const playerIds = Object.keys(players)
+
+        if (playerIds.length >= 2) {
+          const opponentId = playerIds.find(id => id !== user.uid)
+          const opponentData = players[opponentId]
+          setCurrentMatchData({ ...data, opponent: opponentData })
+          setMatchFound(true)
+
+          // Auto-navigate after a short delay
+          setTimeout(() => {
+            navigate(`/app/clash/${currentMatchId}/live`)
+          }, 3000)
+        }
+      }
+    })
+
+    return () => unsubscribe()
+  }, [currentMatchId, isLobbySearching, user?.uid, navigate])
 
   const handleQuickMatch = async () => {
     if (!user) return
@@ -193,7 +225,7 @@ const CodeClashLobby = () => {
             level: user.level || 1,
             score: 0,
             testsPassed: 0,
-            totalTests: 5,
+            totalTests: randomQuest.testCases?.length || 5,
             isYou: false
           },
           status: 'ongoing'
@@ -218,12 +250,13 @@ const CodeClashLobby = () => {
               level: user.level || 1,
               score: 0,
               testsPassed: 0,
-              totalTests: 5,
+              totalTests: randomQuest.testCases?.length || 5,
               isHost: true
             }
           }
         }
-        await addDoc(collection(db, 'clashes'), newClash)
+        const docRef = await addDoc(collection(db, 'clashes'), newClash)
+        setCurrentMatchId(docRef.id)
       }
     } catch (err) {
       console.error('Matchmaking error:', err)
@@ -291,10 +324,41 @@ const CodeClashLobby = () => {
             </div>
             <div className="md:col-span-1 flex justify-center text-4xl font-black text-white/20 italic">VS</div>
             <div className="md:col-span-5">
-              <Card className="bg-[#12122a]/40 border-dashed border-2 border-white/10 p-10 flex flex-col items-center justify-center h-full min-h-[300px]">
-                <div className="size-20 rounded-full border-2 border-primary border-t-transparent animate-spin mb-4" />
-                <p className="text-xl font-bold text-slate-500 italic">Finding Challenger...</p>
-              </Card>
+              {matchFound && currentMatchData?.opponent ? (
+                <Card className="bg-[#12122a]/80 backdrop-blur-xl border-primary/50 p-10 flex flex-col items-center gap-4 relative overflow-hidden animate-slide-in-right">
+                  <div className="absolute top-4 right-4 bg-green-500/20 text-green-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">Match Found</div>
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 bg-green-500/30 rounded-full blur-2xl"></div>
+                    <Avatar src={currentMatchData.opponent.avatar} size="xl" className="size-32 ring-4 ring-green-500/50 relative z-10" />
+                    <div className="absolute bottom-0 right-0 size-8 bg-[#1e1e2e] rounded-full border-2 border-green-500 flex items-center justify-center z-20">
+                      <span className="text-[10px] font-bold text-white">{currentMatchData.opponent.level || 1}</span>
+                    </div>
+                  </div>
+                  <div className="text-center space-y-1">
+                    <h3 className="text-3xl font-black text-white">{currentMatchData.opponent.username}</h3>
+                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Challenger Approached</p>
+                  </div>
+                  <div className="w-full mt-6 flex flex-col items-center gap-2">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">BATTLE STARTS IN</p>
+                    <p className="text-4xl font-black text-white">3s</p>
+                  </div>
+                </Card>
+              ) : (
+                <Card className="bg-[#12122a]/40 backdrop-blur-xl border-dashed border-2 border-white/10 p-10 flex flex-col items-center justify-center gap-6 h-[420px]">
+                  <div className="size-32 rounded-full border-2 border-slate-700/50 flex items-center justify-center relative">
+                    <div className="absolute inset-0 border-t-2 border-primary rounded-full animate-spin"></div>
+                    <span className="material-symbols-outlined text-4xl text-slate-700 animate-pulse">search</span>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h3 className="text-2xl font-black text-slate-500">Searching...</h3>
+                    <div className="flex gap-1.5 justify-center">
+                      <div className="size-2 rounded-full bg-slate-700 animate-bounce"></div>
+                      <div className="size-2 rounded-full bg-slate-700 animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="size-2 rounded-full bg-slate-700 animate-bounce [animation-delay:-0.3s]"></div>
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
 
