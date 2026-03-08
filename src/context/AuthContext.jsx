@@ -12,8 +12,20 @@ import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment 
 import { auth, db, googleProvider } from '../config/firebase'
 import { STORAGE_KEYS } from '../utils/constants'
 import { checkAchievements } from '../utils/achievementChecker'
-import { Capacitor } from '@capacitor/core'
-import { FirebaseAuthentication } from '@capacitor-firebase/authentication'
+// Optional Capacitor state - will be initialized in AuthProvider
+let Capacitor = null
+let FirebaseAuthentication = null
+
+const initCapacitor = async () => {
+  try {
+    const cap = await import('@capacitor/core')
+    Capacitor = cap.Capacitor
+    const authCap = await import('@capacitor-firebase/authentication')
+    FirebaseAuthentication = authCap.FirebaseAuthentication
+  } catch (e) {
+    // Capacitor not available or failed to load (expected on web)
+  }
+}
 
 const AuthContext = createContext(null)
 
@@ -31,6 +43,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    initCapacitor()
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // Fetch additional user data from Firestore
@@ -151,7 +164,7 @@ export const AuthProvider = ({ children }) => {
     try {
       let firebaseUser
 
-      if (Capacitor.isNativePlatform()) {
+      if (Capacitor && Capacitor.isNativePlatform() && FirebaseAuthentication) {
         const result = await FirebaseAuthentication.signInWithGoogle()
         firebaseUser = result.user
       } else {
