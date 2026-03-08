@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, getDocs, orderBy, addDoc, serverTimestamp, getDoc, updateDoc, doc, increment, arrayUnion, arrayRemove } from 'firebase/firestore'
+import { collection, query, getDocs, orderBy, addDoc, serverTimestamp, getDoc, updateDoc, doc, increment, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
 export function useCommunity() {
@@ -75,6 +75,7 @@ export function useCommunity() {
                     timeAgo: timeAgo,
                     tags: data.tags || [],
                     hasAnswer: data.hasAnswer || false,
+                    flagged: data.flagged || false,
                     createdAt: createdAt
                 })
             })
@@ -199,6 +200,7 @@ export function useCommunity() {
                 timeAgo: timeAgo,
                 tags: data.tags || [],
                 hasAnswer: data.hasAnswer || false,
+                flagged: data.flagged || false,
                 replyList: filteredReplies
             }
         } catch (error) {
@@ -256,9 +258,31 @@ export function useCommunity() {
             throw error
         }
     }
+    const deletePost = async (postId) => {
+        try {
+            await deleteDoc(doc(db, 'communityPosts', postId))
+            await fetchPosts() // Refresh the list
+        } catch (error) {
+            console.error("Error deleting post:", error)
+            throw error
+        }
+    }
+
+    const flagPost = async (postId) => {
+        try {
+            await updateDoc(doc(db, 'communityPosts', postId), {
+                flagged: true,
+                flaggedAt: serverTimestamp()
+            })
+            await fetchPosts() // Refresh the list
+        } catch (error) {
+            console.error("Error flagging post:", error)
+            throw error
+        }
+    }
 
     return {
         posts, trendingTopics, stats, isLoading, refetch: fetchPosts,
-        createPost, fetchPost, incrementView, toggleLike, addReply
+        createPost, fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost
     }
 }

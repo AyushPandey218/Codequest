@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext'
 
 const CommunityForum = () => {
   const { user } = useAuth()
-  const { posts, trendingTopics, stats, isLoading, createPost } = useCommunity()
+  const { posts, trendingTopics, stats, isLoading, createPost, deletePost, flagPost } = useCommunity()
 
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -38,6 +38,28 @@ const CommunityForum = () => {
       alert("Failed to create post")
     }
     setIsSubmitting(false)
+  }
+
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        await deletePost(postId)
+      } catch (error) {
+        console.error(error)
+        alert('Failed to delete post')
+      }
+    }
+  }
+
+  const handleFlagPost = async (postId) => {
+    if (window.confirm('Flag this post for review?')) {
+      try {
+        await flagPost(postId)
+      } catch (error) {
+        console.error(error)
+        alert('Failed to flag post')
+      }
+    }
   }
 
   // Calculate dynamic category counts
@@ -148,6 +170,11 @@ const CommunityForum = () => {
                             Answered
                           </Badge>
                         )}
+                        {post.flagged && (
+                          <Badge variant="warning" size="sm" icon="flag">
+                            Flagged
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Tags */}
@@ -178,9 +205,29 @@ const CommunityForum = () => {
                             <span>{post.likes} likes</span>
                           </div>
                         </div>
-                        <Link to={`/app/community/post/${post.id}`}>
-                          <Button variant="outline" size="sm">View Thread</Button>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          {user?.role === 'admin' && (
+                            <>
+                              <button
+                                onClick={() => handleFlagPost(post.id)}
+                                className="p-2 text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors"
+                                title="Flag Post"
+                              >
+                                <span className="material-symbols-outlined text-lg">flag</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeletePost(post.id)}
+                                className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                title="Delete Post"
+                              >
+                                <span className="material-symbols-outlined text-lg">delete</span>
+                              </button>
+                            </>
+                          )}
+                          <Link to={`/app/community/post/${post.id}`}>
+                            <Button variant="outline" size="sm">View Thread</Button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>

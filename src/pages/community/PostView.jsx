@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import Avatar from '../../components/common/Avatar'
 import Badge from '../../components/common/Badge'
@@ -9,8 +9,9 @@ import { useAuth } from '../../context/AuthContext'
 
 const PostView = () => {
     const { id } = useParams()
+    const navigate = useNavigate()
     const { user } = useAuth()
-    const { fetchPost, incrementView, toggleLike, addReply } = useCommunity()
+    const { fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost } = useCommunity()
 
     const [post, setPost] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -48,6 +49,30 @@ const PostView = () => {
         }))
 
         await toggleLike(id, user.uid, !isCurrentlyLiked)
+    }
+
+    const handleDelete = async () => {
+        if (window.confirm('Permanently delete this post?')) {
+            try {
+                await deletePost(id)
+                navigate('/app/community')
+            } catch (error) {
+                console.error(error)
+                alert('Failed to delete post')
+            }
+        }
+    }
+
+    const handleFlag = async () => {
+        if (window.confirm('Flag this post for review?')) {
+            try {
+                await flagPost(id)
+                await loadPost() // Refresh to show flagged badge
+            } catch (error) {
+                console.error(error)
+                alert('Failed to flag post')
+            }
+        }
     }
 
     const handleReplySubmit = async (e) => {
@@ -110,11 +135,32 @@ const PostView = () => {
                             {post.tags.map(t => (
                                 <span key={t} className="px-2 py-0.5 rounded text-xs bg-white/5 text-slate-400 border border-white/10">#{t}</span>
                             ))}
+                            {post.flagged && <Badge variant="warning" size="sm" icon="flag">Flagged</Badge>}
                         </div>
 
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4 leading-tight">
-                            {post.title}
-                        </h1>
+                        <div className="flex items-start justify-between gap-4 mb-4">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight flex-1">
+                                {post.title}
+                            </h1>
+                            {user?.role === 'admin' && (
+                                <div className="flex gap-2 shrink-0">
+                                    <button
+                                        onClick={handleFlag}
+                                        className="p-2 text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors border border-orange-500/20"
+                                        title="Flag Post"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">flag</span>
+                                    </button>
+                                    <button
+                                        onClick={handleDelete}
+                                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors border border-red-500/20"
+                                        title="Delete Post"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="flex items-center gap-3 text-sm text-slate-400 mb-6 border-b border-white/5 pb-6">
                             <Avatar src={post.avatar} name={post.author} size="sm" className="sm:hidden" />
