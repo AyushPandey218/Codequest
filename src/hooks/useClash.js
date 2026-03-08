@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { doc, onSnapshot, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore'
+import { doc, onSnapshot, updateDoc, getDoc, arrayUnion, serverTimestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../context/AuthContext'
 
@@ -45,17 +45,30 @@ export const useClash = (clashId) => {
      * @param {number} testsPassed - Number of tests passed
      * @param {number} totalTests - Total number of tests
      */
-    const updateScore = async (testsPassed, totalTests) => {
+    const updateScore = async (testsPassed, totalTests, isSubmit = false) => {
         if (!clashId || !user) return
 
         try {
             const playerKey = `players.${user.uid}`
-            await updateDoc(doc(db, 'clashes', clashId), {
+            const updates = {
                 [`${playerKey}.testsPassed`]: testsPassed,
                 [`${playerKey}.totalTests`]: totalTests,
-                [`${playerKey}.score`]: testsPassed * 25, // Basic scoring logic
+                [`${playerKey}.score`]: testsPassed * 100,
                 [`${playerKey}.lastUpdate`]: serverTimestamp(),
-            })
+            }
+
+            // Record submission timestamp only on final submit, and only once.
+            // We cannot do a conditional write in Firestore client SDK, so we
+            // read the current value first and only write if not already set.
+            if (isSubmit) {
+                const docSnap = await getDoc(doc(db, 'clashes', clashId))
+                const existing = docSnap.data()?.players?.[user.uid]?.submittedAt
+                if (!existing) {
+                    updates[`${playerKey}.submittedAt`] = serverTimestamp()
+                }
+            }
+
+            await updateDoc(doc(db, 'clashes', clashId), updates)
         } catch (err) {
             console.error('Error updating score:', err)
         }

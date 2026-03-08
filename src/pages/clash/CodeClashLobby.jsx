@@ -16,7 +16,8 @@ import {
   doc,
   updateDoc,
   limit,
-  getDocs
+  getDocs,
+  getDoc
 } from 'firebase/firestore'
 import { useAuth } from '../../context/AuthContext'
 import { useQuestList } from '../../hooks/useQuestList'
@@ -269,6 +270,52 @@ const CodeClashLobby = () => {
     }
   }, [isLobbySearching, currentMatchId])
 
+  /**
+   * Fetch the set of quest IDs a user has fully solved from their submissions.
+   */
+  const getSolvedQuestIds = async (uid) => {
+    try {
+      const q = query(collection(db, 'submissions'), where('uid', '==', uid))
+      const snap = await getDocs(q)
+      const solved = new Set()
+      snap.forEach(d => {
+        const data = d.data()
+        if (data.passedTests === data.totalTests && data.passedTests > 0) {
+          solved.add(data.questId)
+        }
+      })
+      return solved
+    } catch (err) {
+      console.error('Error fetching solved quests:', err)
+      return new Set()
+    }
+  }
+
+  /**
+   * Pick a random quest that hasn't been solved by any uid in the excludedIds set.
+   * Falls back gracefully if no unsolved quests exist.
+   */
+  const pickUnsolvedQuest = (allQuests, difficulty, excludedIds) => {
+    // Primary: matching difficulty, not solved by anyone in the match
+    let pool = allQuests.filter(
+      q => q.difficulty?.toLowerCase() === difficulty && !excludedIds.has(q.id)
+    )
+    if (pool.length > 0) {
+      return { quest: pool[Math.floor(Math.random() * pool.length)], fallback: false }
+    }
+
+    // Fallback 1: any difficulty, not solved by anyone
+    pool = allQuests.filter(q => !excludedIds.has(q.id))
+    if (pool.length > 0) {
+      return { quest: pool[Math.floor(Math.random() * pool.length)], fallback: 'difficulty' }
+    }
+
+    // Fallback 2: everything solved – just pick randomly from difficulty
+    pool = allQuests.filter(q => q.difficulty?.toLowerCase() === difficulty)
+    if (pool.length === 0) pool = allQuests
+    return { quest: pool[Math.floor(Math.random() * pool.length)], fallback: 'all' }
+  }
+
   const handleQuickMatch = async () => {
     if (!user) return
     setIsLobbySearching(true)
@@ -276,37 +323,29 @@ const CodeClashLobby = () => {
     setSearchStartTime(startTime)
 
     try {
-      const filteredQuests = (quests || []).filter(q => q.difficulty.toLowerCase() === selectedDifficulty)
-      if (filteredQuests.length === 0) {
-        alert('No quests found for this difficulty!')
-        setIsLobbySearching(false)
-        return
-      }
-      const randomQuest = filteredQuests[Math.floor(Math.random() * filteredQuests.length)]
+      // 1. Get this user's solved quests
+      const mySolvedIds = await getSolvedQuestIds(user.uid)
 
-      // Fetch all waiting clashes and filter in-memory to avoid complex index requirements
-      const q = query(
-        collection(db, 'clashes'),
-        where('status', '==', 'waiting')
+      // 2. Look for a waiting room
+      const waitingSnap = await getDocs(
+        query(collection(db, 'clashes'), where('status', '==', 'waiting'))
       )
-
-      const querySnapshot = await getDocs(q)
       const now = Date.now()
 
-      const potentialMatch = querySnapshot.docs.find(docSnap => {
+      const potentialMatch = waitingSnap.docs.find(docSnap => {
         const data = docSnap.data()
-        const heartbeatData = data.lastHeartbeat
-        const heartbeat = heartbeatData?.toDate ? heartbeatData.toDate() : new Date(0)
-        // Match on difficulty only — the joiner adopts the host's quest
+        const heartbeat = data.lastHeartbeat?.toDate ? data.lastHeartbeat.toDate() : new Date(0)
         return data.difficulty === selectedDifficulty &&
           (now - heartbeat.getTime()) < 15000 &&
           data.hostUid !== user.uid
       })
 
       if (potentialMatch) {
+        // JOINING an existing room
         const clashId = potentialMatch.id
         const clashData = potentialMatch.data()
-        // Joiner adopts the host's quest so both players solve the same problem
+
+        // Joiner adopts the host's quest so both play the same problem
         const hostTotalTests = Object.values(clashData.players || {})[0]?.totalTests || 5
 
         await updateDoc(doc(db, 'clashes', clashId), {
@@ -314,6 +353,7 @@ const CodeClashLobby = () => {
             username: user.username || 'User',
             avatar: user.avatar || null,
             level: user.level || 1,
+            rating: user.rating ?? 1000,
             score: 0,
             testsPassed: 0,
             totalTests: hostTotalTests,
@@ -322,19 +362,28 @@ const CodeClashLobby = () => {
           status: 'ongoing'
         })
 
-        // Setup joining state for guest
         setCurrentMatchId(clashId)
         setCurrentMatchData({
           ...clashData,
           opponent: {
             username: clashData.hostUsername,
             avatar: clashData.hostAvatar,
-            level: clashData.hostLevel
+            level: clashData.hostLevel,
+            rating: clashData.hostRating ?? 1000
           }
         })
         setMatchFound(true)
         setTransitionCountdown(3)
       } else {
+        // HOSTING a new room — pick an unsolved quest
+        if ((quests || []).length === 0) {
+          alert('No quests available!')
+          setIsLobbySearching(false)
+          return
+        }
+
+        const { quest: randomQuest } = pickUnsolvedQuest(quests, selectedDifficulty, mySolvedIds)
+
         const newClash = {
           questId: randomQuest.id,
           questTitle: randomQuest.title,
@@ -347,11 +396,16 @@ const CodeClashLobby = () => {
           hostUsername: user.username || 'User',
           hostAvatar: user.avatar || null,
           hostLevel: user.level || 1,
+          hostRating: user.rating ?? 1000,
+          // Store host's solved IDs so the joiner can pick the same quest
+          // or so we can validate fairness later
+          hostSolvedIds: Array.from(mySolvedIds),
           players: {
             [user.uid]: {
               username: user.username || 'User',
               avatar: user.avatar || null,
               level: user.level || 1,
+              rating: user.rating ?? 1000,
               score: 0,
               testsPassed: 0,
               totalTests: randomQuest.testCases?.length || 5,

@@ -103,6 +103,9 @@ export const AuthProvider = ({ children }) => {
         level: 1,
         xp: 0,
         streak: 0,
+        rating: 1000,
+        clashesTotal: 0,
+        clashesWon: 0,
         createdAt: serverTimestamp(),
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
       }
@@ -155,6 +158,9 @@ export const AuthProvider = ({ children }) => {
           level: 1,
           xp: 0,
           streak: 0,
+          rating: 1000,
+          clashesTotal: 0,
+          clashesWon: 0,
           createdAt: serverTimestamp(),
           avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
           bio: '',

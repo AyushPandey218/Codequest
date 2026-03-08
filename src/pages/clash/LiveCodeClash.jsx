@@ -80,11 +80,10 @@ const LiveCodeClash = () => {
         const passed = result.results.passed
         const total = result.results.total
         setTestsPassed(passed)
-        // Sync to Firestore for opponent to see
-        await updateScore(passed, total)
+        // Sync to Firestore for opponent to see (not a final submit)
+        await updateScore(passed, total, false)
       } else if (result.error) {
         setTestsPassed(0)
-        // Show error in console logic
       }
     } catch (error) {
       console.error('Execution error:', error)
@@ -103,9 +102,9 @@ const LiveCodeClash = () => {
   const handleSubmitClash = async () => {
     if (!clashId || !user) return
     try {
-      // Mark clash as completed for this user
-      // We'll update the clash status to 'completed' if all players are finished
-      // For now, just navigate to results where final calculation happens
+      // Record final score with submission timestamp for first-submit bonus
+      const total = testCases?.length || 5
+      await updateScore(testsPassed, total, true)
       navigate(`/app/clash/${clashId}/results`)
     } catch (err) {
       console.error('Error submitting clash:', err)
