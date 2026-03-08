@@ -1,105 +1,160 @@
 <p align="center">
   <h1 align="center">🚀 CODEQUEST</h1>
-
 </p>
-
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-18-blue?logo=react" />
-  <img src="https://img.shields.io/badge/Vite-Latest-purple?logo=vite" />
+  <img src="https://img.shields.io/badge/Vite-5-purple?logo=vite" />
   <img src="https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwind-css" />
-  <img src="https://img.shields.io/badge/JavaScript-ES6-yellow?logo=javascript" />
+  <img src="https://img.shields.io/badge/Firebase-12-FFCA28?logo=firebase&logoColor=black" />
+  <img src="https://img.shields.io/badge/Framer_Motion-12-EF4E7B?logo=framer" />
   <img src="https://img.shields.io/badge/Status-Active-success" />
 </p>
 
+------------------------------------------------------------------------
+
+> **Warning:** May cause sudden urge to rewrite everything in TypeScript 🤓
 
 ------------------------------------------------------------------------
 
 ## 📚 Table of Contents
 
--   [Overview](#overview)
--   [Why CodeQuest?](#why-codequest)
--   [Getting Started](#getting-started)
+-   [Overview](#-overview)
+-   [Features](#-features)
+-   [Technology Stack](#-technology-stack)
+-   [Project Structure](#-project-structure)
+-   [Getting Started](#-getting-started)
     -   [Prerequisites](#prerequisites)
+    -   [Environment Variables](#environment-variables)
     -   [Installation](#installation)
--   [Usage](#usage)
--   [Testing](#testing)
--   [Project Structure](#project-structure)
--   [Future Improvements](#future-improvements)
--   [Contributors](#contributors)
--   [License](#license)
+-   [Usage](#️-usage)
+-   [Deployment](#-deployment)
+-   [Future Improvements](#-future-improvements)
+-   [Contributors](#-contributors)
+-   [License](#-license)
 
 ------------------------------------------------------------------------
 
 ## 📖 Overview
 
-CodeQuest is an immersive developer tool that creates an interactive,
-gamified coding platform built with a modern React architecture.
-
-It enables users to:
-
--   Practice coding challenges in-browser
--   Write and execute code interactively
--   Progress through structured quest-based levels
--   Learn programming concepts in a fun and engaging way
+**CodeQuest** is an immersive, gamified coding platform built with a modern React + Vite architecture. It transforms the learning experience into an epic adventure — guiding developers through structured quests, real-time coding battles, and a vibrant community, all powered by Firebase.
 
 ------------------------------------------------------------------------
 
-## 🚀 Why CodeQuest?
+## ✨ Features
 
-This project aims to empower developers and learners with a flexible,
-scalable environment for coding challenges.
+### 🎮 Quest System
+- Browse and select from a curated set of programming quests
+- Structured modules with **Lessons**, **Code Walkthroughs**, and **Debugging Challenges**
+- In-browser code editor powered by **Monaco Editor** (the same engine as VS Code)
+- Real-time code writing and quest progression tracking
 
-### 🔹 Modern Architecture
+### ⚔️ Code Clash (Live PvP)
+- Real-time competitive coding battles — **CodeClash Lobby** and **LiveCodeClash** arena
+- Post-match **Clash Results** summary with scores and rankings
 
--   Built with **React + Vite**
--   Modular and scalable component structure
--   Optimized development workflow
+### 🏆 Dashboard & Leaderboard
+- Personal **Dashboard** showing quest progress, stats, and activity
+- **Progress Screen** with detailed level-by-level tracking
+- Global **Leaderboard** to rank against other developers
 
-### 🔹 Multi-language Code Execution
+### 💬 Community Forum
+- Create, view, and discuss posts in the **Community Forum**
+- Full **Post View** with threaded discussions
+- **Contact Support** page for help and feedback
 
--   Supports multiple languages via integrated editor
--   Real-time code feedback
--   Structured problem-solving interface
+### 👤 Auth & Profile
+- Full authentication flow: **Sign Up**, **Login**, **Password Recovery**, **Email Verification**
+- Google OAuth support via Firebase
+- **Profile** management with editable user details
 
-### 🔹 Customizable Styling
+### ⚙️ Settings & Legal
+- **Settings** page for account preferences
+- **Privacy Policy** and legal pages
 
--   Styled with **TailwindCSS**
--   Dark mode support
--   Responsive design for all screen sizes
-
-### 🔹 Progress & Gamification
-
--   Track solved challenges
--   Structured quest progression
--   Engaging UI/UX experience
+### 🛠️ Admin Panel
+- Protected admin routes for platform management
 
 ------------------------------------------------------------------------
 
 ## 💻 Technology Stack
 
-CodeQuest leverages a modern and robust stack to provide a seamless, high-performance learning experience.
-
 ### Core Frameworks & Build Tools
-- **[React 18](https://react.dev/)**: The core library for building the interactive user interface, utilizing React Hooks and functional components for scalable state management.
-- **[Vite](https://vitejs.dev/)**: Next-generation frontend tooling providing lightning-fast Hot Module Replacement (HMR) and optimized production builds.
+| Technology | Purpose |
+|---|---|
+| **[React 18](https://react.dev/)** | UI library with hooks and functional components |
+| **[Vite 5](https://vitejs.dev/)** | Lightning-fast dev server and optimized builds |
+| **[React Router DOM v6](https://reactrouter.com/)** | Declarative client-side routing |
 
-### Styling & UI
-- **[Tailwind CSS (v3)](https://tailwindcss.com/)**: Utility-first CSS framework for rapid UI development, responsive layouts, and consistent theming.
-- **[@tailwindcss/forms](https://github.com/tailwindlabs/tailwindcss-forms)**: Plugin to provide base styles for form elements, ensuring consistency across browsers.
-- **PostCSS & Autoprefixer**: CSS transformation tools for cross-browser compatibility and parsing CSS features.
+### Styling & Animation
+| Technology | Purpose |
+|---|---|
+| **[Tailwind CSS v3](https://tailwindcss.com/)** | Utility-first CSS for rapid UI development |
+| **[@tailwindcss/forms](https://github.com/tailwindlabs/tailwindcss-forms)** | Consistent base styles for form elements |
+| **[Framer Motion 12](https://www.framer.com/motion/)** | Smooth, production-ready animations and transitions |
+| **[Lucide React](https://lucide.dev/)** | Clean, consistent icon library |
 
-### Routing & Navigation
-- **[React Router DOM v6](https://reactrouter.com/)**: Enables declarative routing, layout wrapping, and dynamic URL matching across different quest, admin, and community pages.
+### Code Editor
+| Technology | Purpose |
+|---|---|
+| **[@monaco-editor/react](https://github.com/suren-atoyan/monaco-react)** | Full-featured VS Code-like editor in the browser |
 
-### Code Editor Integration
-- **[@monaco-editor/react](https://github.com/suren-atoyan/monaco-react)**: Integrates the powerful Monaco Editor (the same editor that powers VS Code) into React, providing syntax highlighting, autocomplete, and real-time code editing capabilities for the in-browser coding challenges.
+### Backend & Services
+| Technology | Purpose |
+|---|---|
+| **[Firebase 12](https://firebase.google.com/)** | Authentication, Firestore database, and cloud services |
+| **[@capacitor-firebase/authentication](https://github.com/capawesome-team/capacitor-firebase)** | Firebase Auth integration layer |
 
-### Backend & Authentication Services
-- **[Firebase](https://firebase.google.com/)**: Used for integrating robust backend services such as user authentication, cloud functions, and real-time database capabilities.
+### Code Quality
+| Technology | Purpose |
+|---|---|
+| **[ESLint](https://eslint.org/)** | Code quality and consistent standards |
+| **PostCSS + Autoprefixer** | CSS transformations and cross-browser compatibility |
 
-### Code Quality & Linting
-- **[ESLint](https://eslint.org/)**: Ensures code quality and maintains consistent coding standards across the JavaScript/JSX codebase.
+------------------------------------------------------------------------
+
+## 📁 Project Structure
+
+```
+Codequest/
+│
+├── public/                  # Static assets (logo, images, landing video)
+├── src/
+│   ├── components/
+│   │   ├── auth/            # Auth-related UI components
+│   │   ├── code/            # Code editor components
+│   │   ├── common/          # Shared/reusable components (BlurText, etc.)
+│   │   └── landing/         # Landing page hero components (SpaceHero)
+│   │
+│   ├── pages/
+│   │   ├── LandingPage.jsx
+│   │   ├── auth/            # Login, Signup, Password Recovery, Email Verification
+│   │   ├── quests/          # QuestSelection, QuestCoding, LessonView, ModuleDetail, etc.
+│   │   ├── clash/           # CodeClashLobby, LiveCodeClash, ClashResults
+│   │   ├── dashboard/       # Dashboard, Leaderboard, ProgressScreen
+│   │   ├── community/       # CommunityForum, PostView, ContactSupport
+│   │   ├── profile/         # User profile pages
+│   │   ├── admin/           # Admin panel pages
+│   │   ├── settings/        # Settings page
+│   │   └── legal/           # Privacy Policy and legal pages
+│   │
+│   ├── context/             # React context providers (AuthContext, etc.)
+│   ├── hooks/               # Custom React hooks
+│   ├── layouts/             # Route layouts and wrappers
+│   ├── router/              # App router configuration
+│   ├── data/                # Static/mock data files
+│   ├── config/              # Firebase and app configuration
+│   ├── utils/               # Utility functions
+│   ├── styles/              # Global CSS styles
+│   └── App.jsx
+│
+├── .env.example             # Environment variable template
+├── index.html
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+└── vercel.json              # Vercel deployment config (SPA rewrites)
+```
 
 ------------------------------------------------------------------------
 
@@ -110,102 +165,97 @@ CodeQuest leverages a modern and robust stack to provide a seamless, high-perfor
 Make sure you have the following installed:
 
 -   **Node.js** (v16 or higher)
--   **npm** or **yarn**
+-   **npm** (v8 or higher)
 
 Check versions:
 
-``` bash
+```bash
 node -v
 npm -v
 ```
 
 ------------------------------------------------------------------------
 
-### Installation
+### Environment Variables
 
-1️⃣ Clone the repository:
+Copy the example env file and fill in your Firebase credentials:
 
-``` bash
-git clone https://github.com/AyushPandey218/Codequest
+```bash
+cp .env.example .env.local
 ```
 
-2️⃣ Navigate to the project directory:
+Open `.env.local` and configure all required variables (Firebase API key, project ID, etc.). See `.env.example` for the full list of required keys.
 
-``` bash
+------------------------------------------------------------------------
+
+### Installation
+
+**1️⃣ Clone the repository:**
+
+```bash
+git clone https://github.com/AyushPandey218/Codequest
 cd Codequest
 ```
 
-3️⃣ Install dependencies:
+**2️⃣ Install dependencies:**
 
-``` bash
+```bash
 npm install
 ```
+
+**3️⃣ Set up environment variables** (see above).
 
 ------------------------------------------------------------------------
 
 ## ▶️ Usage
 
-Run the project locally:
+Run the development server:
 
-``` bash
+```bash
 npm run dev
 ```
 
-The app will start on:
+The app will start at:
 
-    http://localhost:5173
-
-------------------------------------------------------------------------
-
-## 🧪 Testing
-
-Run tests (if configured):
-
-``` bash
-npm run test
+```
+http://localhost:5173
 ```
 
-> Currently uses mock data for authentication and progress tracking.
+**Other scripts:**
+
+```bash
+npm run build      # Build for production
+npm run preview    # Preview the production build locally
+npm run lint       # Run ESLint
+```
 
 ------------------------------------------------------------------------
 
-## 📁 Project Structure
+## 🌐 Deployment
 
-    Codequest/
-    │
-    ├── public/
-    ├── src/
-    │   ├── components/
-    │   ├── layouts/
-    │   ├── pages/
-    │   ├── context/
-    │   ├── assets/
-    │   └── App.jsx
-    │
-    ├── package.json
-    ├── vite.config.js
-    └── tailwind.config.js
+CodeQuest is configured for deployment on **[Vercel](https://vercel.com)**.
+
+The `vercel.json` includes SPA rewrite rules to ensure React Router works correctly on page refresh. Simply connect the repository to Vercel and configure your environment variables in the Vercel dashboard.
 
 ------------------------------------------------------------------------
 
 ## 🔮 Future Improvements
 
--   🔐 Backend integration for real authentication
--   ☁️ Database support for storing progress
--   🏆 Leaderboards
--   🧩 More coding challenges
--   🧪 Expanded testing coverage
--   🌍 Deployment to production
+-   🤖 AI-powered code review and hints
+-   🏅 Badges and achievement system
+-   📊 Detailed analytics and skill tracking
+-   🌐 Multiplayer quest collaboration
+-   🧪 Expanded unit testing coverage
+-   📱 Native mobile app support via Capacitor
 
 ------------------------------------------------------------------------
 
 ## 👨‍💻 Contributors
 
--   Ayush Pandey
+-   **Ayush Pandey** — [GitHub](https://github.com/AyushPandey218)
 
 ------------------------------------------------------------------------
 
+## 📄 License
 
-
-
-
+This project is private. All rights reserved © 2026 Ayush Pandey.

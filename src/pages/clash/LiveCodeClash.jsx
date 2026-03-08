@@ -112,6 +112,12 @@ const LiveCodeClash = () => {
     }
   }
 
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0')
+    const s = (seconds % 60).toString().padStart(2, '0')
+    return `${m}:${s}`
+  }
+
   if (clashLoading || questLoading || testCasesLoading) {
     return (
       <div className="h-screen w-full bg-[#0a0a1a] flex flex-col items-center justify-center gap-6">
