@@ -19,15 +19,27 @@ export default {
         'surface-dark': '#1c1c27',
         'input-dark': '#1c1c27',
         'surface-border': '#282839',
+        background: "hsl(213 45% 67%)",
+        foreground: "hsl(0 0% 100%)",
       },
       fontFamily: {
         display: ['Space Grotesk', 'sans-serif'],
-        body: ['Noto Sans', 'sans-serif'],
+        body: ['Barlow', 'sans-serif'],
+        barlow: ['Barlow', 'sans-serif'],
+        instrument: ['Instrument Serif', 'serif'],
+        heading: ["'Instrument Serif'", "serif"],
+      },
+      letterSpacing: {
+        'tight-hero': '-0.04em', // roughly -4px on large text
+      },
+      fontSize: {
+        'hero-title': ['84px', '1'],
       },
       borderRadius: {
-        DEFAULT: '0.5rem',
+        DEFAULT: '9999px',
         lg: '1rem',
         xl: '1.5rem',
+        '2xl': '16px',
       },
     },
   },

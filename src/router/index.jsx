@@ -59,6 +59,9 @@ import AdminAnalytics from '../pages/admin/AdminAnalytics'
 import TermsOfService from '../pages/legal/TermsPage'
 import PrivacyPolicy from '../pages/legal/PrivacyPage'
 
+// Landing Page
+import LandingPage from '../pages/LandingPage'
+
 // Placeholder components (will be created in next phases)
 const PlaceholderPage = ({ title }) => (
   <div className="flex items-center justify-center min-h-screen">
@@ -76,7 +79,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/auth/login" replace />,
+        element: <LandingPage />,
       },
 
       // Auth Routes
