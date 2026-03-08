@@ -167,6 +167,10 @@ const CodeClashLobby = () => {
     return () => unsubscribe()
   }, [user])
 
+  const [searchStartTime, setSearchStartTime] = useState(0)
+  const [transitionCountdown, setTransitionCountdown] = useState(3)
+
+  // Timer logic
   useEffect(() => {
     let interval
     if (isLobbySearching && !matchFound) {
@@ -178,6 +182,19 @@ const CodeClashLobby = () => {
     }
     return () => clearInterval(interval)
   }, [isLobbySearching, matchFound])
+
+  // Countdown logic once match is found
+  useEffect(() => {
+    let countdownInterval
+    if (matchFound && transitionCountdown > 0) {
+      countdownInterval = setInterval(() => {
+        setTransitionCountdown(prev => prev - 1)
+      }, 1000)
+    } else if (matchFound && transitionCountdown === 0) {
+      navigate(`/app/clash/${currentMatchId}/live`)
+    }
+    return () => clearInterval(countdownInterval)
+  }, [matchFound, transitionCountdown, currentMatchId, navigate])
 
   // Listener for the specific match the user is hosting/joining
   useEffect(() => {
@@ -192,19 +209,22 @@ const CodeClashLobby = () => {
         if (playerIds.length >= 2) {
           const opponentId = playerIds.find(id => id !== user.uid)
           const opponentData = players[opponentId]
-          setCurrentMatchData({ ...data, opponent: opponentData })
-          setMatchFound(true)
 
-          // Auto-navigate after a short delay
+          // Ensure at least 2 seconds of searching time for UX
+          const elapsed = Date.now() - searchStartTime
+          const delay = Math.max(0, 2000 - elapsed)
+
           setTimeout(() => {
-            navigate(`/app/clash/${currentMatchId}/live`)
-          }, 3000)
+            setCurrentMatchData({ ...data, opponent: opponentData })
+            setMatchFound(true)
+            setTransitionCountdown(3)
+          }, delay)
         }
       }
     })
 
     return () => unsubscribe()
-  }, [currentMatchId, isLobbySearching, user?.uid, navigate])
+  }, [currentMatchId, isLobbySearching, user?.uid, searchStartTime])
 
   // Heartbeat for host
   useEffect(() => {
@@ -252,6 +272,8 @@ const CodeClashLobby = () => {
   const handleQuickMatch = async () => {
     if (!user) return
     setIsLobbySearching(true)
+    const startTime = Date.now()
+    setSearchStartTime(startTime)
 
     try {
       const filteredQuests = (quests || []).filter(q => q.difficulty.toLowerCase() === selectedDifficulty)
@@ -262,21 +284,29 @@ const CodeClashLobby = () => {
       }
       const randomQuest = filteredQuests[Math.floor(Math.random() * filteredQuests.length)]
 
-      // Find an active waiting clash (heartbeat in last 15 seconds)
-      const fifteenSecondsAgo = new Date(Date.now() - 15000)
+      // Fetch all waiting clashes and filter in-memory to avoid complex index requirements
       const q = query(
         collection(db, 'clashes'),
-        where('status', '==', 'waiting'),
-        where('difficulty', '==', selectedDifficulty),
-        where('questId', '==', randomQuest.id),
-        where('lastHeartbeat', '>=', fifteenSecondsAgo)
+        where('status', '==', 'waiting')
       )
 
       const querySnapshot = await getDocs(q)
+      const now = Date.now()
 
-      if (!querySnapshot.empty) {
-        const matchDoc = querySnapshot.docs[0]
-        const clashId = matchDoc.id
+      const potentialMatch = querySnapshot.docs.find(docSnap => {
+        const data = docSnap.data()
+        const heartbeatData = data.lastHeartbeat
+        const heartbeat = heartbeatData?.toDate ? heartbeatData.toDate() : new Date(0)
+        return data.difficulty === selectedDifficulty &&
+          data.questId === randomQuest.id &&
+          (now - heartbeat.getTime()) < 15000 &&
+          data.hostUid !== user.uid
+      })
+
+      if (potentialMatch) {
+        const clashId = potentialMatch.id
+        const clashData = potentialMatch.data()
+
         await updateDoc(doc(db, 'clashes', clashId), {
           [`players.${user.uid}`]: {
             username: user.username || 'User',
@@ -289,7 +319,19 @@ const CodeClashLobby = () => {
           },
           status: 'ongoing'
         })
-        navigate(`/app/clash/${clashId}/live`)
+
+        // Setup joining state for guest
+        setCurrentMatchId(clashId)
+        setCurrentMatchData({
+          ...clashData,
+          opponent: {
+            username: clashData.hostUsername,
+            avatar: clashData.hostAvatar,
+            level: clashData.hostLevel
+          }
+        })
+        setMatchFound(true)
+        setTransitionCountdown(3)
       } else {
         const newClash = {
           questId: randomQuest.id,
@@ -326,7 +368,32 @@ const CodeClashLobby = () => {
 
   const handleJoinMatch = async (clashId) => {
     if (!user) return
+    setIsLobbySearching(true)
+    setSearchStartTime(Date.now())
+
     try {
+      // Use getDocs with query instead of getDoc to keep it simple or use getDoc for single doc
+      const q = query(collection(db, 'clashes'), where('__name__', '==', clashId))
+      const matchSnap = await getDocs(q)
+
+      if (matchSnap.empty) {
+        alert('Match no longer exists!')
+        setIsLobbySearching(false)
+        return
+      }
+
+      const clashData = matchSnap.docs[0].data()
+
+      // Check if room is still active
+      const now = Date.now()
+      const heartbeatData = clashData.lastHeartbeat
+      const heartbeat = heartbeatData?.toDate ? heartbeatData.toDate() : new Date(0)
+      if (clashData.status !== 'waiting' || (now - heartbeat.getTime()) > 30000) {
+        alert('This room is no longer active!')
+        setIsLobbySearching(false)
+        return
+      }
+
       await updateDoc(doc(db, 'clashes', clashId), {
         [`players.${user.uid}`]: {
           username: user.username || 'User',
@@ -339,9 +406,22 @@ const CodeClashLobby = () => {
         },
         status: 'ongoing'
       })
-      navigate(`/app/clash/${clashId}/live`)
+
+      // Setup joining state for guest
+      setCurrentMatchId(clashId)
+      setCurrentMatchData({
+        ...clashData,
+        opponent: {
+          username: clashData.hostUsername,
+          avatar: clashData.hostAvatar,
+          level: clashData.hostLevel
+        }
+      })
+      setMatchFound(true)
+      setTransitionCountdown(3)
     } catch (error) {
       console.error('Error joining:', error)
+      setIsLobbySearching(false)
     }
   }
 
@@ -400,7 +480,7 @@ const CodeClashLobby = () => {
                   </div>
                   <div className="w-full mt-6 flex flex-col items-center gap-2">
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">BATTLE STARTS IN</p>
-                    <p className="text-4xl font-black text-white">3s</p>
+                    <p className="text-4xl font-black text-white">{transitionCountdown}s</p>
                   </div>
                 </Card>
               ) : (
