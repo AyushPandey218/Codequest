@@ -93,17 +93,17 @@ const Dashboard = () => {
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-slide-up">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-slide-up">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight">
             Welcome back, {user?.username || 'Coder'}! 👋
           </h1>
-          <p className="text-slate-600 dark:text-text-secondary mt-1">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-text-secondary mt-1">
             Ready to level up your coding skills today?
           </p>
         </div>
-        <Link to="/app/quests">
-          <Button variant="primary" icon="explore">
+        <Link to="/app/quests" className="w-full sm:w-auto">
+          <Button variant="primary" icon="explore" fullWidth>
             Browse Quests
           </Button>
         </Link>
@@ -112,18 +112,18 @@ const Dashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <Card key={index} variant="elevated" className={`p-6 animate-scale-in animate-delay-${(index + 1) * 100}`}>
+          <Card key={index} variant="elevated" className={`p-4 sm:p-6 animate-scale-in animate-delay-${(index + 1) * 100}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 dark:text-text-secondary font-medium">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-text-secondary font-medium">
                   {stat.label}
                 </p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">
                   {stat.value}
                 </p>
               </div>
-              <div className={`size-12 rounded-xl bg-slate-100 dark:bg-[#282839] flex items-center justify-center ${stat.color}`}>
-                <span className="material-symbols-outlined text-3xl">{stat.icon}</span>
+              <div className={`size-10 sm:size-12 rounded-xl bg-slate-100 dark:bg-[#282839] flex items-center justify-center ${stat.color}`}>
+                <span className="material-symbols-outlined text-2xl sm:text-3xl">{stat.icon}</span>
               </div>
             </div>
           </Card>

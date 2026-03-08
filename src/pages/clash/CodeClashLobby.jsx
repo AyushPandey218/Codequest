@@ -437,64 +437,64 @@ const CodeClashLobby = () => {
         <div className="absolute top-[-10%] left-[-10%] size-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] right-[-10%] size-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse"></div>
 
-        <div className="w-full max-w-6xl space-y-16 mt-12 z-10">
-          <div className="flex items-start justify-between">
+        <div className="w-full max-w-6xl space-y-8 sm:space-y-16 mt-4 sm:mt-12 z-10">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
             <div className="space-y-2">
-              <div className="flex items-center gap-4">
-                <div className="size-3 rounded-full bg-primary animate-ping"></div>
-                <h1 className="text-5xl font-black text-white tracking-tight">Searching for Pilots...</h1>
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="size-2 sm:size-3 rounded-full bg-primary animate-ping"></div>
+                <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">Searching for Pilots...</h1>
               </div>
-              <p className="text-slate-400 text-lg font-medium ml-7">Joining the arena for a {selectedDifficulty} duel.</p>
+              <p className="text-slate-400 text-sm sm:text-lg font-medium ml-5 sm:ml-7">Joining the arena for a {selectedDifficulty} duel.</p>
             </div>
             <div className="flex gap-4">
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl w-40 text-center">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Time Elapsed</p>
-                <p className="text-2xl font-black text-white font-mono">{formatTime(matchmakingTime)}</p>
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-3 sm:p-4 rounded-2xl w-32 sm:w-40 text-center">
+                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Time Elapsed</p>
+                <p className="text-xl sm:text-2xl font-black text-white font-mono">{formatTime(matchmakingTime)}</p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-11 items-center gap-8">
-            <div className="md:col-span-5">
-              <Card className="bg-[#12122a]/80 backdrop-blur-xl border-white/10 p-10 flex flex-col items-center gap-4">
-                <Avatar src={user?.avatar} size="xl" className="size-32 ring-4 ring-primary/50" />
-                <h3 className="text-3xl font-black text-white">{user?.username || 'You'}</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-11 items-center gap-6 sm:gap-8">
+            <div className="lg:col-span-5">
+              <Card className="bg-[#12122a]/80 backdrop-blur-xl border-white/10 p-6 sm:p-10 flex flex-col items-center gap-3 sm:gap-4">
+                <Avatar src={user?.avatar} size="xl" className="size-24 sm:size-32 ring-4 ring-primary/50" />
+                <h3 className="text-xl sm:text-3xl font-black text-white">{user?.username || 'You'}</h3>
                 <Badge variant="primary">READY</Badge>
               </Card>
             </div>
-            <div className="md:col-span-1 flex justify-center text-4xl font-black text-white/20 italic">VS</div>
-            <div className="md:col-span-5">
+            <div className="lg:col-span-1 flex justify-center text-4xl font-black text-white/20 italic rotate-90 lg:rotate-0">VS</div>
+            <div className="lg:col-span-5">
               {matchFound && currentMatchData?.opponent ? (
-                <Card className="bg-[#12122a]/80 backdrop-blur-xl border-primary/50 p-10 flex flex-col items-center gap-4 relative overflow-hidden animate-slide-in-right">
-                  <div className="absolute top-4 right-4 bg-green-500/20 text-green-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">Match Found</div>
-                  <div className="relative mb-4">
+                <Card className="bg-[#12122a]/80 backdrop-blur-xl border-primary/50 p-6 sm:p-10 flex flex-col items-center gap-3 sm:gap-4 relative overflow-hidden animate-slide-in-right">
+                  <div className="absolute top-4 right-4 bg-green-500/20 text-green-500 text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">Match Found</div>
+                  <div className="relative mb-2 sm:mb-4">
                     <div className="absolute inset-0 bg-green-500/30 rounded-full blur-2xl"></div>
-                    <Avatar src={currentMatchData.opponent.avatar} size="xl" className="size-32 ring-4 ring-green-500/50 relative z-10" />
-                    <div className="absolute bottom-0 right-0 size-8 bg-[#1e1e2e] rounded-full border-2 border-green-500 flex items-center justify-center z-20">
-                      <span className="text-[10px] font-bold text-white">{currentMatchData.opponent.level || 1}</span>
+                    <Avatar src={currentMatchData.opponent.avatar} size="xl" className="size-24 sm:size-32 ring-4 ring-green-500/50 relative z-10" />
+                    <div className="absolute bottom-0 right-0 size-6 sm:size-8 bg-[#1e1e2e] rounded-full border-2 border-green-500 flex items-center justify-center z-20">
+                      <span className="text-[9px] sm:text-[10px] font-bold text-white">{currentMatchData.opponent.level || 1}</span>
                     </div>
                   </div>
                   <div className="text-center space-y-1">
-                    <h3 className="text-3xl font-black text-white">{currentMatchData.opponent.username}</h3>
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Challenger Approached</p>
+                    <h3 className="text-xl sm:text-3xl font-black text-white">{currentMatchData.opponent.username}</h3>
+                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Challenger Approached</p>
                   </div>
-                  <div className="w-full mt-6 flex flex-col items-center gap-2">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">BATTLE STARTS IN</p>
-                    <p className="text-4xl font-black text-white">{transitionCountdown}s</p>
+                  <div className="w-full mt-4 sm:mt-6 flex flex-col items-center gap-1 sm:gap-2">
+                    <p className="text-[9px] sm:text-[10px] font-black text-primary uppercase tracking-[0.3em]">BATTLE STARTS IN</p>
+                    <p className="text-3xl sm:text-4xl font-black text-white">{transitionCountdown}s</p>
                   </div>
                 </Card>
               ) : (
-                <Card className="bg-[#12122a]/40 backdrop-blur-xl border-dashed border-2 border-white/10 p-10 flex flex-col items-center justify-center gap-6 h-[420px]">
-                  <div className="size-32 rounded-full border-2 border-slate-700/50 flex items-center justify-center relative">
+                <Card className="bg-[#12122a]/40 backdrop-blur-xl border-dashed border-2 border-white/10 p-6 sm:p-10 flex flex-col items-center justify-center gap-6 h-[300px] sm:h-[420px]">
+                  <div className="size-24 sm:size-32 rounded-full border-2 border-slate-700/50 flex items-center justify-center relative">
                     <div className="absolute inset-0 border-t-2 border-primary rounded-full animate-spin"></div>
-                    <span className="material-symbols-outlined text-4xl text-slate-700 animate-pulse">search</span>
+                    <span className="material-symbols-outlined text-3xl sm:text-4xl text-slate-700 animate-pulse">search</span>
                   </div>
                   <div className="text-center space-y-2">
-                    <h3 className="text-2xl font-black text-slate-500">Searching...</h3>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-500">Searching...</h3>
                     <div className="flex gap-1.5 justify-center">
-                      <div className="size-2 rounded-full bg-slate-700 animate-bounce"></div>
-                      <div className="size-2 rounded-full bg-slate-700 animate-bounce [animation-delay:-0.15s]"></div>
-                      <div className="size-2 rounded-full bg-slate-700 animate-bounce [animation-delay:-0.3s]"></div>
+                      <div className="size-1.5 sm:size-2 rounded-full bg-slate-700 animate-bounce"></div>
+                      <div className="size-1.5 sm:size-2 rounded-full bg-slate-700 animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="size-1.5 sm:size-2 rounded-full bg-slate-700 animate-bounce [animation-delay:-0.3s]"></div>
                     </div>
                   </div>
                 </Card>
@@ -514,23 +514,23 @@ const CodeClashLobby = () => {
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-6 animate-fade-in p-6 lg:p-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6">
         <div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">Code Clash <span className="text-primary italic px-1">⚔️</span></h1>
-          <p className="text-slate-600 dark:text-slate-400 text-lg font-medium mt-2">Elite algorithmic duels for masters</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">Code Clash <span className="text-primary italic px-1">⚔️</span></h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-lg font-medium mt-1 sm:mt-2">Elite algorithmic duels for masters</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="p-6 bg-white dark:bg-[#12122a] border-slate-200 dark:border-white/5 hover:border-primary/30 transition-all group">
+          <Card key={index} className="p-4 sm:p-6 bg-white dark:bg-[#12122a] border-slate-200 dark:border-white/5 hover:border-primary/30 transition-all group">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{stat.label}</p>
-                <p className="text-3xl font-black text-slate-900 dark:text-white mt-1 group-hover:scale-105 transition-transform">{stat.value}</p>
+                <p className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 sm:mb-2">{stat.label}</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white mt-1 group-hover:scale-105 transition-transform">{stat.value}</p>
               </div>
-              <div className={`size-14 rounded-2xl bg-white/5 flex items-center justify-center`}>
-                <span className={`material-symbols-outlined text-3xl ${stat.color}`}>{stat.icon}</span>
+              <div className={`size-10 sm:size-14 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center`}>
+                <span className={`material-symbols-outlined text-2xl sm:text-3xl ${stat.color}`}>{stat.icon}</span>
               </div>
             </div>
           </Card>
@@ -540,14 +540,14 @@ const CodeClashLobby = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <section className="relative group overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-[2rem] blur-2xl opacity-50" />
-            <Card className="relative p-10 bg-[#14142b]/60 border-white/10 backdrop-blur-xl rounded-[2rem]">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-[1.5rem] sm:rounded-[2rem] blur-2xl opacity-50" />
+            <Card className="relative p-6 sm:p-10 bg-[#14142b]/60 border-white/10 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem]">
               <Badge variant="primary" className="mb-4">UPCOMING EVENT</Badge>
-              <h2 className="text-4xl font-black text-white mb-4 leading-tight tracking-tighter">
+              <h2 className="text-2xl sm:text-4xl font-black text-white mb-4 leading-tight tracking-tighter">
                 Algorithm <span className="text-primary tracking-tighter italic">Titan</span> Tournament
               </h2>
-              <p className="text-white/60 mb-8 max-w-md font-medium">Earn exclusive legendary badges and triple XP in the upcoming tournament.</p>
-              <Button variant="primary" size="lg" className="px-10 py-5 font-black uppercase tracking-widest hover:scale-105 transition-all outline outline-white/10">Register Interest</Button>
+              <p className="text-white/60 text-sm sm:text-base mb-6 sm:mb-8 max-w-md font-medium">Earn exclusive legendary badges and triple XP in the upcoming tournament.</p>
+              <Button variant="primary" size="md" className="sm:size-lg w-full sm:w-auto sm:px-10 sm:py-5 font-black uppercase tracking-widest hover:scale-105 transition-all outline outline-white/10">Register Interest</Button>
             </Card>
           </section>
 
@@ -580,22 +580,22 @@ const CodeClashLobby = () => {
               ))}
             </div>
 
-            <Button onClick={handleQuickMatch} fullWidth variant="primary" size="lg" className="h-16 font-black uppercase tracking-widest">
+            <Button onClick={handleQuickMatch} fullWidth variant="primary" size="lg" className="h-14 sm:h-16 font-black uppercase tracking-widest">
               Launch Quick Battle
             </Button>
           </section>
 
           <section className="space-y-4">
-            <div className="flex items-center justify-between px-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-2">
               <h3 className="text-xl font-black text-white/90 uppercase tracking-tight">Joinable Rooms</h3>
-              <div className="relative">
-                <span className="absolute left-3 top-2 material-symbols-outlined text-sm text-white/20">search</span>
+              <div className="relative w-full sm:w-48">
+                <span className="absolute left-3 top-2.5 material-symbols-outlined text-sm text-white/20">search</span>
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search rooms..."
-                  className="bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 w-48 transition-all"
+                  className="bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 w-full transition-all"
                 />
               </div>
             </div>

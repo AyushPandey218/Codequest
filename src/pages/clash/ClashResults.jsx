@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
@@ -8,327 +8,202 @@ import ProgressBar from '../../components/common/ProgressBar'
 import { useClash } from '../../hooks/useClash'
 import { useQuest } from '../../hooks/useQuest'
 import { useAuth } from '../../context/AuthContext'
+import { db } from '../../config/firebase'
+import { doc, updateDoc, increment } from 'firebase/firestore'
+import { getLevelFromXP } from '../../utils/progressStorage'
 
 const ClashResults = () => {
   const { clashId } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { clash, players, loading: clashLoading } = useClash(clashId)
   const { quest, loading: questLoading } = useQuest(clash?.questId)
-  const [activeTab, setActiveTab] = useState('summary')
+  const [statsUpdated, setStatsUpdated] = useState(false)
 
-  const yourPlayer = players.find(p => p.isYou)
-  const yourRank = players.findIndex(p => p.isYou) + 1
+  // Determine winner and calculate stats
+  const yourPlayer = players.find(p => p.uid === user?.uid)
+  const opponent = players.find(p => p.uid !== user?.uid)
+
+  // Winner logic: Most tests passed. If equal, whoever updated last (or first, depending on logic, let's say whoever finished first)
+  const isWinner = yourPlayer && opponent ?
+    (yourPlayer.testsPassed > (opponent.testsPassed || 0)) ||
+    (yourPlayer.testsPassed === (opponent.testsPassed || 0) && (yourPlayer.lastUpdate?.toMillis() < opponent.lastUpdate?.toMillis()))
+    : (yourPlayer?.testsPassed === (quest?.testCases?.length || 5))
 
   const results = {
-    yourRank: yourRank || '-',
+    isWinner,
+    yourRank: isWinner ? 1 : 2,
     yourScore: yourPlayer?.score || 0,
-    xpEarned: Math.min(yourPlayer?.score || 0, 500),
-    bonusXP: yourRank === 1 ? 50 : 0,
+    xpEarned: (yourPlayer?.testsPassed || 0) * 20 + (isWinner ? 100 : 20),
+    ratingChange: isWinner ? 25 : -15,
     matchDuration: 'Completed',
     difficulty: quest?.difficulty || clash?.difficulty || 'Medium',
   }
 
+  // Update user stats in Firestore (only once)
+  useEffect(() => {
+    if (user && yourPlayer && !statsUpdated && !clashLoading && !questLoading) {
+      const updateStats = async () => {
+        try {
+          const userRef = doc(db, 'users', user.uid)
+          const newXP = (user.xp || 0) + results.xpEarned
+          const newLevel = getLevelFromXP(newXP)
+
+          await updateDoc(userRef, {
+            xp: increment(results.xpEarned),
+            rating: increment(results.ratingChange),
+            level: newLevel,
+            clashesTotal: increment(1),
+            clashesWon: increment(isWinner ? 1 : 0)
+          })
+          setStatsUpdated(true)
+        } catch (err) {
+          console.error('Error updating stats:', err)
+        }
+      }
+      updateStats()
+    }
+  }, [user, yourPlayer, statsUpdated, clashLoading, questLoading])
+
   const achievements = [
-    { title: 'First Place', icon: 'emoji_events', color: 'text-yellow-500', earned: true },
-    { title: 'Perfect Score', icon: 'stars', color: 'text-purple-500', earned: true },
-    { title: 'Speed Demon', icon: 'bolt', color: 'text-orange-500', earned: true },
-    { title: 'Code Master', icon: 'verified', color: 'text-blue-500', earned: false },
+    { title: 'First Place', icon: 'emoji_events', color: 'text-yellow-500', earned: isWinner },
+    { title: 'Perfect Score', icon: 'stars', color: 'text-purple-500', earned: yourPlayer?.testsPassed === quest?.testCases?.length },
+    { title: 'Speed Demon', icon: 'bolt', color: 'text-orange-500', earned: isWinner && clash?.difficulty === 'hard' },
+    { title: 'Code Master', icon: 'verified', color: 'text-blue-500', earned: user?.level > 5 },
   ]
 
-  const solution = quest?.solution?.Python3 || `def solve(nums):\n    # Solution details pending migration\n    return sum(nums)`
+  const solution = quest?.solution?.JavaScript ||
+    `// Solution code for ${quest?.title} is being processed.`;
+
+  if (clashLoading || questLoading) {
+    return (
+      <div className="h-screen w-full bg-[#0a0a1a] flex flex-col items-center justify-center gap-6">
+        <div className="size-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        <p className="text-white/40 font-black uppercase tracking-[0.3em] animate-pulse">Calculating Results...</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6">
-      {/* Victory Banner */}
-      <Card variant="elevated" className="overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-red-500/20" />
-        <div className="relative p-8 md:p-12 text-center">
-          <div className="inline-flex items-center justify-center size-24 rounded-full bg-gradient-to-br from-yellow-400 to-orange-600 mb-6 animate-bounce">
-            <span className="material-symbols-outlined text-white text-5xl">emoji_events</span>
+    <div className="max-w-[1400px] mx-auto space-y-6 animate-fade-in p-6">
+      {/* Victory/Defeat Banner */}
+      <Card className={`overflow-hidden relative border-none shadow-2xl ${isWinner ? 'bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-red-500/20' : 'bg-gradient-to-br from-slate-500/10 to-slate-800/20'}`}>
+        <div className="relative p-8 md:p-16 text-center">
+          <div className={`inline-flex items-center justify-center size-32 rounded-full mb-8 ${isWinner ? 'bg-gradient-to-br from-yellow-400 to-orange-600 shadow-[0_0_50px_rgba(234,179,8,0.3)]' : 'bg-slate-700'} animate-bounce`}>
+            <span className="material-symbols-outlined text-white text-6xl">{isWinner ? 'emoji_events' : 'sports_score'}</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-3">
-            Victory! 🎉
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter">
+            {isWinner ? 'VICTORY!' : 'GG WELL PLAYED'}
           </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-300 mb-6">
-            You ranked #{results.yourRank} in this Code Clash
+          <p className="text-xl text-white/60 mb-10 font-medium">
+            {isWinner ? 'You dominated the arena today' : 'You showed great tactical skill'}
           </p>
-          <div className="flex items-center justify-center gap-6 flex-wrap">
-            <div className="text-center">
-              <p className="text-3xl font-black text-slate-900 dark:text-white">
+
+          <div className="flex items-center justify-center gap-12 flex-wrap">
+            <div className="text-center group">
+              <p className="text-5xl font-black text-white group-hover:scale-110 transition-transform font-mono">
                 {results.yourScore}
               </p>
-              <p className="text-sm text-slate-600 dark:text-text-secondary">
-                Score
-              </p>
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mt-2">Final Score</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-black text-yellow-600 dark:text-yellow-400">
-                +{results.xpEarned + results.bonusXP}
+            <div className="w-[1px] h-12 bg-white/10" />
+            <div className="text-center group">
+              <p className="text-5xl font-black text-yellow-400 group-hover:scale-110 transition-transform font-mono">
+                +{results.xpEarned}
               </p>
-              <p className="text-sm text-slate-600 dark:text-text-secondary">
-                XP Earned
-              </p>
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mt-2">XP Gained</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-black text-slate-900 dark:text-white">
-                {results.matchDuration}
+            <div className="w-[1px] h-12 bg-white/10" />
+            <div className="text-center group">
+              <p className={`text-5xl font-black group-hover:scale-110 transition-transform font-mono ${results.ratingChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {results.ratingChange >= 0 ? '+' : ''}{results.ratingChange}
               </p>
-              <p className="text-sm text-slate-600 dark:text-text-secondary">
-                Time
-              </p>
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mt-2">Rating</p>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Achievements Unlocked */}
-      <Card variant="elevated" className="p-6">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-          Achievements Unlocked
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {achievements.map((achievement, index) => (
-            <div
-              key={index}
-              className={`p-4 rounded-xl border-2 text-center transition-all ${achievement.earned
-                  ? 'bg-slate-50 dark:bg-[#282839] border-slate-200 dark:border-border-dark'
-                  : 'bg-slate-100/50 dark:bg-[#1c1c27]/50 border-slate-200/50 dark:border-border-dark/50 opacity-50 grayscale'
-                }`}
-            >
-              <div className={`size-16 rounded-full ${achievement.earned ? 'bg-slate-200 dark:bg-[#323267]' : 'bg-slate-300 dark:bg-[#2a2a3a]'} flex items-center justify-center mx-auto mb-3`}>
-                <span className={`material-symbols-outlined text-3xl ${achievement.color}`}>
-                  {achievement.icon}
-                </span>
-              </div>
-              <p className="font-bold text-sm text-slate-900 dark:text-white">
-                {achievement.title}
-              </p>
-              {achievement.earned && (
-                <Badge variant="success" size="sm" className="mt-2">
-                  Unlocked
-                </Badge>
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Tabs */}
-      <Card variant="elevated" className="overflow-hidden">
-        <div className="flex border-b border-slate-200 dark:border-border-dark">
-          {['summary', 'rankings', 'solution'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-medium text-sm capitalize transition-colors ${activeTab === tab
-                  ? 'text-primary border-b-2 border-primary bg-primary/5'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        <div className="p-6">
-          {/* Summary Tab */}
-          {activeTab === 'summary' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card variant="bordered" className="p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-green-500">check_circle</span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-text-secondary">
-                        Tests Passed
-                      </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                        5/5
-                      </p>
-                    </div>
-                  </div>
-                  <ProgressBar value={100} variant="success" />
-                </Card>
-
-                <Card variant="bordered" className="p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-blue-500">speed</span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-text-secondary">
-                        Accuracy
-                      </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                        100%
-                      </p>
-                    </div>
-                  </div>
-                  <ProgressBar value={100} variant="primary" />
-                </Card>
-
-                <Card variant="bordered" className="p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-yellow-500">stars</span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-text-secondary">
-                        Total XP
-                      </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                        +200
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-1 text-xs text-slate-600 dark:text-text-secondary">
-                    <p>Base: +{results.xpEarned} XP</p>
-                    <p>Bonus: +{results.bonusXP} XP</p>
-                  </div>
-                </Card>
-              </div>
-
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white mb-3">
-                  Performance Breakdown
-                </h3>
-                <div className="space-y-3">
-                  {['Code Quality', 'Efficiency', 'Speed', 'Problem Solving'].map((metric, index) => {
-                    const value = [95, 88, 92, 100][index]
-                    return (
-                      <div key={index}>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            {metric}
-                          </span>
-                          <span className="text-sm font-bold text-slate-900 dark:text-white">
-                            {value}%
-                          </span>
-                        </div>
-                        <ProgressBar value={value} />
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Rankings Tab */}
-          {activeTab === 'rankings' && (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Rankings Card */}
+          <Card className="bg-[#14142b]/60 border-white/5 backdrop-blur-xl p-8">
+            <h2 className="text-xl font-black text-white mb-8 flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">leaderboard</span>
+              Arena Standings
+            </h2>
             <div className="space-y-4">
               {players.map((player, idx) => (
-                <Card
+                <div
                   key={player.uid}
-                  variant="bordered"
-                  className={`p-4 ${player.isYou ? 'bg-primary/5 border-primary' : ''
-                    }`}
+                  className={`p-6 rounded-3xl border transition-all flex items-center gap-6 ${player.isYou ? 'bg-primary/10 border-primary/30' : 'bg-white/5 border-white/5'}`}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Rank */}
-                    <div className={`size-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-600 text-white' :
-                        idx === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-white' :
-                          idx === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white' :
-                            'bg-slate-200 dark:bg-[#323267] text-slate-600 dark:text-slate-300'
-                      }`}>
-                      {idx + 1}
-                    </div>
-
-                    {/* Avatar & Info */}
-                    <Avatar src={player.avatar} name={player.username} size="lg" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-slate-900 dark:text-white">
-                        {player.username}
-                        {player.isYou && (
-                          <Badge variant="primary" size="sm" className="ml-2">You</Badge>
-                        )}
-                      </h3>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-slate-600 dark:text-text-secondary">
-                        <span>{player.testsPassed || 0}/{player.totalTests || 5} tests</span>
-                        <span>•</span>
-                        <span>{player.score || 0} points</span>
-                      </div>
-                    </div>
-
-                    {/* Score */}
-                    <div className="text-right">
-                      <p className="text-3xl font-black text-slate-900 dark:text-white">
-                        {player.score}
-                      </p>
-                      <p className="text-sm text-slate-600 dark:text-text-secondary">
-                        points
-                      </p>
-                    </div>
+                  <div className={`size-12 rounded-2xl flex items-center justify-center font-black text-xl ${idx === 0 ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/20' : 'bg-white/10 text-white/40'}`}>
+                    {idx + 1}
                   </div>
-                </Card>
+                  <Avatar src={player.avatar} size="lg" className={idx === 0 ? 'ring-2 ring-yellow-500' : ''} />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-lg text-white">{player.username}</h3>
+                      {player.isYou && <Badge variant="primary">YOU</Badge>}
+                    </div>
+                    <p className="text-xs font-bold text-white/40 uppercase tracking-widest mt-1">Level {player.level || 1} Pilot</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-black text-white font-mono">{player.score || 0}</p>
+                    <p className="text-[10px] font-black text-white/20 uppercase tracking-tighter">{player.testsPassed || 0} Tests Passed</p>
+                  </div>
+                </div>
               ))}
             </div>
-          )}
+          </Card>
 
           {/* Solution Tab */}
-          {activeTab === 'solution' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white">
-                    Optimal Solution
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-text-secondary mt-1">
-                    Your solution matched the optimal approach!
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" icon="content_copy">
-                  Copy Solution
-                </Button>
-              </div>
-
-              <Card variant="bordered" className="overflow-hidden">
-                <div className="bg-[#1e1e2e] p-6 pb-4 overflow-x-auto">
-                  <pre className="text-[#c5d4dd] text-sm font-mono">
-                    {solution}
-                  </pre>
-                </div>
-              </Card>
-
-              <Card variant="bordered" className="p-4 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
-                <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">
-                    lightbulb
-                  </span>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white mb-2">
-                      Key Insights
-                    </h4>
-                    <ul className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
-                      <li>• Using a simple loop is the most efficient approach with O(n) time complexity</li>
-                      <li>• The built-in sum() function is also acceptable and more Pythonic</li>
-                      <li>• Space complexity is O(1) as we only use a single variable</li>
-                    </ul>
-                  </div>
-                </div>
-              </Card>
+          <Card className="bg-[#14142b]/60 border-white/5 backdrop-blur-xl p-0 overflow-hidden">
+            <div className="flex bg-[#0f0f1d]/50 p-1 border-b border-white/5">
+              <button className="px-8 py-4 text-xs font-black uppercase tracking-widest text-primary bg-[#1a1a2e] rounded-t-2xl">Optimal Solution</button>
             </div>
-          )}
+            <div className="p-8">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative bg-[#0a0a1a] rounded-2xl border border-white/5 p-8 font-mono text-sm leading-relaxed overflow-x-auto text-blue-400">
+                  <pre>{solution}</pre>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
-      </Card>
 
-      {/* Action Buttons */}
-      <div className="flex items-center justify-center gap-4">
-        <Link to="/app/clash">
-          <Button variant="primary" size="lg" icon="replay">
-            Play Again
-          </Button>
-        </Link>
-        <Link to="/app/dashboard">
-          <Button variant="outline" size="lg" icon="home">
-            Back to Dashboard
-          </Button>
-        </Link>
-        <Button variant="outline" size="lg" icon="share">
-          Share Results
-        </Button>
+        <aside className="space-y-6">
+          {/* Stats Card */}
+          <Card className="bg-[#14142b]/60 border-white/5 backdrop-blur-xl p-8">
+            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8">Match Statistics</h3>
+            <div className="space-y-8">
+              <div>
+                <div className="flex justify-between mb-3 text-[10px] font-black uppercase tracking-widest">
+                  <span className="text-white/40">Accuracy</span>
+                  <span className="text-white">{((yourPlayer?.testsPassed || 0) / (quest?.testCases?.length || 5) * 100).toFixed(0)}%</span>
+                </div>
+                <ProgressBar value={(yourPlayer?.testsPassed || 0) / (quest?.testCases?.length || 5) * 100} variant="primary" className="h-2 rounded-full" />
+              </div>
+              <div className="pt-4 border-t border-white/5 space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-white/40">Status</span>
+                  <span className="text-xs font-black text-white uppercase">{results.isWinner ? 'Winner' : 'Runner Up'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-white/40">Difficulty</span>
+                  <span className="text-xs font-black text-primary uppercase">{results.difficulty}</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <div className="flex flex-col gap-4">
+            <Button onClick={() => navigate('/app/clash')} fullWidth variant="primary" size="lg" className="h-16 font-black uppercase tracking-widest shadow-xl shadow-primary/20">Rematch pilots</Button>
+            <Button onClick={() => navigate('/app/dashboard')} fullWidth variant="outline" size="lg" className="h-16 border-white/10 text-white/60 hover:text-white font-black uppercase tracking-widest">Command Center</Button>
+          </div>
+        </aside>
       </div>
     </div>
   )

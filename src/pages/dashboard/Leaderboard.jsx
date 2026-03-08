@@ -126,12 +126,12 @@ const Leaderboard = () => {
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
               Time Period
             </label>
-            <div className="flex gap-2">
-              {['daily', 'weekly', 'monthly', 'all-time'].map((filter) => (
+            <div className="flex flex-wrap gap-2">
+              {['daily', 'weekly', 'monthly', 'all'].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setTimeFilter(filter)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${timeFilter === filter
+                  className={`flex-1 min-w-[80px] px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${timeFilter === filter
                     ? 'bg-primary text-white'
                     : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
                     }`}
@@ -147,17 +147,17 @@ const Leaderboard = () => {
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
               Category
             </label>
-            <div className="flex gap-2">
-              {['all', 'python', 'javascript', 'algorithms'].map((filter) => (
+            <div className="flex flex-wrap gap-2">
+              {['all', 'python', 'javascript', 'algos'].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setCategoryFilter(filter)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${categoryFilter === filter
+                  className={`flex-1 min-w-[70px] px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${categoryFilter === filter
                     ? 'bg-primary text-white'
                     : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
                     }`}
                 >
-                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                  {filter === 'algos' ? 'Algos' : filter.charAt(0).toUpperCase() + filter.slice(1)}
                 </button>
               ))}
             </div>
@@ -169,7 +169,7 @@ const Leaderboard = () => {
       <Card variant="elevated" className="p-8 overflow-hidden relative animate-scale-in animate-delay-200">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 pointer-events-none" />
 
-        <div className="relative flex items-end justify-center gap-4 md:gap-8">
+        <div className="relative flex flex-col md:flex-row items-center md:items-end justify-center gap-6 md:gap-8">
           {podiumOrder.map((leader) => (
             <div
               key={leader.rank}
@@ -214,7 +214,7 @@ const Leaderboard = () => {
               </Badge>
 
               {/* Podium */}
-              <div className={`w-32 md:w-40 ${getPodiumHeight(leader.rank)} bg-gradient-to-b ${getPodiumColor(leader.rank)} rounded-t-xl mt-4 flex items-center justify-center relative overflow-hidden`}>
+              <div className={`w-full md:w-40 ${getPodiumHeight(leader.rank)} bg-gradient-to-b ${getPodiumColor(leader.rank)} rounded-t-xl mt-4 flex items-center justify-center relative overflow-hidden hidden md:flex`}>
                 <div className="absolute inset-0 bg-white/10" />
                 <span className="text-white text-4xl md:text-5xl font-black relative z-10">
                   {leader.rank}
@@ -226,21 +226,21 @@ const Leaderboard = () => {
       </Card>
 
       {/* Your Rank */}
-      <Card variant="elevated" className="p-6 bg-primary/5 border-primary/20 animate-slide-up animate-delay-300">
-        <div className="flex items-center gap-4">
-          <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+      <Card variant="elevated" className="p-4 sm:p-6 bg-primary/5 border-primary/20 animate-slide-up animate-delay-300">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="size-10 sm:size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold sm:text-lg flex-shrink-0">
             #{currentUserRank.rank}
           </div>
-          <Avatar src={currentUserRank.avatar || user?.avatar || user?.photoURL} name={currentUserRank.username} size="lg" ring ringColor="ring-primary" />
-          <div className="flex-1">
-            <h3 className="font-bold text-slate-900 dark:text-white">
-              {currentUserRank.username} <span className="text-primary text-sm">(You)</span>
+          <Avatar src={currentUserRank.avatar || user?.avatar || user?.photoURL} name={currentUserRank.username} size="md" ring ringColor="ring-primary" />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-slate-900 dark:text-white truncate">
+              {currentUserRank.username} <span className="text-primary text-xs sm:text-sm">(You)</span>
             </h3>
-            <p className="text-sm text-slate-600 dark:text-text-secondary">
-              {currentUserRank.questsCompleted || userStats?.completedQuests || 0} quests completed
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-text-secondary">
+              {currentUserRank.questsCompleted || userStats?.completedQuests || 0} quests
             </p>
           </div>
-          <Badge variant="warning" icon="stars" size="md">
+          <Badge variant="warning" icon="stars" size="sm" className="sm:size-md">
             {(currentUserRank.xp || userStats?.totalXP || 0).toLocaleString()} XP
           </Badge>
         </div>
@@ -261,8 +261,8 @@ const Leaderboard = () => {
               className="p-6 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-[#1f1f35] transition-colors"
             >
               {/* Rank */}
-              <div className="w-12 text-center">
-                <span className="text-lg font-bold text-slate-900 dark:text-white">
+              <div className="w-8 sm:w-12 text-center">
+                <span className="text-sm sm:text-lg font-bold text-slate-900 dark:text-white">
                   #{leader.rank}
                 </span>
               </div>
@@ -281,25 +281,25 @@ const Leaderboard = () => {
               </div>
 
               {/* Avatar & Info */}
-              <Avatar src={leader.avatar} name={leader.username} size="md" />
-              <div className="flex-1">
+              <Avatar src={leader.avatar} name={leader.username} size="sm" className="sm:size-md" />
+              <div className="flex-1 min-w-0">
                 <Link to={`/app/profile/${leader.username}`}>
-                  <h3 className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors">
+                  <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white hover:text-primary transition-colors truncate">
                     {leader.username}
-                    {leader.isCurrentUser && <span className="ml-1 text-primary text-sm">(You)</span>}
+                    {leader.isCurrentUser && <span className="ml-1 text-primary text-[10px] sm:text-sm">(You)</span>}
                   </h3>
                 </Link>
-                <p className="text-sm text-slate-600 dark:text-text-secondary">
+                <p className="text-[10px] sm:text-sm text-slate-600 dark:text-text-secondary truncate">
                   {leader.questsCompleted} quest{leader.questsCompleted !== 1 ? 's' : ''} completed
                 </p>
               </div>
 
               {/* XP */}
               <div className="text-right">
-                <p className="font-bold text-slate-900 dark:text-white">
+                <p className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
                   {leader.xp.toLocaleString()}
                 </p>
-                <p className="text-xs text-slate-600 dark:text-text-secondary">XP</p>
+                <p className="text-[10px] sm:text-xs text-slate-600 dark:text-text-secondary uppercase">XP</p>
               </div>
             </div>
           ))}

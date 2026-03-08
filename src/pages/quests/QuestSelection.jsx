@@ -110,36 +110,36 @@ const QuestSelection = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card variant="elevated" className="p-4 text-center animate-scale-in animate-delay-100">
-          <p className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card variant="elevated" className="p-3 sm:p-4 text-center animate-scale-in animate-delay-100">
+          <p className="text-2xl sm:text-4xl font-black tracking-tighter text-slate-900 dark:text-white">
             {totalQuests}
           </p>
-          <p className="text-sm text-slate-600 dark:text-text-secondary mt-1">
+          <p className="text-[10px] sm:text-sm text-slate-600 dark:text-text-secondary mt-1">
             Total Quests
           </p>
         </Card>
-        <Card variant="elevated" className="p-4 text-center animate-scale-in animate-delay-200">
-          <p className="text-4xl font-black tracking-tighter text-green-600 dark:text-green-400">
+        <Card variant="elevated" className="p-3 sm:p-4 text-center animate-scale-in animate-delay-200">
+          <p className="text-2xl sm:text-4xl font-black tracking-tighter text-green-600 dark:text-green-400">
             {completedQuests}
           </p>
-          <p className="text-sm text-slate-600 dark:text-text-secondary mt-1">
+          <p className="text-[10px] sm:text-sm text-slate-600 dark:text-text-secondary mt-1">
             Completed
           </p>
         </Card>
-        <Card variant="elevated" className="p-4 text-center animate-scale-in animate-delay-300">
-          <p className="text-4xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+        <Card variant="elevated" className="p-3 sm:p-4 text-center animate-scale-in animate-delay-300">
+          <p className="text-2xl sm:text-4xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
             {inProgressQuests}
           </p>
-          <p className="text-sm text-slate-600 dark:text-text-secondary mt-1">
+          <p className="text-[10px] sm:text-sm text-slate-600 dark:text-text-secondary mt-1">
             In Progress
           </p>
         </Card>
-        <Card variant="elevated" className="p-4 text-center animate-scale-in animate-delay-400">
-          <p className="text-4xl font-black tracking-tighter text-purple-600 dark:text-purple-400">
+        <Card variant="elevated" className="p-3 sm:p-4 text-center animate-scale-in animate-delay-400">
+          <p className="text-2xl sm:text-4xl font-black tracking-tighter text-purple-600 dark:text-purple-400">
             {notStartedQuests}
           </p>
-          <p className="text-sm text-slate-600 dark:text-text-secondary mt-1">
+          <p className="text-[10px] sm:text-sm text-slate-600 dark:text-text-secondary mt-1">
             Not Started
           </p>
         </Card>

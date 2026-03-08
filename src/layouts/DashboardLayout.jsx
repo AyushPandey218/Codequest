@@ -159,7 +159,8 @@ const DashboardLayout = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`p-2 -ml-2 rounded-lg text-text-muted hover:text-white hover:bg-[#282839] transition-colors ${isSidebarOpen && 'lg:hidden'}`}
+              className={`p-2 -ml-2 rounded-lg text-text-muted hover:text-white hover:bg-[#282839] transition-colors ${isSidebarOpen ? 'lg:hidden' : ''}`}
+              aria-label={isSidebarOpen ? 'Close menu' : 'Open menu'}
             >
               <span className="material-symbols-outlined text-2xl">
                 {isSidebarOpen ? 'menu_open' : 'menu'}
@@ -167,7 +168,7 @@ const DashboardLayout = () => {
             </button>
 
             <div className={`${isSidebarOpen ? 'lg:hidden' : 'block'}`}>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-none">
                 CodeQuest
               </h1>
             </div>
@@ -233,7 +234,7 @@ const DashboardLayout = () => {
         )}
 
         {/* Page content */}
-        <main className="flex-1 p-6 relative overflow-x-hidden">
+        <main className="flex-1 p-4 sm:p-6 relative overflow-x-hidden pb-10 sm:pb-6">
           <Outlet />
         </main>
       </div>
