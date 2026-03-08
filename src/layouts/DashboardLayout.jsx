@@ -186,6 +186,21 @@ const DashboardLayout = () => {
             </div>
 
             <div className="relative">
+              <button
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className={`p-2 rounded-xl transition-all relative group ${isNotificationsOpen ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                aria-label="Notifications"
+              >
+                <span className="material-symbols-outlined text-2xl">
+                  {unreadCount > 0 ? 'notifications_active' : 'notifications'}
+                </span>
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 size-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-background-dark shadow-lg shadow-red-500/40 animate-pulse group-hover:animate-none">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
               <NotificationCenter
                 isOpen={isNotificationsOpen}
                 onClose={() => setIsNotificationsOpen(false)}

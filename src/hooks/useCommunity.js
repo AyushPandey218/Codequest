@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { collection, query, getDocs, orderBy, addDoc, serverTimestamp, getDoc, updateDoc, doc, increment, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore'
 import { db } from '../config/firebase'
+import { useNotification } from '../context/NotificationContext'
 
 export function useCommunity() {
     const [posts, setPosts] = useState([])
     const [trendingTopics, setTrendingTopics] = useState([])
     const [stats, setStats] = useState({ totalPosts: 0, activeUsers: 0, todaysPosts: 0 })
     const [isLoading, setIsLoading] = useState(true)
+    const { createNotification } = useNotification()
 
     const fetchPosts = async () => {
         try {
@@ -256,9 +258,26 @@ export function useCommunity() {
             })
             // 2. Increment the parent counter
             const postRef = doc(db, 'communityPosts', postId)
+            const postSnap = await getDoc(postRef)
+
             await updateDoc(postRef, {
                 replies: increment(1)
             })
+
+            // 3. Send notification to post author
+            if (postSnap.exists()) {
+                const postData = postSnap.data()
+                if (postData.authorUid && postData.authorUid !== replyData.authorUid) {
+                    await createNotification({
+                        title: 'New Reply! 💬',
+                        message: `${replyData.author} replied to your post: "${postData.title}"`,
+                        type: 'reply',
+                        link: `/app/community/post/${postId}`,
+                        postId: postId
+                    }, postData.authorUid)
+                }
+            }
+
             return replyRef.id
         } catch (error) {
             console.error("Error adding reply:", error)

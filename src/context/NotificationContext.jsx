@@ -58,11 +58,12 @@ export const NotificationProvider = ({ children }) => {
         // We'll handle persistent achievement creation in AuthContext to avoid duplication
     }, [])
 
-    const createNotification = useCallback(async (notif) => {
-        if (!user?.uid) return
+    const createNotification = useCallback(async (notif, targetUid = null) => {
+        const uid = targetUid || user?.uid
+        if (!uid) return
         try {
             await addDoc(collection(db, 'notifications'), {
-                uid: user.uid,
+                uid,
                 ...notif,
                 read: false,
                 createdAt: serverTimestamp()
