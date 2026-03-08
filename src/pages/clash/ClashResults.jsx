@@ -53,12 +53,12 @@ const ClashResults = () => {
   const isWinner = outcome === 'win'
   const isDraw = outcome === 'draw'
 
-  // -- ELO calculation --
+  // -- ELO calculation (with floor of 1000) --
   const myRating = user?.rating ?? 1000
   const oppRating = yourPlayer && opponent ? (opponent.rating ?? 1000) : 1000
-  const ratingDelta = yourPlayer && opponent
-    ? calculateElo(myRating, oppRating, outcome)
-    : 0
+  const rawDelta = yourPlayer && opponent ? calculateElo(myRating, oppRating, outcome) : 0
+  const newRating = Math.max(0, myRating + rawDelta)
+  const ratingDelta = newRating - myRating   // actual applied delta (rating can't go below 0)
 
   // -- XP calculation --
   const xpEarned = isWinner
