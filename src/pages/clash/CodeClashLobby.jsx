@@ -297,8 +297,8 @@ const CodeClashLobby = () => {
         const data = docSnap.data()
         const heartbeatData = data.lastHeartbeat
         const heartbeat = heartbeatData?.toDate ? heartbeatData.toDate() : new Date(0)
+        // Match on difficulty only — the joiner adopts the host's quest
         return data.difficulty === selectedDifficulty &&
-          data.questId === randomQuest.id &&
           (now - heartbeat.getTime()) < 15000 &&
           data.hostUid !== user.uid
       })
@@ -306,6 +306,8 @@ const CodeClashLobby = () => {
       if (potentialMatch) {
         const clashId = potentialMatch.id
         const clashData = potentialMatch.data()
+        // Joiner adopts the host's quest so both players solve the same problem
+        const hostTotalTests = Object.values(clashData.players || {})[0]?.totalTests || 5
 
         await updateDoc(doc(db, 'clashes', clashId), {
           [`players.${user.uid}`]: {
@@ -314,7 +316,7 @@ const CodeClashLobby = () => {
             level: user.level || 1,
             score: 0,
             testsPassed: 0,
-            totalTests: randomQuest.testCases?.length || 5,
+            totalTests: hostTotalTests,
             isYou: false
           },
           status: 'ongoing'
