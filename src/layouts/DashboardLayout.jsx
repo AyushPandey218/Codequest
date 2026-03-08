@@ -55,15 +55,27 @@ const DashboardLayout = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark flex">
+    <div className="min-h-screen bg-background-dark flex">
       {/* Sidebar */}
-      <aside className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-card-dark border-r border-border-dark flex flex-col z-50 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        {/* Logo */}
-        <div className="p-6 border-b border-border-dark">
-          <Link to="/app/dashboard" className="flex items-center gap-3 text-white hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="CodeQuest Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-            <h2 className="text-xl font-bold">CodeQuest</h2>
+      <aside className={`fixed lg:sticky top-0 left-0 h-screen bg-panel-dark border-r border-border-dark flex flex-col z-50 transition-all duration-300 ${isSidebarOpen
+        ? 'w-64 translate-x-0'
+        : 'w-20 -translate-x-full lg:translate-x-0'
+        }`}>
+        {/* Logo & Toggle */}
+        <div className={`p-6 border-b border-border-dark flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
+          <Link to="/app/dashboard" className="flex items-center gap-3 text-white hover:opacity-80 transition-opacity min-w-0">
+            <img src="/logo.png" alt="CodeQuest Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] flex-shrink-0" />
+            {isSidebarOpen && <h2 className="text-xl font-bold truncate">CodeQuest</h2>}
           </Link>
+
+          {isSidebarOpen && (
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:flex hidden p-2 rounded-lg text-text-muted hover:text-white hover:bg-[#282839] transition-colors"
+            >
+              <span className="material-symbols-outlined text-2xl">menu_open</span>
+            </button>
+          )}
         </div>
 
         {isAdmin ? (
@@ -95,14 +107,15 @@ const DashboardLayout = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                      : 'text-text-muted hover:text-white hover:bg-[#282839]'
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isSidebarOpen ? '' : 'justify-center'} ${isActive
+                      ? 'bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/5'
+                      : 'text-text-muted hover:text-white hover:bg-white/5'
                     }`
                   }
+                  title={!isSidebarOpen ? item.label : ''}
                 >
                   <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
+                  {isSidebarOpen && <span className="font-medium">{item.label}</span>}
                 </NavLink>
               ))}
             </nav>
@@ -114,14 +127,15 @@ const DashboardLayout = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
-                      ? 'bg-[#282839] text-white'
-                      : 'text-text-muted hover:text-white hover:bg-[#282839]'
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isSidebarOpen ? '' : 'justify-center'} ${isActive
+                      ? 'bg-white/10 text-white'
+                      : 'text-text-muted hover:text-white hover:bg-white/5'
                     }`
                   }
+                  title={!isSidebarOpen ? item.label : ''}
                 >
                   <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
+                  {isSidebarOpen && <span className="font-medium">{item.label}</span>}
                 </NavLink>
               ))}
             </div>
@@ -138,21 +152,21 @@ const DashboardLayout = () => {
       )}
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isSidebarOpen ? 'lg:ml-72' : 'lg:ml-20'}`}>
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300`}>
 
         {/* Top Header */}
         <header className="sticky top-0 z-30 bg-background-dark/80 backdrop-blur-md border-b border-border-dark px-4 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 -ml-2 rounded-lg text-text-muted hover:text-white hover:bg-[#282839] transition-colors"
+              className={`p-2 -ml-2 rounded-lg text-text-muted hover:text-white hover:bg-[#282839] transition-colors ${isSidebarOpen && 'lg:hidden'}`}
             >
               <span className="material-symbols-outlined text-2xl">
                 {isSidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
 
-            <div className="hidden sm:block">
+            <div className={`${isSidebarOpen ? 'lg:hidden' : 'block'}`}>
               <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
                 CodeQuest
               </h1>

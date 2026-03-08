@@ -1,110 +1,179 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Avatar from '../../components/common/Avatar'
 import Button from '../../components/common/Button'
 import { db } from '../../config/firebase'
-import { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore'
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  limit,
+  getDocs
+} from 'firebase/firestore'
 import { useAuth } from '../../context/AuthContext'
 import { useQuestList } from '../../hooks/useQuestList'
+
+const LobbyChat = ({ user }) => {
+  const [messages, setMessages] = useState([])
+  const [newMessage, setNewMessage] = useState('')
+  const scrollRef = useRef(null)
+
+  useEffect(() => {
+    const q = query(
+      collection(db, 'lobby_messages'),
+      orderBy('timestamp', 'desc'),
+      limit(50)
+    )
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).reverse()
+      setMessages(msgs)
+    })
+
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages])
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault()
+    if (!newMessage.trim() || !user) return
+
+    try {
+      await addDoc(collection(db, 'lobby_messages'), {
+        text: newMessage,
+        uid: user.uid,
+        username: user.username || user.displayName || 'Anonymous',
+        avatar: user.avatar || '',
+        timestamp: serverTimestamp()
+      })
+      setNewMessage('')
+    } catch (error) {
+      console.error('Error sending message:', error)
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-[400px] bg-[#0f0f1d]/50 rounded-2xl border border-white/5 overflow-hidden">
+      <div className="p-3 border-b border-white/5 bg-white/5 flex items-center justify-between">
+        <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Global Chat</span>
+        <div className="flex items-center gap-1.5">
+          <div className="size-1.5 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-[10px] font-bold text-green-500/80">LIVE</span>
+        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10"
+      >
+        {messages.map((msg) => (
+          <div key={msg.id} className="flex gap-3 animate-fade-in text-[12px]">
+            <Avatar src={msg.avatar} size="xs" className="shrink-0" />
+            <div className="flex-1">
+              <div className="flex items-baseline gap-2 mb-0.5">
+                <span className="font-bold text-white/90">{msg.username}</span>
+                <span className="text-[9px] text-white/20 uppercase">
+                  {msg.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || '...'}
+                </span>
+              </div>
+              <p className="text-white/60 leading-relaxed font-medium">{msg.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={handleSendMessage} className="p-3 bg-white/5 border-t border-white/5">
+        <div className="relative">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Say something to the lobby..."
+            className="w-full bg-[#0a0a1a] border border-white/10 rounded-xl py-2 px-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-all"
+          />
+          <button type="submit" className="absolute right-2 top-1.5 size-6 rounded-lg bg-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+            <span className="material-symbols-outlined text-sm">send</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
 
 const CodeClashLobby = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { quests } = useQuestList()
+
   const [selectedMode, setSelectedMode] = useState('ranked')
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium')
   const [isLobbySearching, setIsLobbySearching] = useState(false)
+  const [matchmakingTime, setMatchmakingTime] = useState(0)
+  const [activeMatches, setActiveMatches] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const stats = [
+    { label: 'Pilot Rating', value: '1,240', icon: 'trending_up', color: 'text-primary' },
+    { label: 'Battles Won', value: user?.clashesWon || '142', icon: 'emoji_events', color: 'text-yellow-500' },
+    { label: 'Global Rank', value: '#482', icon: 'military_tech', color: 'text-orange-500' },
+    { label: 'Total XP Earned', value: user?.xp?.toLocaleString() || '12.4k', icon: 'bolt', color: 'text-blue-500' },
+  ]
 
   const modes = [
-    {
-      id: 'ranked',
-      title: 'Ranked Match',
-      description: 'Compete for leaderboard points',
-      icon: 'emoji_events',
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10',
-    },
-    {
-      id: 'casual',
-      title: 'Casual Match',
-      description: 'Practice without stakes',
-      icon: 'sports_esports',
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
-    },
-    {
-      id: 'custom',
-      title: 'Custom Room',
-      description: 'Create private match',
-      icon: 'lock',
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10',
-    },
+    { id: 'ranked', title: 'Ranked Match', description: 'Compete for points', icon: 'emoji_events', color: 'text-yellow-500', bgColor: 'bg-yellow-500/10' },
+    { id: 'casual', title: 'Casual Match', description: 'Practice without stakes', icon: 'sports_esports', color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
+    { id: 'custom', title: 'Custom Room', description: 'Create private match', icon: 'lock', color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
   ]
 
   const difficulties = ['easy', 'medium', 'hard']
 
-  const activeMatches = [
-    {
-      id: 1,
-      host: 'CodeMaster_99',
-      players: 3,
-      maxPlayers: 4,
-      difficulty: 'medium',
-      mode: 'ranked',
-      region: 'US-East',
-    },
-    {
-      id: 2,
-      host: 'PyDev_Pro',
-      players: 2,
-      maxPlayers: 4,
-      difficulty: 'hard',
-      mode: 'ranked',
-      region: 'EU-West',
-    },
-    {
-      id: 3,
-      host: 'JSNinja_42',
-      players: 1,
-      maxPlayers: 2,
-      difficulty: 'easy',
-      mode: 'casual',
-      region: 'Asia',
-    },
-  ]
+  useEffect(() => {
+    const q = query(
+      collection(db, 'clashes'),
+      where('status', '==', 'waiting')
+    )
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setActiveMatches(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+    })
+    return () => unsubscribe()
+  }, [])
 
-  const onlinePlayers = [
-    { username: 'CodeWizard', level: 15, status: 'In Queue', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wizard' },
-    { username: 'AlgoKing', level: 18, status: 'Available', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=king' },
-    { username: 'DevQueen', level: 12, status: 'In Match', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=queen' },
-    { username: 'BugHunter', level: 14, status: 'Available', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hunter' },
-  ]
-
-  const stats = [
-    { label: 'Win Rate', value: '68%', icon: 'trophy', color: 'text-yellow-500' },
-    { label: 'Total Matches', value: '142', icon: 'swords', color: 'text-blue-500' },
-    { label: 'Current Rank', value: '#42', icon: 'leaderboard', color: 'text-green-500' },
-    { label: 'Win Streak', value: '5', icon: 'local_fire_department', color: 'text-orange-500' },
-  ]
+  useEffect(() => {
+    let interval
+    if (isLobbySearching) {
+      interval = setInterval(() => setMatchmakingTime(prev => prev + 1), 1000)
+    } else {
+      setMatchmakingTime(0)
+    }
+    return () => clearInterval(interval)
+  }, [isLobbySearching])
 
   const handleQuickMatch = async () => {
     if (!user) return
     setIsLobbySearching(true)
 
     try {
-      // 1. Find a quest for this difficulty
-      const easyQuests = quests.filter(q => q.difficulty.toLowerCase() === selectedDifficulty)
-      if (easyQuests.length === 0) {
+      const filteredQuests = (quests || []).filter(q => q.difficulty.toLowerCase() === selectedDifficulty)
+      if (filteredQuests.length === 0) {
         alert('No quests found for this difficulty!')
         setIsLobbySearching(false)
         return
       }
-      const randomQuest = easyQuests[Math.floor(Math.random() * easyQuests.length)]
+      const randomQuest = filteredQuests[Math.floor(Math.random() * filteredQuests.length)]
 
-      // 2. Look for open matches (status: waiting, difficulty: selectedDifficulty)
       const q = query(
         collection(db, 'clashes'),
         where('status', '==', 'waiting'),
@@ -115,25 +184,22 @@ const CodeClashLobby = () => {
       const querySnapshot = await getDocs(q)
 
       if (!querySnapshot.empty) {
-        // Join the first available match
         const matchDoc = querySnapshot.docs[0]
         const clashId = matchDoc.id
-
         await updateDoc(doc(db, 'clashes', clashId), {
           [`players.${user.uid}`]: {
             username: user.username || 'User',
             avatar: user.avatar || null,
+            level: user.level || 1,
             score: 0,
             testsPassed: 0,
-            totalTests: randomQuest.testCases?.length || 5,
-            isYou: false // In the hook we derive this correctly
+            totalTests: 5,
+            isYou: false
           },
-          status: 'ongoing' // Match starts when 2 people join (for now)
+          status: 'ongoing'
         })
-
         navigate(`/app/clash/${clashId}/live`)
       } else {
-        // Create a new match
         const newClash = {
           questId: randomQuest.id,
           questTitle: randomQuest.title,
@@ -141,310 +207,246 @@ const CodeClashLobby = () => {
           mode: selectedMode,
           status: 'waiting',
           createdAt: serverTimestamp(),
+          hostUid: user.uid,
+          hostUsername: user.username || 'User',
+          hostAvatar: user.avatar || null,
+          hostLevel: user.level || 1,
           players: {
             [user.uid]: {
               username: user.username || 'User',
               avatar: user.avatar || null,
+              level: user.level || 1,
               score: 0,
               testsPassed: 0,
-              totalTests: randomQuest.testCases?.length || 5,
+              totalTests: 5,
               isHost: true
             }
-          },
-          activityFeed: [
-            {
-              user: 'System',
-              action: `Match created by ${user.username || 'User'}`,
-              icon: 'info',
-              color: 'text-blue-500',
-              timestamp: new Date().toISOString()
-            }
-          ]
+          }
         }
-
-        const docRef = await addDoc(collection(db, 'clashes'), newClash)
-        navigate(`/app/clash/${docRef.id}/live`)
+        await addDoc(collection(db, 'clashes'), newClash)
       }
     } catch (err) {
       console.error('Matchmaking error:', err)
-      alert('Failed to find match: ' + err.message)
-    } finally {
       setIsLobbySearching(false)
     }
   }
 
-  return (
-    <div className="max-w-[1600px] mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-            Code Clash ⚔️
-          </h1>
-          <p className="text-slate-600 dark:text-text-secondary mt-1">
-            Compete with developers worldwide
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#282839]">
-            <div className="size-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-sm font-medium text-slate-900 dark:text-white">
-              1,234 Online
-            </span>
+  const handleJoinMatch = async (clashId) => {
+    if (!user) return
+    try {
+      await updateDoc(doc(db, 'clashes', clashId), {
+        [`players.${user.uid}`]: {
+          username: user.username || 'User',
+          avatar: user.avatar || null,
+          level: user.level || 1,
+          score: 0,
+          testsPassed: 0,
+          totalTests: 5,
+          isYou: false
+        },
+        status: 'ongoing'
+      })
+      navigate(`/app/clash/${clashId}/live`)
+    } catch (error) {
+      console.error('Error joining:', error)
+    }
+  }
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  if (isLobbySearching) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#0a0a1a] flex flex-col items-center justify-center p-6 animate-fade-in overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] size-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] size-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse"></div>
+
+        <div className="w-full max-w-6xl space-y-16 mt-12 z-10">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-4">
+                <div className="size-3 rounded-full bg-primary animate-ping"></div>
+                <h1 className="text-5xl font-black text-white tracking-tight">Searching for Pilots...</h1>
+              </div>
+              <p className="text-slate-400 text-lg font-medium ml-7">Joining the arena for a {selectedDifficulty} duel.</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl w-40 text-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Time Elapsed</p>
+                <p className="text-2xl font-black text-white font-mono">{formatTime(matchmakingTime)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-11 items-center gap-8">
+            <div className="md:col-span-5">
+              <Card className="bg-[#12122a]/80 backdrop-blur-xl border-white/10 p-10 flex flex-col items-center gap-4">
+                <Avatar src={user?.avatar} size="xl" className="size-32 ring-4 ring-primary/50" />
+                <h3 className="text-3xl font-black text-white">{user?.username || 'You'}</h3>
+                <Badge variant="primary">READY</Badge>
+              </Card>
+            </div>
+            <div className="md:col-span-1 flex justify-center text-4xl font-black text-white/20 italic">VS</div>
+            <div className="md:col-span-5">
+              <Card className="bg-[#12122a]/40 border-dashed border-2 border-white/10 p-10 flex flex-col items-center justify-center h-full min-h-[300px]">
+                <div className="size-20 rounded-full border-2 border-primary border-t-transparent animate-spin mb-4" />
+                <p className="text-xl font-bold text-slate-500 italic">Finding Challenger...</p>
+              </Card>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <Button onClick={() => setIsLobbySearching(false)} variant="outline" className="border-red-500/20 text-red-500 hover:bg-red-500/10">
+              Cancel Matchmaking
+            </Button>
           </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  return (
+    <div className="max-w-[1600px] mx-auto space-y-6 animate-fade-in p-6 lg:p-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">Code Clash <span className="text-primary italic px-1">⚔️</span></h1>
+          <p className="text-slate-600 dark:text-slate-400 text-lg font-medium mt-2">Elite algorithmic duels for masters</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} variant="elevated" className="p-4">
+          <Card key={index} className="p-6 bg-white dark:bg-[#12122a] border-slate-200 dark:border-white/5 hover:border-primary/30 transition-all group">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 dark:text-text-secondary">
-                  {stat.label}
-                </p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  {stat.value}
-                </p>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{stat.label}</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white mt-1 group-hover:scale-105 transition-transform">{stat.value}</p>
               </div>
-              <span className={`material-symbols-outlined text-3xl ${stat.color}`}>
-                {stat.icon}
-              </span>
+              <div className={`size-14 rounded-2xl bg-white/5 flex items-center justify-center`}>
+                <span className={`material-symbols-outlined text-3xl ${stat.color}`}>{stat.icon}</span>
+              </div>
             </div>
           </Card>
         ))}
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Match Setup */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Mode Selection */}
-          <Card variant="elevated" className="p-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-              Select Game Mode
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <section className="relative group overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-[2rem] blur-2xl opacity-50" />
+            <Card className="relative p-10 bg-[#14142b]/60 border-white/10 backdrop-blur-xl rounded-[2rem]">
+              <Badge variant="warning" className="mb-4">WEEKEND SPECIAL</Badge>
+              <h2 className="text-4xl font-black text-white mb-4 leading-tight tracking-tighter">
+                Algorithm <span className="text-primary tracking-tighter italic">Titan</span> Tournament
+              </h2>
+              <p className="text-white/60 mb-8 max-w-md font-medium">Earn exclusive legendary badges and double XP this weekend.</p>
+              <Button variant="primary" size="lg" className="px-10 py-5 font-black uppercase tracking-widest hover:scale-105 transition-all">Join Event</Button>
+            </Card>
+          </section>
+
+          <section className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {modes.map(mode => (
                 <button
                   key={mode.id}
                   onClick={() => setSelectedMode(mode.id)}
-                  className={`p-6 rounded-xl border-2 transition-all text-left ${selectedMode === mode.id
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 dark:border-border-dark hover:border-primary/50'
-                    }`}
+                  className={`p-6 rounded-3xl border-2 transition-all text-left group ${selectedMode === mode.id ? 'border-primary bg-primary/5' : 'border-white/5 bg-[#12122a]'}`}
                 >
                   <div className={`size-12 rounded-xl ${mode.bgColor} flex items-center justify-center mb-4`}>
-                    <span className={`material-symbols-outlined text-2xl ${mode.color}`}>
-                      {mode.icon}
-                    </span>
+                    <span className={`material-symbols-outlined text-2xl ${mode.color}`}>{mode.icon}</span>
                   </div>
-                  <h3 className="font-bold text-slate-900 dark:text-white mb-1">
-                    {mode.title}
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-text-secondary">
-                    {mode.description}
-                  </p>
+                  <h3 className="font-bold text-white mb-1">{mode.title}</h3>
+                  <p className="text-xs text-white/40">{mode.description}</p>
                 </button>
               ))}
             </div>
-          </Card>
 
-          {/* Difficulty Selection */}
-          <Card variant="elevated" className="p-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-              Select Difficulty
-            </h2>
-            <div className="flex gap-3">
-              {difficulties.map(difficulty => (
+            <div className="flex gap-4">
+              {difficulties.map(d => (
                 <button
-                  key={difficulty}
-                  onClick={() => setSelectedDifficulty(difficulty)}
-                  className={`flex-1 px-6 py-4 rounded-xl font-bold capitalize transition-all ${selectedDifficulty === difficulty
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
-                    }`}
+                  key={d}
+                  onClick={() => setSelectedDifficulty(d)}
+                  className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${selectedDifficulty === d ? 'bg-primary text-white shadow-xl shadow-primary/30' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
                 >
-                  {difficulty}
+                  {d}
                 </button>
               ))}
             </div>
-          </Card>
 
-          {/* Quick Match Button */}
-          <Card variant="elevated" className="p-6 bg-gradient-to-br from-primary/10 to-purple-500/10 border-primary/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
-                  Ready to Battle?
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">
-                  Find a match and compete for glory
-                </p>
+            <Button onClick={handleQuickMatch} fullWidth variant="primary" size="lg" className="h-16 font-black uppercase tracking-widest">
+              Launch Quick Battle
+            </Button>
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-xl font-black text-white/90 uppercase tracking-tight">Joinable Rooms</h3>
+              <div className="relative">
+                <span className="absolute left-3 top-2 material-symbols-outlined text-sm text-white/20">search</span>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search rooms..."
+                  className="bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 w-48 transition-all"
+                />
               </div>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={handleQuickMatch}
-                icon="bolt"
-                className="group"
-                isLoading={isLobbySearching}
-                disabled={isLobbySearching}
-              >
-                {isLobbySearching ? 'Searching...' : 'Quick Match'}
-              </Button>
             </div>
-          </Card>
 
-          {/* Active Matches */}
-          <Card variant="elevated" className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                Active Matches
-              </h2>
-              <Button variant="outline" size="sm" icon="refresh">
-                Refresh
-              </Button>
-            </div>
-            <div className="space-y-3">
-              {activeMatches.map(match => (
-                <div
-                  key={match.id}
-                  className="p-4 rounded-xl bg-slate-50 dark:bg-[#282839] hover:bg-slate-100 dark:hover:bg-[#323267] transition-all cursor-pointer border border-transparent hover:border-primary/50"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                        {match.host.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 dark:text-white">
-                          {match.host}'s Room
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant={match.mode === 'ranked' ? 'warning' : 'info'} size="sm">
-                            {match.mode}
-                          </Badge>
-                          <Badge variant="default" size="sm">
-                            {match.difficulty}
-                          </Badge>
-                          <span className="text-xs text-slate-600 dark:text-text-secondary">
-                            {match.region}
-                          </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(activeMatches || [])
+                .filter(m => !searchTerm || m.questTitle?.toLowerCase().includes(searchTerm.toLowerCase()) || m.hostUsername?.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((match) => (
+                  <Card key={match.id} className="p-4 bg-[#14142b]/60 border-white/5 hover:border-primary/30 transition-all">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar src={match.hostAvatar} size="sm" />
+                        <div>
+                          <p className="text-xs font-black text-white/90">{match.hostUsername}</p>
+                          <p className="text-[10px] font-bold text-white/20 uppercase">Level {match.hostLevel || '??'}</p>
                         </div>
                       </div>
+                      <Badge variant={match.difficulty === 'hard' ? 'danger' : 'warning'} className="text-[9px]">{match.difficulty}</Badge>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
-                          {match.players}/{match.maxPlayers}
-                        </p>
-                        <p className="text-xs text-slate-600 dark:text-text-secondary">
-                          Players
-                        </p>
-                      </div>
-                      <Button variant="primary" size="sm">
-                        Join
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                    <h4 className="font-bold text-sm text-white mb-4 line-clamp-1">{match.questTitle}</h4>
+                    <Button onClick={() => handleJoinMatch(match.id)} fullWidth size="sm" variant="outline" className="border-primary/20 text-primary hover:bg-primary hover:text-white">Join Battle</Button>
+                  </Card>
+                ))}
+              {activeMatches.length === 0 && (
+                <div className="col-span-2 py-10 text-center border-2 border-dashed border-white/5 rounded-3xl text-white/20 text-xs font-bold uppercase">No pilots waiting. Host your own!</div>
+              )}
             </div>
-          </Card>
+          </section>
         </div>
 
-        {/* Right Column - Online Players */}
-        <div className="space-y-6">
-          {/* Online Players */}
-          <Card variant="elevated" className="p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-green-500">group</span>
-              Online Players
-            </h3>
-            <div className="space-y-3">
-              {onlinePlayers.map((player, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#282839] transition-all"
-                >
-                  <Avatar
-                    src={player.avatar}
-                    name={player.username}
-                    size="md"
-                    online={player.status === 'Available'}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                      {player.username}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="default" size="sm">
-                        Lvl {player.level}
-                      </Badge>
-                      <span className={`text-xs ${player.status === 'Available' ? 'text-green-600 dark:text-green-400' :
-                        player.status === 'In Queue' ? 'text-yellow-600 dark:text-yellow-400' :
-                          'text-slate-500'
-                        }`}>
-                        {player.status}
-                      </span>
-                    </div>
-                  </div>
-                  <button className="p-2 hover:bg-slate-200 dark:hover:bg-[#323267] rounded-lg transition-colors">
-                    <span className="material-symbols-outlined text-slate-600 dark:text-slate-400 text-xl">
-                      person_add
-                    </span>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Recent Matches */}
-          <Card variant="elevated" className="p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
-              Recent Matches
-            </h3>
-            <div className="space-y-3">
+        <aside className="space-y-6">
+          <LobbyChat user={user} />
+          <Card className="p-6 bg-[#14142b]/60 border-white/10 backdrop-blur-xl rounded-[1.5rem]">
+            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6">Active Pilots</h3>
+            <div className="space-y-4">
               {[
-                { result: 'win', opponent: 'CodeNinja', score: '95 - 87', time: '2h ago' },
-                { result: 'win', opponent: 'DevMaster', score: '92 - 88', time: '5h ago' },
-                { result: 'loss', opponent: 'PyExpert', score: '78 - 96', time: '1d ago' },
-              ].map((match, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg border ${match.result === 'win'
-                    ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
-                    : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-sm text-slate-900 dark:text-white">
-                        vs {match.opponent}
-                      </p>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                        {match.score} • {match.time}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={match.result === 'win' ? 'success' : 'danger'}
-                      size="sm"
-                    >
-                      {match.result.toUpperCase()}
-                    </Badge>
+                { name: 'SkyNet_X', level: 99, status: 'In Duel', color: 'text-primary' },
+                { name: 'NullPointer', level: 45, status: 'Matching', color: 'text-yellow-500' },
+                { name: 'CryptoDev', level: 22, status: 'Idle', color: 'text-green-500' },
+              ].map((player, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="relative">
+                    <Avatar src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.name}`} size="sm" />
+                    <div className="absolute -bottom-0.5 -right-0.5 size-2 bg-green-500 rounded-full border border-[#14142b]" />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white mb-0.5">{player.name}</p>
+                    <p className="text-[9px] font-bold text-white/20 uppercase">Level {player.level}</p>
+                  </div>
+                  <span className={`text-[8px] font-black uppercase ${player.color}`}>{player.status}</span>
                 </div>
               ))}
             </div>
-            <Link to="/app/clash/1/results">
-              <Button variant="outline" size="sm" className="w-full mt-4">
-                View All Matches
-              </Button>
-            </Link>
           </Card>
-        </div>
+        </aside>
       </div>
     </div>
   )

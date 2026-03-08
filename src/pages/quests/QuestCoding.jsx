@@ -21,7 +21,7 @@ const QuestCoding = () => {
   const { questId } = useParams()
   const navigate = useNavigate()
   const { user, checkAndAwardAchievements: _deprecated_auth_check } = useAuth()
-  const { userStats, submissions, checkAndAwardAchievements } = useUser()
+  const { userStats, submissions, userProgress, checkAndAwardAchievements } = useUser()
 
   const [activeTab, setActiveTab] = useState('instructions')
   const [selectedLanguage, setSelectedLanguage] = useState('Python3')
