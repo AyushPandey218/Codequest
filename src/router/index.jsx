@@ -28,6 +28,10 @@ import DebuggingChallenge from '../pages/quests/DebuggingChallenge'
 import ProjectModules from '../pages/quests/ProjectModules'
 import ModuleDetail from '../pages/quests/ModuleDetail'
 import LessonView from '../pages/quests/LessonView'
+import LearningPaths from '../pages/quests/LearningPaths'
+import PathDetail from '../pages/quests/PathDetail'
+import AcademyHub from '../pages/quests/AcademyHub'
+import ArenaHub from '../pages/clash/ArenaHub'
 
 
 // Clash Pages
@@ -174,6 +178,22 @@ const router = createBrowserRouter([
           {
             path: 'modules/:moduleId/lessons/:lessonId',
             element: <LessonView />,
+          },
+          {
+            path: 'paths',
+            element: <LearningPaths />,
+          },
+          {
+            path: 'paths/:pathId',
+            element: <PathDetail />,
+          },
+          {
+            path: 'academy',
+            element: <AcademyHub />,
+          },
+          {
+            path: 'arena',
+            element: <ArenaHub />,
           },
           {
             path: 'clash',

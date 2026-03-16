@@ -144,18 +144,38 @@
     animation-delay: 0.5s;
     animation-fill-mode: backwards;
   }
+
+  @keyframes pulse-subtle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(0.98); }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
+  }
 }
 
 /* Custom Base Styles */
 @layer base {
   body {
-    @apply font-display antialiased;
+    @apply font-display antialiased bg-background-dark text-white;
+    background-color: #101022; /* Fallback for background-dark */
   }
 
   /* Selection styles */
   ::selection {
     @apply bg-primary text-white;
   }
+}
+
+#root {
+  @apply min-h-screen bg-background-dark;
+  background-color: #101022;
+}
+
+html {
+  @apply bg-background-dark;
+  background-color: #101022;
 }
 
 /* Custom Component Classes */

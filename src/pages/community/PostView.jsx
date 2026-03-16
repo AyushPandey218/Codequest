@@ -188,18 +188,20 @@ const PostView = () => {
                             {post.content}
                         </div>
 
-                        <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                        <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-white/5">
                             <button
                                 onClick={handleLikeToggle}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${hasLiked ? 'bg-red-500/15 text-red-400 border border-red-500/30' : 'bg-white/5 text-slate-400 hover:text-white border border-white/10'
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${hasLiked
+                                        ? 'bg-red-500/15 text-red-400 border border-red-500/30'
+                                        : 'bg-white/5 text-slate-400 hover:text-white border border-white/10 hover:bg-white/10'
                                     }`}
                             >
                                 <span className={hasLiked ? "material-symbols-outlined fill-current" : "material-symbols-outlined"}>favorite</span>
-                                {post.likes} {post.likes === 1 ? 'Like' : 'Likes'}
+                                <span>{post.likes} {post.likes === 1 ? 'Like' : 'Likes'}</span>
                             </button>
-                            <div className="flex items-center gap-2 text-sm text-slate-500 px-4 py-2 border border-transparent">
+                            <div className="flex items-center gap-2 text-sm text-slate-500 px-3 py-2">
                                 <span className="material-symbols-outlined">chat</span>
-                                {post.repliesCount} {post.repliesCount === 1 ? 'Reply' : 'Replies'}
+                                <span>{post.repliesCount} {post.repliesCount === 1 ? 'Reply' : 'Replies'}</span>
                             </div>
                         </div>
                     </div>

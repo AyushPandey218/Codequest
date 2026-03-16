@@ -97,6 +97,12 @@ const QuestSelection = () => {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
+      {/* Back Link */}
+      <Link to="/app/academy" className="flex items-center gap-2 text-slate-600 dark:text-text-secondary hover:text-primary transition-colors group">
+        <span className="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+        <span className="text-sm font-medium">Back to Academy</span>
+      </Link>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-slide-up">
         <div>
@@ -108,6 +114,27 @@ const QuestSelection = () => {
           </p>
         </div>
       </div>
+
+      {/* Featured Journey Link */}
+      <Link to="/app/paths" className="block transform transition-all hover:scale-[1.01] active:scale-[0.99]">
+        <Card variant="elevated" className="relative overflow-hidden p-6 bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20 hover:border-primary/40 group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <span className="material-symbols-outlined text-9xl -rotate-12">map</span>
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary border border-primary/30 shadow-inner">
+                 <span className="material-symbols-outlined text-3xl">route</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Structured Learning Paths</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md">Don't know where to start? Follow a curated path from zero to hero.</p>
+              </div>
+            </div>
+            <Button variant="primary" className="shadow-lg shadow-primary/20 group-hover:px-8 transition-all">Explore Paths</Button>
+          </div>
+        </Card>
+      </Link>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

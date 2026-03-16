@@ -258,6 +258,17 @@ const Dashboard = () => {
               Quick Actions
             </h3>
             <div className="space-y-3">
+              <Link to="/app/paths" className="block">
+                <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/10 hover:bg-primary/20 transition-colors text-left border border-primary/20">
+                  <span className="material-symbols-outlined text-primary text-2xl">map</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-900 dark:text-white text-sm">Learning Paths</p>
+                    <p className="text-xs text-slate-600 dark:text-text-secondary">Structured journeys</p>
+                  </div>
+                  <span className="material-symbols-outlined text-slate-400">arrow_forward</span>
+                </button>
+              </Link>
+
               <Link to="/app/clash" className="block">
                 <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-[#282839] hover:bg-slate-200 dark:hover:bg-[#323267] transition-colors text-left">
                   <span className="material-symbols-outlined text-primary text-2xl">swords</span>

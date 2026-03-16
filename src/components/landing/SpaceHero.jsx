@@ -96,7 +96,7 @@ const SpaceHero = () => {
                 {/* Heading */}
                 <BlurText
                     text="Master Your Craft Through Epic Quests"
-                    className="text-6xl md:text-7xl lg:text-[5.5rem] font-heading italic text-foreground leading-[0.8] max-w-4xl justify-center tracking-[-4px] drop-shadow-2xl"
+                    className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-heading italic text-foreground leading-[0.9] sm:leading-[0.8] max-w-4xl justify-center tracking-[-2px] sm:tracking-[-4px] drop-shadow-2xl px-2"
                     delay={100}
                     animateBy="words"
                     direction="bottom"
@@ -107,7 +107,7 @@ const SpaceHero = () => {
                     initial={{ filter: 'blur(10px)', opacity: 0, y: 20 }}
                     animate={{ filter: 'blur(0px)', opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.8 }}
-                    className="mt-6 text-sm md:text-base text-white max-w-2xl font-body font-light leading-tight opacity-100 drop-shadow-lg"
+                    className="mt-6 text-sm md:text-base text-white/90 max-w-2xl font-body font-light leading-snug sm:leading-tight drop-shadow-lg"
                 >
                     Elite challenges for developers. Level up your engineering skills, conquer complex architecture challenges, and join a fellowship of master coders.
                 </motion.p>
@@ -117,24 +117,24 @@ const SpaceHero = () => {
                     initial={{ filter: 'blur(10px)', opacity: 0, y: 20 }}
                     animate={{ filter: 'blur(0px)', opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 1.1 }}
-                    className="flex items-center gap-6 mt-10"
+                    className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mt-10 w-full sm:w-auto px-4"
                 >
                     <button
                         onClick={() => navigate('/auth/login')}
-                        className="liquid-glass-strong rounded-full px-6 py-3 text-sm font-medium text-foreground font-body flex items-center gap-2 group hover:scale-105 transition-all"
+                        className="w-full sm:w-auto liquid-glass-strong rounded-full px-8 py-4 text-sm font-bold text-foreground font-body flex items-center justify-center gap-2 group hover:scale-105 transition-all shadow-2xl shadow-white/5"
                     >
                         Start Your Quest
-                        <ArrowUpRight className="h-5 w-5" />
+                        <ArrowUpRight className="h-5 w-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </button>
                 </motion.div>
             </div>
             {/* Bottom Label */}
-            <div className="relative z-10 flex justify-center pb-10">
+            <div className="relative z-10 flex justify-center pb-8 sm:pb-10 px-4">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 1.5 }}
-                    className="liquid-glass rounded-full px-3.5 py-1 text-xs font-medium text-white font-body"
+                    className="liquid-glass rounded-full px-4 py-1.5 text-[10px] sm:text-xs font-medium text-white/70 font-body text-center"
                 >
                     Warning: May cause sudden urge to rewrite everything in TypeScript 🤓
                 </motion.div>

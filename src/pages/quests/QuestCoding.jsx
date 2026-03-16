@@ -254,11 +254,9 @@ const QuestCoding = () => {
         </Card>
       </div>
     )
-  }
-
-  if (!quest) {
+  }  if (!quest) {
     return (
-      <div className="h-[calc(100vh-120px)] flex items-center justify-center max-w-[1600px] mx-auto">
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center max-w-[1600px] mx-auto px-4">
         <Card variant="elevated" className="p-8 text-center max-w-md">
           <span className="material-symbols-outlined text-6xl text-slate-400 mb-4">search_off</span>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
@@ -276,306 +274,356 @@ const QuestCoding = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-120px)] flex flex-col max-w-[1600px] mx-auto">
+    <div className="h-full lg:h-[calc(100vh-120px)] flex flex-col min-w-0">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Link to="/app/quests">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+        <div className="flex items-center gap-3">
+          <Link to="/app/quests" className="shrink-0">
             <button className="p-2 hover:bg-slate-100 dark:hover:bg-[#282839] rounded-lg transition-colors">
               <span className="material-symbols-outlined text-slate-600 dark:text-slate-300">
                 arrow_back
               </span>
             </button>
           </Link>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">
               {quest.title}
             </h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-0.5">
               <Badge variant="warning" size="sm">{quest.difficulty}</Badge>
-              <span className="text-sm text-slate-600 dark:text-text-secondary">
+              <span className="text-xs sm:text-sm text-slate-600 dark:text-text-secondary font-medium">
                 +{quest.xp} XP
               </span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        
+        {/* Mobile Tab Switcher */}
+        <div className="flex lg:hidden bg-[#1c1c27] p-1 rounded-xl border border-white/5">
+          {['Instructions', 'Editor', 'Results'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab.toLowerCase())}
+              className={`flex-1 flex flex-col items-center py-2 px-1 rounded-lg transition-all ${
+                activeTab === tab.toLowerCase() 
+                  ? 'bg-primary text-white shadow-lg' 
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <span className="material-symbols-outlined text-xl mb-0.5">
+                {tab === 'Instructions' ? 'description' : tab === 'Editor' ? 'code' : 'terminal'}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">{tab}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="hidden sm:flex items-center gap-3">
           {quest.duration && (
-            <div className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-[#282839]">
-              <span className="material-symbols-outlined text-orange-500 inline-block mr-2">schedule</span>
-              <span className="font-mono text-slate-900 dark:text-white font-bold">
+            <div className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#282839] hidden md:flex items-center">
+              <span className="material-symbols-outlined text-orange-500 text-lg mr-2">schedule</span>
+              <span className="font-mono text-slate-900 dark:text-white font-bold text-sm">
                 {quest.duration}
               </span>
             </div>
           )}
           <Button
             variant="primary"
+            size="sm"
             onClick={handleSubmit}
             icon={alreadyCompleted ? 'check_circle' : 'send'}
             isLoading={isSubmitting}
             disabled={isSubmitting || isRunning}
           >
-            {isSubmitting ? 'Submitting...' : alreadyCompleted ? 'Resubmit' : 'Submit Quest'}
+            {isSubmitting ? 'Submitting...' : alreadyCompleted ? 'Resubmit' : 'Submit'}
           </Button>
         </div>
       </div>
 
-      {/* Main Content - Split Pane */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
-        {/* Left Panel - Instructions */}
-        <Card variant="elevated" className="flex flex-col overflow-hidden animate-slide-in-left animate-delay-100">
-          {/* Tabs */}
-          <div className="flex border-b border-slate-200 dark:border-border-dark">
-            {['instructions', 'hints', 'solution'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 font-medium text-sm capitalize transition-colors ${activeTab === tab
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 pr-4">
-            {activeTab === 'instructions' && (
-              <div className="prose prose-slate dark:prose-invert max-w-none">
-                {quest.instructions
-                  ? quest.instructions.split('\n').map((line, i) => {
-                    if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-bold text-slate-900 dark:text-white mb-3 mt-4">{line.slice(3)}</h2>
-                    if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-bold text-slate-900 dark:text-white mb-2 mt-4">{line.slice(4)}</h3>
-                    if (line.startsWith('- ')) return <li key={i} className="ml-4 text-slate-700 dark:text-slate-300">{line.slice(2)}</li>
-                    if (line.startsWith('```')) return null
-                    if (line.trim() === '') return <br key={i} />
-                    return <p key={i} className="text-slate-700 dark:text-slate-300 mb-1">{line}</p>
-                  })
-                  : <p className="text-slate-600 dark:text-slate-400">No instructions available.</p>
-                }
-              </div>
-            )}
-
-            {activeTab === 'hints' && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                  Hints 💡
-                </h2>
-                {[
-                  'Start with an initial sum of 0',
-                  'Iterate through each element in the array',
-                  'Add each element to your running sum',
-                  'Consider using a for loop or reduce method',
-                ].map((hint, index) => (
-                  <Card key={index} variant="bordered" className="p-4 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
-                    <div className="flex items-start gap-3">
-                      <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">
-                        lightbulb
-                      </span>
-                      <div>
-                        <p className="font-bold text-sm text-blue-900 dark:text-blue-200 mb-1">
-                          Hint {index + 1}
-                        </p>
-                        <p className="text-sm text-slate-700 dark:text-slate-300">
-                          {hint}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
+      {/* Main Content - Split Pane (Desktop) or Tabs (Mobile) */}
+      <div className="flex-1 overflow-hidden min-h-0">
+        <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+          
+          {/* Left Panel - Instructions (Always visible on desktop, tab-dependent on mobile) */}
+          <div className={`${activeTab === 'instructions' ? 'flex' : 'hidden lg:flex'} flex-col h-full min-h-0 overflow-hidden`}>
+            <Card variant="elevated" className="flex-1 flex flex-col overflow-hidden animate-slide-in-left animate-delay-100">
+              {/* Internal Tabs */}
+              <div className="flex border-b border-slate-200 dark:border-border-dark shrink-0 overflow-x-auto scrollbar-hide">
+                {['instructions', 'hints', 'solution'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 sm:px-6 py-3 font-medium text-xs sm:text-sm capitalize transition-colors whitespace-nowrap ${
+                      activeTab === tab
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {tab}
+                  </button>
                 ))}
               </div>
-            )}
 
-            {activeTab === 'solution' && (
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                  Solution 🎯
-                </h2>
-                <Card variant="bordered" className="p-4 bg-slate-50 dark:bg-[#1c1c27] mb-4">
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                    Complete the quest first to unlock the solution!
-                  </p>
-                  <Button variant="outline" size="sm" disabled>
-                    <span className="material-symbols-outlined mr-2">lock</span>
-                    Locked
-                  </Button>
-                </Card>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        {/* Right Panel - Code Editor */}
-        <div className="flex flex-col gap-4 min-h-0">
-          {/* Code Editor */}
-          <Card variant="elevated" className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-border-dark">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-slate-600 dark:text-slate-300">
-                  code
-                </span>
-                <span className="font-medium text-slate-900 dark:text-white">
-                  {getLanguageFilename(selectedLanguage)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <LanguageSelector
-                  selectedLanguage={selectedLanguage}
-                  onLanguageChange={handleLanguageChange}
-                  hasUserCode={hasUserCode}
-                  currentCode={code}
-                />
-                <Button variant="outline" size="sm" icon="content_copy">
-                  Copy
-                </Button>
-                <Button variant="outline" size="sm" icon="refresh">
-                  Reset
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-hidden">
-              <CodeEditor
-                value={code}
-                onChange={handleCodeChange}
-                language={monacoLanguage}
-                theme="vs-dark"
-                height="100%"
-              />
-            </div>
-
-            <div className="p-4 border-t border-slate-200 dark:border-border-dark flex justify-between items-center">
-              <div className="flex items-center gap-2 text-sm">
-                {testResults && (
-                  <>
-                    <Badge variant={testResults.passed === testResults.total ? 'success' : 'warning'}>
-                      {testResults.passed}/{testResults.total} Tests Passed
-                    </Badge>
-                    <span className="text-slate-600 dark:text-text-secondary">
-                      {testResults.executionTime}ms
-                    </span>
-                  </>
+              {/* Content Area */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+                {activeTab === 'instructions' && (
+                  <div className="prose prose-slate dark:prose-invert max-w-none">
+                    {quest.instructions
+                      ? quest.instructions.split('\n').map((line, i) => {
+                        if (line.startsWith('## ')) return <h2 key={i} className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-3 mt-4">{line.slice(3)}</h2>
+                        if (line.startsWith('### ')) return <h3 key={i} className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-2 mt-4">{line.slice(4)}</h3>
+                        if (line.startsWith('- ')) return <li key={i} className="ml-4 text-sm sm:text-base text-slate-700 dark:text-slate-300">{line.slice(2)}</li>
+                        if (line.startsWith('```')) return null
+                        if (line.trim() === '') return <br key={i} />
+                        return <p key={i} className="text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-2 leading-relaxed">{line}</p>
+                      })
+                      : <p className="text-slate-600 dark:text-slate-400">No instructions available.</p>
+                    }
+                  </div>
                 )}
-                {!testResults && !isRunning && (
-                  <>
-                    <span className="material-symbols-outlined text-lg text-slate-600 dark:text-text-secondary">info</span>
-                    <span className="text-slate-600 dark:text-text-secondary">Press Ctrl+Enter to run code</span>
-                  </>
-                )}
-              </div>
-              <Button
-                variant="primary"
-                onClick={handleRunCode}
-                icon="play_arrow"
-                isLoading={isRunning}
-                disabled={isRunning || isSubmitting}
-              >
-                {isRunning ? 'Running...' : 'Run Tests'}
-              </Button>
-            </div>
-          </Card>
 
-          {/* Error Message */}
-          {executionError && (
-            <Card variant="elevated" className="p-4 bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800">
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-2xl">
-                  error
-                </span>
-                <div>
-                  <h3 className="font-bold text-red-900 dark:text-red-200 mb-1">
-                    Execution Error
-                  </h3>
-                  <p className="text-sm text-red-700 dark:text-red-300 font-mono">
-                    {executionError}
-                  </p>
-                </div>
+                {activeTab === 'hints' && (
+                  <div className="space-y-4">
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                       Hints <span className="text-xl">💡</span>
+                    </h2>
+                    {(quest.hints || [
+                      'Break the problem down into smaller steps',
+                      'Think about the edge cases for the input',
+                      'Consider the time complexity of your approach'
+                    ]).map((hint, index) => (
+                      <Card key={index} variant="bordered" className="p-4 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+                        <div className="flex items-start gap-3">
+                          <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 shrink-0">
+                            lightbulb
+                          </span>
+                          <div>
+                            <p className="font-bold text-xs sm:text-sm text-blue-900 dark:text-blue-200 mb-1">
+                              Hint {index + 1}
+                            </p>
+                            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                              {hint}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {activeTab === 'solution' && (
+                  <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                    <div className="size-16 rounded-full bg-slate-100 dark:bg-[#282839] flex items-center justify-center mb-4">
+                       <span className="material-symbols-outlined text-4xl text-slate-400">lock</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                      Solution Locked
+                    </h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xs mb-6">
+                      Complete the quest first to unlock the master solution and expert explanation!
+                    </p>
+                    <Button variant="outline" size="sm" disabled>
+                      Solve to Unlock
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
-          )}
+          </div>
 
-          {/* Test Results */}
-          {testResults && (
-            <Card variant="elevated" className="p-4 max-h-64 overflow-y-auto pr-2">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 dark:text-white">
-                  Test Results
-                </h3>
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant={testResults.passed === testResults.total ? 'success' : 'danger'}
-                  >
-                    {testResults.passed}/{testResults.total} Passed
-                  </Badge>
-                  <span className="text-xs text-slate-600 dark:text-text-secondary">
-                    {testResults.executionTime}ms
-                  </span>
+          {/* Right Panel - Editor & Results */}
+          <div className={`${activeTab === 'editor' || activeTab === 'results' ? 'flex' : 'hidden lg:flex'} flex-col h-full min-h-0 gap-4 overflow-hidden`}>
+            
+            {/* Editor Container */}
+            <div className={`${activeTab === 'editor' ? 'flex' : 'hidden lg:flex'} flex-col flex-1 h-full min-h-0`}>
+              <Card variant="elevated" className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-200 dark:border-border-dark shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-slate-600 dark:text-slate-300">
+                      code
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-white text-xs sm:text-sm">
+                      {getLanguageFilename(selectedLanguage)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <LanguageSelector
+                      selectedLanguage={selectedLanguage}
+                      onLanguageChange={handleLanguageChange}
+                      hasUserCode={hasUserCode}
+                      currentCode={code}
+                    />
+                    <button className="p-2 text-slate-400 hover:text-white transition-colors">
+                       <span className="material-symbols-outlined text-lg sm:text-xl">refresh</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                {testResults.tests.map((test, index) => (
-                  <div
-                    key={index}
-                    className={`p-3 rounded-lg border ${test.passed
-                      ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
-                      : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
-                      }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-sm text-slate-900 dark:text-white">
-                        {test.name}
+
+                <div className="flex-1 overflow-hidden relative">
+                  <CodeEditor
+                    value={code}
+                    onChange={handleCodeChange}
+                    language={monacoLanguage}
+                    theme="vs-dark"
+                    height="100%"
+                  />
+                  
+                  {/* Floating Action Button (Mobile Only) */}
+                  <div className="lg:hidden absolute bottom-4 right-4 flex flex-col gap-2 z-20">
+                    <button 
+                      onClick={handleRunCode}
+                      disabled={isRunning || isSubmitting}
+                      className="size-14 rounded-full bg-primary text-white flex items-center justify-center shadow-2xl shadow-primary/40 active:scale-95 transition-transform disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-3xl">
+                        {isRunning ? 'sync' : 'play_arrow'}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-600 dark:text-slate-400">
-                          {test.executionTime}ms
-                        </span>
-                        <span className={`material-symbols-outlined text-lg ${test.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                          }`}>
-                          {test.passed ? 'check_circle' : 'cancel'}
-                        </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-border-dark flex justify-between items-center shrink-0">
+                  <div className="flex items-center gap-2 text-[10px] sm:text-xs">
+                    {!testResults && !isRunning && (
+                      <div className="flex items-center gap-1.5 text-slate-500">
+                        <span className="material-symbols-outlined text-base">keyboard</span>
+                        <span className="hidden sm:inline">Ctrl+Enter to run</span>
+                        <span className="sm:hidden">Ready</span>
                       </div>
-                    </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                      <p>Input: <code className="bg-slate-200 dark:bg-[#282839] px-1 py-0.5 rounded">{test.input}</code></p>
-                      <p>Expected: <code className="bg-slate-200 dark:bg-[#282839] px-1 py-0.5 rounded">{test.expectedOutput}</code></p>
-                      <p>Actual: <code className="bg-slate-200 dark:bg-[#282839] px-1 py-0.5 rounded">{test.actualOutput}</code></p>
-                      {test.error && (
-                        <p className="text-red-600 dark:text-red-400">Error: {test.error}</p>
-                      )}
+                    )}
+                    {isRunning && (
+                       <span className="text-primary animate-pulse font-bold uppercase tracking-widest">Running tests...</span>
+                    )}
+                    {testResults && (
+                       <Badge variant={testResults.passed === testResults.total ? 'success' : 'warning'} size="sm">
+                          {testResults.passed}/{testResults.total} Tests Passed
+                       </Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleRunCode}
+                      icon="play_arrow"
+                      isLoading={isRunning}
+                      disabled={isRunning || isSubmitting}
+                      className="hidden lg:flex"
+                    >
+                      Run Tests
+                    </Button>
+                    <div className="lg:hidden flex gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => { handleRunCode(); setActiveTab('results'); }}
+                        isLoading={isRunning}
+                        disabled={isRunning || isSubmitting}
+                      >
+                         Run & View
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                        onClick={handleSubmit}
+                        isLoading={isSubmitting}
+                        disabled={isSubmitting}
+                      >
+                        Submit
+                      </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </Card>
-          )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Results Panel (Always visible on desktop bottom, tab-dependent on mobile) */}
+            <div className={`${activeTab === 'results' ? 'flex' : 'hidden lg:flex'} flex-col h-full lg:h-auto lg:max-h-64 min-h-0`}>
+               {executionError && (
+                <Card variant="elevated" className="p-4 bg-red-900/10 border-red-500/30 mb-2">
+                  <div className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-red-500 shrink-0">error</span>
+                    <div>
+                      <h4 className="font-bold text-red-200 text-sm">Execution Error</h4>
+                      <p className="text-xs text-red-400 font-mono mt-1 break-all">{executionError}</p>
+                    </div>
+                  </div>
+                </Card>
+               )}
+
+               {testResults ? (
+                 <Card variant="elevated" className="flex-1 flex flex-col overflow-hidden">
+                    <div className="p-3 border-b border-border-dark flex items-center justify-between shrink-0">
+                       <h3 className="font-bold text-white text-xs uppercase tracking-wider">Test Results</h3>
+                       <Badge variant={testResults.passed === testResults.total ? 'success' : 'danger'} size="sm">
+                          {testResults.passed}/{testResults.total} PASSED
+                       </Badge>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                       {testResults.tests.map((test, i) => (
+                         <div key={i} className={`p-3 rounded-lg border ${test.passed ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                            <div className="flex items-center justify-between mb-2">
+                               <p className="text-xs font-bold text-white">{test.name}</p>
+                               <span className={`material-symbols-outlined text-lg ${test.passed ? 'text-green-500' : 'text-red-500'}`}>
+                                  {test.passed ? 'check_circle' : 'cancel'}
+                               </span>
+                            </div>
+                            <div className="grid grid-cols-1 gap-1.5">
+                               <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Input:</span>
+                                  <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-slate-300 truncate">{test.input}</code>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Expect:</span>
+                                  <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-green-400 truncate">{test.expectedOutput}</code>
+                                </div>
+                                {!test.passed && (
+                                  <div className="flex items-center gap-2">
+                                   <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Got:</span>
+                                   <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-red-400 truncate">{test.actualOutput}</code>
+                                 </div>
+                                )}
+                            </div>
+                         </div>
+                       ))}
+                    </div>
+                 </Card>
+               ) : (
+                 <Card variant="elevated" className="flex-1 flex flex-col items-center justify-center p-8 opacity-50 border-dashed border-2 border-white/5">
+                    <span className="material-symbols-outlined text-4xl mb-2">terminal</span>
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Run code to see results</p>
+                 </Card>
+               )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ── Success Modal ─────────────────────────── */}
       {showSuccessModal && completionData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1c1c27] border border-green-500/30 rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl animate-scale-in">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-white mb-2">Quest Complete!</h2>
-            <p className="text-slate-400 mb-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md px-4">
+          <div className="bg-[#1c1c27] border border-green-500/30 rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl animate-scale-in">
+            <div className="text-6xl mb-6">🏆</div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-2 leading-tight">Quest Complete!</h2>
+            <p className="text-sm text-slate-400 mb-8 max-w-[240px] mx-auto">
               {completionData.alreadyCompleted
-                ? 'You already completed this quest — great revision!'
-                : `You earned +${completionData.xpEarned} XP!`}
+                ? 'Great persistence! You refined your solution perfectly.'
+                : `Epic coding! You've earned recognition and XP.`}
             </p>
-            {!completionData.alreadyCompleted && (
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-6">
-                <p className="text-green-400 font-bold text-2xl">+{completionData.xpEarned} XP</p>
-                <p className="text-slate-400 text-sm mt-1">Total: {completionData.xpAfter} XP</p>
-              </div>
-            )}
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => { setShowSuccessModal(false); navigate('/app/quests') }} className="flex-1">
-                Back to Quests
+            
+            <div className="bg-green-500/5 border border-green-500/20 rounded-2xl p-6 mb-8 relative overflow-hidden group">
+               <div className="absolute inset-0 bg-green-500/5 group-hover:bg-green-500/10 transition-colors" />
+               <p className="relative text-green-400 font-black text-4xl tracking-tighter">+{completionData.xpEarned} XP</p>
+               <p className="relative text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 font-mono">Total Balance: {completionData.xpAfter} XP</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" size="md" onClick={() => { setShowSuccessModal(false); navigate('/app/quests') }} className="font-bold">
+                Browse
               </Button>
-              <Button variant="primary" onClick={() => setShowSuccessModal(false)} className="flex-1">
-                Keep Coding
+              <Button variant="primary" size="md" onClick={() => setShowSuccessModal(false)} className="font-bold shadow-xl shadow-primary/20">
+                Continue
               </Button>
             </div>
           </div>

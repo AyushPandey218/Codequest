@@ -36,13 +36,10 @@ const DashboardLayout = () => {
 
   const navigationItems = [
     { path: '/app/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { path: '/app/quests', icon: 'explore', label: 'Quests' },
-    { path: '/app/modules', icon: 'school', label: 'Modules' },
-    { path: '/app/clash', icon: 'swords', label: 'Code Clash' },
-    { path: '/app/leaderboard', icon: 'leaderboard', label: 'Leaderboard' },
-    { path: '/app/progress', icon: 'trending_up', label: 'Progress' },
-    { path: `/app/profile/${user?.username || 'user'}`, icon: 'person', label: 'Profile' },
+    { path: '/app/academy', icon: 'school', label: 'Academy' },
+    { path: '/app/arena', icon: 'shield', label: 'Arena' },
     { path: '/app/community', icon: 'forum', label: 'Community' },
+    { path: `/app/profile/${user?.username || 'user'}`, icon: 'person', label: 'Profile' },
   ]
 
   const bottomNavItems = [
@@ -155,8 +152,8 @@ const DashboardLayout = () => {
       <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300`}>
 
         {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-background-dark/80 backdrop-blur-md border-b border-border-dark px-4 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-30 bg-background-dark/80 backdrop-blur-md border-b border-border-dark px-3 sm:px-4 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className={`p-2 -ml-2 rounded-lg text-text-muted hover:text-white hover:bg-[#282839] transition-colors ${isSidebarOpen ? 'lg:hidden' : ''}`}
@@ -168,7 +165,7 @@ const DashboardLayout = () => {
             </button>
 
             <div className={`${isSidebarOpen ? 'lg:hidden' : 'block'}`}>
-              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-none">
+              <h1 className="text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent truncate max-w-[100px] sm:max-w-none">
                 CodeQuest
               </h1>
             </div>
@@ -208,9 +205,9 @@ const DashboardLayout = () => {
             </div>
 
             {/* User profile dropdown & logout */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Link to={`/app/profile/${user?.username || 'user'}`}>
-                <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#282839] cursor-pointer">
+                <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-[#282839] cursor-pointer">
                   <Avatar
                     src={user?.avatar || user?.photoURL}
                     name={user?.username || user?.displayName || 'User'}
@@ -218,14 +215,14 @@ const DashboardLayout = () => {
                     ring
                     ringColor="ring-primary"
                   />
-                  <div className="hidden sm:block text-left">
+                  <div className="hidden md:block text-left">
                     <p className="text-sm font-bold text-white">{user?.username || 'User'}</p>
                     <p className="text-xs text-text-muted">Level {userStats?.level ?? user?.level ?? '1'}</p>
                   </div>
                 </div>
               </Link>
-              <button onClick={handleLogout} className="text-text-muted hover:text-white p-2 flex items-center justify-center rounded-lg hover:bg-red-500/10 hover:text-red-500 transition-colors">
-                <span className="material-symbols-outlined text-xl">logout</span>
+              <button onClick={handleLogout} className="text-text-muted hover:text-white p-1.5 sm:p-2 flex items-center justify-center rounded-lg hover:bg-red-500/10 hover:text-red-500 transition-colors">
+                <span className="material-symbols-outlined text-xl sm:text-2xl">logout</span>
               </button>
             </div>
           </div>
@@ -249,8 +246,10 @@ const DashboardLayout = () => {
         )}
 
         {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6 relative overflow-x-hidden pb-10 sm:pb-6">
-          <Outlet />
+        <main className="flex-1 p-3 sm:p-4 md:p-6 relative overflow-x-hidden min-w-0">
+          <div className="mx-auto w-full max-w-[1600px] pb-10 sm:pb-6">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

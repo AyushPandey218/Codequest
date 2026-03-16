@@ -191,18 +191,18 @@ const CommunityForum = () => {
                       </div>
 
                       {/* Stats & Actions */}
-                      <div className="flex items-center justify-between mt-1 border-t border-slate-100 dark:border-[#323267] pt-3">
-                        <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-text-secondary">
-                          <div className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-lg">chat</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2 border-t border-slate-100 dark:border-[#323267] pt-4 gap-4">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-600 dark:text-text-secondary">
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-lg opacity-70">chat</span>
                             <span>{post.replies} replies</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-lg">visibility</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-lg opacity-70">visibility</span>
                             <span>{post.views} views</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-lg">favorite</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-lg opacity-70">favorite</span>
                             <span>{post.likes} likes</span>
                           </div>
                         </div>
@@ -225,8 +225,8 @@ const CommunityForum = () => {
                               </button>
                             </>
                           )}
-                          <Link to={`/app/community/post/${post.id}`}>
-                            <Button variant="outline" size="sm">View Thread</Button>
+                          <Link to={`/app/community/post/${post.id}`} className="w-full sm:w-auto">
+                            <Button variant="primary" size="sm" className="w-full sm:w-auto px-4">View Thread</Button>
                           </Link>
                         </div>
                       </div>

@@ -36,6 +36,12 @@ const ProjectModules = () => {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
+      {/* Back Link */}
+      <Link to="/app/academy" className="flex items-center gap-2 text-slate-600 dark:text-text-secondary hover:text-primary transition-colors group">
+        <span className="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+        <span className="text-sm font-medium">Back to Academy</span>
+      </Link>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
