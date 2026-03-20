@@ -19,7 +19,6 @@ const SpaceHero = () => {
                     muted
                     playsInline
                     preload="auto"
-                    poster="/images/hero_bg.jpeg"
                     className="h-full w-full object-cover"
                 >
                     <source src="/landingvid/pk34pwvq0nrmt0cwshts0ymj1m_result_.mp4" type="video/mp4" />
