@@ -103,7 +103,6 @@
 | Technology | Purpose |
 |---|---|
 | **[Firebase 12](https://firebase.google.com/)** | Authentication, Firestore database, and cloud services |
-| **[@capacitor-firebase/authentication](https://github.com/capawesome-team/capacitor-firebase)** | Firebase Auth integration layer |
 
 ### Code Quality
 | Technology | Purpose |
@@ -246,7 +245,6 @@ The `vercel.json` includes SPA rewrite rules to ensure React Router works correc
 -   📊 Detailed analytics and skill tracking
 -   🌐 Multiplayer quest collaboration
 -   🧪 Expanded unit testing coverage
--   📱 Native mobile app support via Capacitor
 
 ------------------------------------------------------------------------
 

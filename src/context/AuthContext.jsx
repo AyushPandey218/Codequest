@@ -12,20 +12,7 @@ import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment 
 import { auth, db, googleProvider } from '../config/firebase'
 import { STORAGE_KEYS } from '../utils/constants'
 import { checkAchievements } from '../utils/achievementChecker'
-// Optional Capacitor state - will be initialized in AuthProvider
-let Capacitor = null
-let FirebaseAuthentication = null
-
-const initCapacitor = async () => {
-  try {
-    const cap = await import('@capacitor/core')
-    Capacitor = cap.Capacitor
-    const authCap = await import('@capacitor-firebase/authentication')
-    FirebaseAuthentication = authCap.FirebaseAuthentication
-  } catch (e) {
-    // Capacitor not available or failed to load (expected on web)
-  }
-}
+// Removed Capacitor initialization as the project is now web-only
 
 const AuthContext = createContext(null)
 
@@ -43,7 +30,6 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    initCapacitor()
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // Fetch additional user data from Firestore
@@ -162,15 +148,8 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      let firebaseUser
-
-      if (Capacitor && Capacitor.isNativePlatform() && FirebaseAuthentication) {
-        const result = await FirebaseAuthentication.signInWithGoogle()
-        firebaseUser = result.user
-      } else {
-        const result = await signInWithPopup(auth, googleProvider)
-        firebaseUser = result.user
-      }
+      const result = await signInWithPopup(auth, googleProvider)
+      const firebaseUser = result.user
 
       // Check if user document exists in Firestore
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
