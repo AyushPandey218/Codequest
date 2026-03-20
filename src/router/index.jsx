@@ -3,6 +3,7 @@ import RootLayout from '../layouts/RootLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import DashboardLayout from '../layouts/DashboardLayout'
 import AdminLayout from '../layouts/AdminLayout'
+import { isMobile } from '../utils/helpers'
 
 // Auth Pages
 import Login from '../pages/auth/Login'
@@ -76,6 +77,10 @@ const PlaceholderPage = ({ title }) => (
   </div>
 )
 
+const AppLayoutWrapper = () => {
+  return <DashboardLayout />
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -132,7 +137,7 @@ const router = createBrowserRouter([
       // Protected App Routes
       {
         path: 'app',
-        element: <DashboardLayout />,
+        element: <AppLayoutWrapper />,
         children: [
           {
             index: true,

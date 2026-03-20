@@ -6,8 +6,10 @@ import Avatar from '../../components/common/Avatar'
 import Button from '../../components/common/Button'
 import { useCommunity } from '../../hooks/useCommunity'
 import { useAuth } from '../../context/AuthContext'
+import { isNativeApp, isMobile } from '../../utils/helpers'
 
 const CommunityForum = () => {
+  const isApp = isNativeApp() || isMobile()
   const { user } = useAuth()
   const { posts, trendingTopics, stats, isLoading, createPost, deletePost, flagPost } = useCommunity()
 
@@ -85,22 +87,24 @@ const CommunityForum = () => {
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-            Community Forum 💬
-          </h1>
-          <p className="text-slate-600 dark:text-text-secondary mt-1">
-            Ask questions, share knowledge, and connect with fellow coders
-          </p>
+      {!isApp && (
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+              Community Forum 💬
+            </h1>
+            <p className="text-slate-600 dark:text-text-secondary mt-1">
+              Ask questions, share knowledge, and connect with fellow coders
+            </p>
+          </div>
+          <Button variant="primary" icon="add" onClick={() => setIsModalOpen(true)}>
+            New Post
+          </Button>
         </div>
-        <Button variant="primary" icon="add" onClick={() => setIsModalOpen(true)}>
-          New Post
-        </Button>
-      </div>
+      )}
 
       {/* Search & Categories */}
-      <Card variant="elevated" className="p-6">
+      <Card variant="elevated" className={`p-4 sm:p-6 ${isApp ? 'border-none bg-slate-900/40' : ''}`}>
         <div className="flex flex-col gap-4">
           {/* Search */}
           <div className="relative">
@@ -112,7 +116,9 @@ const CommunityForum = () => {
               placeholder="Search discussions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-[#282839] border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary"
+              className={`w-full pl-12 pr-4 py-3 rounded-xl border text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary ${
+                isApp ? 'bg-slate-950/50 border-white/5' : 'bg-slate-50 dark:bg-[#282839] border-slate-200 dark:border-border-dark'
+              }`}
             />
           </div>
 
@@ -122,16 +128,13 @@ const CommunityForum = () => {
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeCategory === category.id
-                  ? 'bg-primary text-white'
-                  : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all ${activeCategory === category.id
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  : `text-slate-500 hover:text-slate-300 ${isApp ? 'bg-white/5' : 'bg-slate-100 dark:bg-[#282839]'}`
                   }`}
               >
                 <span className="material-symbols-outlined text-lg">{category.icon}</span>
                 {category.label}
-                <Badge variant={activeCategory === category.id ? 'default' : 'default'} size="sm">
-                  {category.count}
-                </Badge>
               </button>
             ))}
           </div>
@@ -168,12 +171,12 @@ const CommunityForum = () => {
                         </div>
                         {post.hasAnswer && (
                           <Badge variant="success" size="sm" icon="check_circle">
-                            Answered
+                            {isApp ? '' : 'Answered'}
                           </Badge>
                         )}
                         {post.flagged && (
                           <Badge variant="warning" size="sm" icon="flag">
-                            Flagged
+                            {isApp ? '' : 'Flagged'}
                           </Badge>
                         )}
                       </div>
@@ -252,82 +255,84 @@ const CommunityForum = () => {
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Trending Topics */}
-          <Card variant="elevated" className="p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-orange-500">trending_up</span>
-              Trending Topics
-            </h3>
-            <div className="space-y-2">
-              {!isLoading && trendingTopics.length === 0 && (
-                <p className="text-sm text-slate-500">No trending topics yet.</p>
-              )}
-              {trendingTopics.map((topic, index) => (
-                <button
-                  key={index}
-                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#282839] transition-all text-left"
-                >
-                  <span className="font-medium text-slate-900 dark:text-white">
-                    #{topic.tag}
+        {/* Sidebar (Hide on App mode) */}
+        {!isApp && (
+          <div className="space-y-6">
+            {/* Trending Topics ... existing content */}
+            <Card variant="elevated" className="p-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-orange-500">trending_up</span>
+                Trending Topics
+              </h3>
+              <div className="space-y-2">
+                {!isLoading && trendingTopics.length === 0 && (
+                  <p className="text-sm text-slate-500">No trending topics yet.</p>
+                )}
+                {trendingTopics.map((topic, index) => (
+                  <button
+                    key={index}
+                    className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#282839] transition-all text-left"
+                  >
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      #{topic.tag}
+                    </span>
+                    <Badge variant="default" size="sm">
+                      {topic.count}
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            {/* Forum Stats */}
+            <Card variant="elevated" className="p-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+                Forum Stats
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-text-secondary">
+                    Total Posts
                   </span>
-                  <Badge variant="default" size="sm">
-                    {topic.count}
-                  </Badge>
-                </button>
-              ))}
-            </div>
-          </Card>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {stats.totalPosts}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-text-secondary">
+                    Active Users
+                  </span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {stats.activeUsers}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-text-secondary">
+                    Today's Posts
+                  </span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {stats.todaysPosts}
+                  </span>
+                </div>
+              </div>
+            </Card>
 
-          {/* Forum Stats */}
-          <Card variant="elevated" className="p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
-              Forum Stats
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-text-secondary">
-                  Total Posts
-                </span>
-                <span className="font-bold text-slate-900 dark:text-white">
-                  {stats.totalPosts}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-text-secondary">
-                  Active Users
-                </span>
-                <span className="font-bold text-slate-900 dark:text-white">
-                  {stats.activeUsers}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-text-secondary">
-                  Today's Posts
-                </span>
-                <span className="font-bold text-slate-900 dark:text-white">
-                  {stats.todaysPosts}
-                </span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Guidelines */}
-          <Card variant="elevated" className="p-6 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined text-blue-500">info</span>
-              Community Guidelines
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-              <li>• Be respectful and constructive</li>
-              <li>• Search before posting</li>
-              <li>• Use clear, descriptive titles</li>
-              <li>• Add relevant tags</li>
-              <li>• Mark solved topics</li>
-            </ul>
-          </Card>
-        </div>
+            {/* Guidelines */}
+            <Card variant="elevated" className="p-6 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-blue-500">info</span>
+                Community Guidelines
+              </h3>
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                <li>• Be respectful and constructive</li>
+                <li>• Search before posting</li>
+                <li>• Use clear, descriptive titles</li>
+                <li>• Add relevant tags</li>
+                <li>• Mark solved topics</li>
+              </ul>
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* New Post Modal */}

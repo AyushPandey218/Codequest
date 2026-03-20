@@ -1,3 +1,4 @@
+
 // Helper utility functions
 
 /**
@@ -101,3 +102,11 @@ export const debounce = (func, wait) => {
 export const cn = (...classes) => {
   return classes.filter(Boolean).join(' ')
 }
+
+/**
+ * Detect if screen is mobile sized
+ */
+export const isMobile = () => {
+  return window.innerWidth < 768
+}
+

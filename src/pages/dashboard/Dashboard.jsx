@@ -13,7 +13,7 @@ const Dashboard = () => {
   const { user } = useAuth()
   const { userStats, userProgress, isLoading: userLoading } = useUser()
   const { quests, loading: questsLoading } = useQuestList()
-
+  
   // Real XP & level data from localStorage
   // Animate the XP bar (start at 0, fill to real value)
   const [barValue, setBarValue] = useState(0)
@@ -114,16 +114,16 @@ const Dashboard = () => {
         {stats.map((stat, index) => (
           <Card key={index} variant="elevated" className={`p-4 sm:p-6 animate-scale-in animate-delay-${(index + 1) * 100}`}>
             <div className="flex items-center justify-between">
+              <div className={`size-10 rounded-xl bg-slate-100 dark:bg-[#282839] flex items-center justify-center ${stat.color}`}>
+                <span className="material-symbols-outlined text-2xl">{stat.icon}</span>
+              </div>
               <div>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-text-secondary font-medium">
+                <p className="text-[10px] sm:text-xs text-slate-500 uppercase tracking-wider font-bold">
                   {stat.label}
                 </p>
-                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-0.5">
                   {stat.value}
                 </p>
-              </div>
-              <div className={`size-10 sm:size-12 rounded-xl bg-slate-100 dark:bg-[#282839] flex items-center justify-center ${stat.color}`}>
-                <span className="material-symbols-outlined text-2xl sm:text-3xl">{stat.icon}</span>
               </div>
             </div>
           </Card>
@@ -191,16 +191,16 @@ const Dashboard = () => {
               {recentQuests.length > 0 ? (
                 recentQuests.map((quest) => (
                   <Link key={quest.id} to={`/app/quests/${quest.id}`}>
-                    <Card variant="elevated" hover className="p-6">
+                    <Card variant="elevated" hover className="p-4 sm:p-6">
                       <div className="flex items-start gap-4">
                         <div className="text-4xl">{quest.icon || '📝'}</div>
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-1 sm:mb-2">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-slate-900 dark:text-white truncate text-lg">
                                 {quest.title}
                               </h3>
-                              <p className="text-sm text-slate-600 dark:text-text-secondary">
+                              <p className="text-xs text-slate-500 uppercase font-bold tracking-tight">
                                 {quest.category || 'Quest'}
                               </p>
                             </div>
@@ -215,14 +215,17 @@ const Dashboard = () => {
                               {quest.difficulty}
                             </Badge>
                           </div>
-                          <ProgressBar value={quest.progress} className="mb-3" />
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-slate-600 dark:text-text-secondary">
-                              {Math.round(quest.progress)}% Complete
-                            </span>
-                            <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
-                              +{quest.xp} XP
-                            </span>
+                          
+                          <div className="mt-3">
+                             <ProgressBar value={quest.progress} className="h-1.5 mb-2" />
+                             <div className="flex items-center justify-between">
+                               <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                 {Math.round(quest.progress)}% DONE
+                               </span>
+                               <span className="text-xs font-bold text-yellow-500">
+                                 +{quest.xp} XP
+                               </span>
+                             </div>
                           </div>
                         </div>
                       </div>
