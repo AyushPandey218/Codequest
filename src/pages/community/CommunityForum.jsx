@@ -6,10 +6,10 @@ import Avatar from '../../components/common/Avatar'
 import Button from '../../components/common/Button'
 import { useCommunity } from '../../hooks/useCommunity'
 import { useAuth } from '../../context/AuthContext'
-import { isNativeApp, isMobile } from '../../utils/helpers'
+import { isMobile } from '../../utils/helpers'
 
 const CommunityForum = () => {
-  const isApp = isNativeApp() || isMobile()
+  const isApp = isMobile()
   const { user } = useAuth()
   const { posts, trendingTopics, stats, isLoading, createPost, deletePost, flagPost } = useCommunity()
 
