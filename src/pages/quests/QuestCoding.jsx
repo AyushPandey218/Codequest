@@ -59,8 +59,9 @@ const QuestCoding = () => {
     setTestResults(null)
 
     try {
-      // Execute code with test cases - pass selectedLanguage
-      const result = await executeCode({
+      let result;
+      // Run as standard quest
+      result = await executeCode({
         code,
         selectedLanguage,
         testCases
@@ -117,7 +118,9 @@ const QuestCoding = () => {
     setExecutionError(null)
     setTestResults(null)
     try {
-      const result = await executeCode({ code, selectedLanguage, testCases })
+      let result;
+      result = await executeCode({ code, selectedLanguage, testCases })
+      
       if (result.success) {
         setTestResults(result.results)
 
@@ -562,30 +565,30 @@ const QuestCoding = () => {
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
                        {testResults.tests.map((test, i) => (
-                         <div key={i} className={`p-3 rounded-lg border ${test.passed ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
-                            <div className="flex items-center justify-between mb-2">
-                               <p className="text-xs font-bold text-white">{test.name}</p>
-                               <span className={`material-symbols-outlined text-lg ${test.passed ? 'text-green-500' : 'text-red-500'}`}>
-                                  {test.passed ? 'check_circle' : 'cancel'}
-                               </span>
-                            </div>
-                            <div className="grid grid-cols-1 gap-1.5">
-                               <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Input:</span>
-                                  <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-slate-300 truncate">{test.input}</code>
-                                </div>
+                          <div key={i} className={`p-3 rounded-lg border ${test.passed ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                             <div className="flex items-center justify-between mb-2">
+                                <p className="text-xs font-bold text-white">{test.name}</p>
+                                <span className={`material-symbols-outlined text-lg ${test.passed ? 'text-green-500' : 'text-red-500'}`}>
+                                   {test.passed ? 'check_circle' : 'cancel'}
+                                </span>
+                             </div>
+                             <div className="grid grid-cols-1 gap-1.5">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Expect:</span>
-                                  <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-green-400 truncate">{test.expectedOutput}</code>
-                                </div>
-                                {!test.passed && (
-                                  <div className="flex items-center gap-2">
-                                   <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Got:</span>
-                                   <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-red-400 truncate">{test.actualOutput}</code>
+                                   <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Input:</span>
+                                   <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-slate-300 truncate">{test.input}</code>
                                  </div>
-                                )}
-                            </div>
-                         </div>
+                                 <div className="flex items-center gap-2">
+                                   <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Expect:</span>
+                                   <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-green-400 truncate">{test.expectedOutput}</code>
+                                 </div>
+                                 {!test.passed && (
+                                   <div className="flex items-center gap-2">
+                                    <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Got:</span>
+                                    <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-red-400 truncate">{test.actualOutput}</code>
+                                   </div>
+                                 )}
+                             </div>
+                          </div>
                        ))}
                     </div>
                  </Card>

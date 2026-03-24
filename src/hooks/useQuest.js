@@ -21,7 +21,6 @@ export const useQuest = (questId) => {
 
     setLoading(true)
 
-    // Fetch from Firestore
     const unsubscribe = onSnapshot(
       doc(db, 'quests', questId),
       (docSnapshot) => {

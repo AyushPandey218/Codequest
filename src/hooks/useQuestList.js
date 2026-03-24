@@ -21,6 +21,10 @@ export const useQuestList = () => {
         querySnapshot.forEach((doc) => {
           questsData.push({ id: doc.id, ...doc.data() })
         })
+        
+        // Sort by XP
+        questsData.sort((a, b) => b.xp - a.xp)
+        
         setQuests(questsData)
         setError(null)
       } catch (err) {
