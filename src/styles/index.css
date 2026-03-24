@@ -298,6 +298,16 @@ html {
     mask-composite: exclude;
     pointer-events: none;
   }
+
+  .glass-card-premium {
+    @apply relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)];
+  }
+
+  .glass-card-premium::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06) 0%, transparent 80%);
+  }
 }
 
 /* Custom Utilities */

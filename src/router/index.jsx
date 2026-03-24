@@ -34,6 +34,11 @@ import PathDetail from '../pages/quests/PathDetail'
 import AcademyHub from '../pages/quests/AcademyHub'
 import ArenaHub from '../pages/clash/ArenaHub'
 
+// Learn Pages
+import LearnLanding from '../pages/learn/LearnLanding'
+import LearnHub from '../pages/learn/LearnHub'
+import LessonPage from '../pages/learn/LessonPage'
+
 
 // Clash Pages
 import CodeClashLobby from '../pages/clash/CodeClashLobby'
@@ -195,6 +200,19 @@ const router = createBrowserRouter([
           {
             path: 'academy',
             element: <AcademyHub />,
+          },
+          // Learn Routes
+          {
+            path: 'learn',
+            element: <LearnLanding />,
+          },
+          {
+            path: 'learn/:trackId',
+            element: <LearnHub />,
+          },
+          {
+            path: 'learn/:trackId/:moduleId/:lessonId',
+            element: <LessonPage />,
           },
           {
             path: 'arena',

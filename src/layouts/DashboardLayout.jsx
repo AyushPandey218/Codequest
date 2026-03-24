@@ -37,6 +37,7 @@ const DashboardLayout = () => {
   const navigationItems = [
     { path: '/app/dashboard', icon: 'dashboard', label: 'Dashboard' },
     { path: '/app/academy', icon: 'school', label: 'Academy' },
+    { path: '/app/learn', icon: 'menu_book', label: 'Learn' },
     { path: '/app/arena', icon: 'shield', label: 'Arena' },
     { path: '/app/community', icon: 'forum', label: 'Community' },
     { path: `/app/profile/${user?.username || 'user'}`, icon: 'person', label: 'Profile' },

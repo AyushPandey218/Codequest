@@ -15,6 +15,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/jdoodle/, ''),
       },
+      // Proxy Wandbox API calls 
+      '/wandbox': {
+        target: 'https://wandbox.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/wandbox/, ''),
+      },
     },
   },
 })

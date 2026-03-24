@@ -48,9 +48,12 @@ const STARTER_TEMPLATES = {
   "Racket": "(define (solution arr)\n  ; Your code here\n  0)"
 }
 
-// Languages with working execution (Python3 via Pyodide, JS via Web Worker)
-// All others will show "Coming Soon" in the dropdown
-const SUPPORTED_LANGUAGES = new Set(['Python3', 'Python', 'JavaScript'])
+// Python3/Python → Pyodide, JavaScript → Web Worker, rest → Wandbox API
+const SUPPORTED_LANGUAGES = new Set([
+  'Python3', 'Python', 'JavaScript', 'TypeScript',
+  'C++', 'Java', 'C', 'C#', 'Go', 'Kotlin', 'Swift',
+  'Rust', 'Ruby', 'PHP', 'Dart', 'Scala', 'Elixir', 'Erlang', 'Racket'
+])
 
 // Language groups for 3-column layout
 const LANGUAGE_GROUPS = [
@@ -157,7 +160,7 @@ const LanguageSelector = ({
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute left-0 bg-[#1c1c27] border border-[#2A2A35] rounded-xl shadow-2xl z-50 w-[600px] max-h-[260px] overflow-y-auto p-4 pr-2"
+          className="absolute right-0 bg-[#1c1c27] border border-[#2A2A35] rounded-xl shadow-2xl z-50 w-[620px] max-h-[380px] overflow-y-auto p-4 pr-2"
           style={{ top: '110%' }}
         >
           {/* 3-Column Grid */}

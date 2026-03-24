@@ -182,6 +182,28 @@ const JDOODLE_LANGUAGES = {
   Scala: { language: 'scala', versionIndex: '4' },
 }
 
+// ─── Wandbox — free compiled language execution ────────────────────────────
+// No API keys required. Proxied via Vite /wandbox.
+
+const WANDBOX_COMPILERS = {
+  'C++': 'gcc-13.2.0',
+  'Java': 'openjdk-jdk-21+35',
+  'C': 'gcc-13.2.0-c',
+  'C#': 'mono-6.12.0.199',
+  'Go': 'go-1.21.0',
+  'Rust': 'rust-1.72.0',
+  'Ruby': 'ruby-3.2.2',
+  'PHP': 'php-8.2.10',
+  'TypeScript': 'typescript-5.2.2',
+  'Kotlin': 'kotlin-1.9.10',
+  'Swift': 'swift-5.9',
+  'Dart': 'dart-3.1.2',
+  'Scala': 'scala-3.3.1',
+  'Elixir': 'elixir-1.15.5',
+  'Erlang': 'erlang-26.1',
+  'Racket': 'racket-8.10'
+}
+
 // Build a complete runnable program that reads stdin → calls solution() → prints result
 const buildJDoodleProgram = (userCode, language) => {
   switch (language) {
@@ -299,7 +321,85 @@ else
   p solution(input.to_i)
 end
 `
+    case 'C#': return `
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+${userCode}
+
+public class MainClass {
+    public static void Main(string[] args) {
+        string input = Console.ReadLine();
+        if (string.IsNullOrEmpty(input)) return;
+        
+        // If the user has a class Program with static solution(), let's call it.
+        // Otherwise assume they just defined the function in the global scope (impossible in C#)
+        // or they provided a class Solution.
+        try {
+            if (input.StartsWith("[")) {
+                int[] arr = input.Trim('[', ']').Split(',').Select(s => int.Parse(s.Trim())).ToArray();
+                Console.WriteLine(Solution.solution(arr));
+            } else {
+                int n = int.Parse(input);
+                Console.WriteLine(Solution.solution(n));
+            }
+        } catch {
+            // Fallback for full programs that manage their own IO
+            // (We just let the user code run as is if the above fails)
+        }
+    }
+}
+`
     default: return userCode
+  }
+}
+
+const runWandbox = async (code, language, input) => {
+  const compiler = WANDBOX_COMPILERS[language]
+  if (!compiler) {
+    return { stdout: null, error: `Language "${language}" is not supported via Wandbox.` }
+  }
+
+  // Only wrap if the user hasn't provided their own Main method
+  let program = code
+  const needsWrap = 
+    (language === 'C#' && !code.includes('static void Main')) ||
+    (language === 'Java' && !code.includes('public static void main')) ||
+    (['C++', 'C', 'Go', 'Rust'].includes(language) && !code.includes('main'))
+
+  if (needsWrap) {
+    program = buildJDoodleProgram(code, language)
+  }
+
+  try {
+    const res = await fetch('/wandbox/api/compile.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        compiler,
+        code: program,
+        stdin: input,
+        save: false,
+      }),
+    })
+
+    if (!res.ok) throw new Error(`Wandbox API error: ${res.status}`)
+
+    const data = await res.json()
+    // Wandbox response: { program_output, program_error, program_message, status }
+    
+    const stdout = (data.program_output || '').trim()
+    const stderr = (data.program_error || data.program_message || '').trim()
+
+    // If it's a compilation error, status will be non-zero and stdout empty
+    if (data.status !== "0" && !stdout) {
+      return { stdout: null, stderr: stderr, error: stderr || 'Execution failed' }
+    }
+
+    return { stdout, stderr: stderr || null, error: null }
+  } catch (err) {
+    return { stdout: null, error: err.message }
   }
 }
 
@@ -313,10 +413,8 @@ const runJDoodle = async (code, language, input) => {
   const clientSecret = import.meta.env.VITE_JDOODLE_CLIENT_SECRET
 
   if (!clientId || !clientSecret) {
-    return {
-      stdout: null,
-      error: 'JDoodle API keys not set. Add VITE_JDOODLE_CLIENT_ID and VITE_JDOODLE_CLIENT_SECRET to .env.local',
-    }
+    // If no JDoodle keys, fallback to Wandbox!
+    return runWandbox(code, language, input)
   }
 
   const program = buildJDoodleProgram(code, language)
@@ -371,10 +469,8 @@ const executeTestCase = async (code, selectedLanguage, testCase) => {
     } else if (selectedLanguage === 'JavaScript') {
       execResult = await runJavaScript(code, testCase.input)
     } else {
-      result.error = `${selectedLanguage} support coming soon! Use Python3 or JavaScript to run tests.`
-      result.passed = false
-      result.executionTime = 0
-      return result
+      // Use Wandbox for all compiled languages — it's free and needs no keys!
+      execResult = await runWandbox(code, selectedLanguage, testCase.input)
     }
 
     result.executionTime = Date.now() - startTime
@@ -476,14 +572,17 @@ export const executeCodePlayground = async (code, language = 'Python3') => {
     let result
     if (language === 'JavaScript') {
       result = await runJavaScript(code, '')
-    } else {
+    } else if (language === 'Python3' || language === 'Python') {
       const pyodide = await getPyodide()
       let stdout = ''
       pyodide.setStdout({ batched: (s) => { stdout += s + '\n' } })
       await pyodide.runPythonAsync(code)
       result = { stdout: stdout.trim(), error: null }
+    } else {
+      // Compiled languages via Wandbox
+      result = await runWandbox(code, language, '')
     }
-    return { success: true, output: result.stdout, executionTime: 0 }
+    return { success: true, output: result.stdout || result.error, executionTime: 0, error: result.error }
   } catch (e) {
     return { success: false, error: e.message, output: null }
   }
