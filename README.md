@@ -1,5 +1,6 @@
 <p align="center">
-  <h1 align="center">🚀 CODEQUEST</h1>
+  <h1 align="center">🏆 CODEQUEST: THE ELITE ACADEMY</h1>
+  <p align="center"><i>"Software engineering is a competitive sport. Prove your dominance."</i></p>
 </p>
 
 <p align="center">
@@ -8,151 +9,72 @@
   <img src="https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwind-css" />
   <img src="https://img.shields.io/badge/Firebase-12-FFCA28?logo=firebase&logoColor=black" />
   <img src="https://img.shields.io/badge/Framer_Motion-12-EF4E7B?logo=framer" />
-  <img src="https://img.shields.io/badge/Status-Active-success" />
+  <img src="https://img.shields.io/badge/Status-Vibrant-success" />
 </p>
-
-------------------------------------------------------------------------
-
-> **Warning:** May cause sudden urge to rewrite everything in TypeScript 🤓
-
-------------------------------------------------------------------------
-
-## 📚 Table of Contents
-
--   [Overview](#-overview)
--   [Features](#-features)
--   [Technology Stack](#-technology-stack)
--   [Project Structure](#-project-structure)
--   [Getting Started](#-getting-started)
-    -   [Prerequisites](#prerequisites)
-    -   [Environment Variables](#environment-variables)
-    -   [Installation](#installation)
--   [Usage](#️-usage)
--   [Deployment](#-deployment)
--   [Future Improvements](#-future-improvements)
--   [Contributors](#-contributors)
--   [License](#-license)
 
 ------------------------------------------------------------------------
 
 ## 📖 Overview
 
-**CodeQuest** is an immersive, gamified coding platform built with a modern React + Vite architecture. It transforms the learning experience into an epic adventure — guiding developers through structured quests, real-time coding battles, and a vibrant community, all powered by Firebase.
+**CodeQuest** is a high-end, gamified coding platform built for the next generation of software engineers. It transforms the learning journey into a professional "Arena" experience — featuring a multi-track academy, real-time global rankings, and high-vibrancy glassmorphic aesthetics.
 
 ------------------------------------------------------------------------
 
-## ✨ Features
+## ✨ Key Features
 
-### 🎮 Quest System
-- Browse and select from a curated set of programming quests
-- Structured modules with **Lessons**, **Code Walkthroughs**, and **Debugging Challenges**
-- In-browser code editor powered by **Monaco Editor** (the same engine as VS Code)
-- Real-time code writing and quest progression tracking
+### 🏔️ Staircase of Mastery (Learn)
+- **Multi-Language Tracks**: Master Python, JavaScript, C++, and Java through structured curriculum paths.
+- **Visual Journey**: Navigate an animated zigzag path that tracks your rise to power.
+- **Wandbox Integration**: Execute code in real-time across multiple languages without leaving the browser.
+- **Success Celebrations**: Dynamic XP popups and confetti storms upon completing legendary challenges.
 
-### ⚔️ Code Clash (Live PvP)
-- Real-time competitive coding battles — **CodeClash Lobby** and **LiveCodeClash** arena
-- Post-match **Clash Results** summary with scores and rankings
+### ⚔️ The Arena Hub (Clash)
+- **Code Clash**: Engage in 1v1 real-time competitive coding duels.
+- **Global Rating**: Climb the ELO ladder and see your win rate soar.
+- **Arena Stats**: Track your total matches, wins, and competitive standing at a glance.
 
-### 🏆 Dashboard & Leaderboard
-- Personal **Dashboard** showing quest progress, stats, and activity
-- **Progress Screen** with detailed level-by-level tracking
-- Global **Leaderboard** to rank against other developers
+### 🏆 Hall of Fame (Leaderboard)
+- **3D Animated Podium**: The Top 3 contenders are showcased on a vibrant, glowing stage.
+- **Time-Based Filtering**: Filter rankings by **Today**, **Weekly**, **Monthly**, or **All-Time**.
+- **Live Sync**: Rankings update in real-time via Firestore subscriptions as points are earned globally.
+- **Quick-View Card**: Inspect any legend's stats instantly with a high-performance profile modal.
 
-### 💬 Community Forum
-- Create, view, and discuss posts in the **Community Forum**
-- Full **Post View** with threaded discussions
-- **Contact Support** page for help and feedback
-
-### 👤 Auth & Profile
-- Full authentication flow: **Sign Up**, **Login**, **Password Recovery**, **Email Verification**
-- Google OAuth support via Firebase
-- **Profile** management with editable user details
-
-### ⚙️ Settings & Legal
-- **Settings** page for account preferences
-- **Privacy Policy** and legal pages
-
-### 🛠️ Admin Panel
-- Protected admin routes for platform management
+### 👤 Legends Archive (Profile)
+- **Comprehensive Records**: Track your streak, quest completion, and ELO history with interactive charts.
+- **Public Profiles**: Explore the achievements and linguistic proficiency of any user in the academy.
+- **Premium UI**: Experience high-contrast gradients and glowing effects designed for professional impact.
 
 ------------------------------------------------------------------------
 
 ## 💻 Technology Stack
 
-### Core Frameworks & Build Tools
-| Technology | Purpose |
+| Layer | Technologies |
 |---|---|
-| **[React 18](https://react.dev/)** | UI library with hooks and functional components |
-| **[Vite 5](https://vitejs.dev/)** | Lightning-fast dev server and optimized builds |
-| **[React Router DOM v6](https://reactrouter.com/)** | Declarative client-side routing |
-
-### Styling & Animation
-| Technology | Purpose |
-|---|---|
-| **[Tailwind CSS v3](https://tailwindcss.com/)** | Utility-first CSS for rapid UI development |
-| **[@tailwindcss/forms](https://github.com/tailwindlabs/tailwindcss-forms)** | Consistent base styles for form elements |
-| **[Framer Motion 12](https://www.framer.com/motion/)** | Smooth, production-ready animations and transitions |
-| **[Lucide React](https://lucide.dev/)** | Clean, consistent icon library |
-
-### Code Editor
-| Technology | Purpose |
-|---|---|
-| **[@monaco-editor/react](https://github.com/suren-atoyan/monaco-react)** | Full-featured VS Code-like editor in the browser |
-
-### Backend & Services
-| Technology | Purpose |
-|---|---|
-| **[Firebase 12](https://firebase.google.com/)** | Authentication, Firestore database, and cloud services |
-
-### Code Quality
-| Technology | Purpose |
-|---|---|
-| **[ESLint](https://eslint.org/)** | Code quality and consistent standards |
-| **PostCSS + Autoprefixer** | CSS transformations and cross-browser compatibility |
+| **Frontend** | React 18, Vite 5, Tailwind CSS, Framer Motion |
+| **Backend** | Firebase (Auth, Firestore, Hosting) |
+| **Logic** | Custom React Hooks, Context API, Real-time Listeners |
+| **Execution** | Wandbox API Proxy, Monaco Editor |
+| **Animations** | Canvas-Confetti, Framer Motion Orchestration |
 
 ------------------------------------------------------------------------
 
 ## 📁 Project Structure
 
-```
+```bash
 Codequest/
-│
-├── public/                  # Static assets (logo, images, landing video)
 ├── src/
 │   ├── components/
-│   │   ├── auth/            # Auth-related UI components
-│   │   ├── code/            # Code editor components
-│   │   ├── common/          # Shared/reusable components (BlurText, etc.)
-│   │   └── landing/         # Landing page hero components (SpaceHero)
-│   │
+│   │   ├── common/          # Glassmorphic UI library (Cards, Buttons, Badges)
+│   │   ├── profile/         # Quick-View Modal logic
+│   │   └── code/            # Monaco Editor & Execution wrappers
 │   ├── pages/
-│   │   ├── LandingPage.jsx
-│   │   ├── auth/            # Login, Signup, Password Recovery, Email Verification
-│   │   ├── quests/          # QuestSelection, QuestCoding, LessonView, ModuleDetail, etc.
-│   │   ├── clash/           # CodeClashLobby, LiveCodeClash, ClashResults
-│   │   ├── dashboard/       # Dashboard, Leaderboard, ProgressScreen
-│   │   ├── community/       # CommunityForum, PostView, ContactSupport
-│   │   ├── profile/         # User profile pages
-│   │   ├── admin/           # Admin panel pages
-│   │   ├── settings/        # Settings page
-│   │   └── legal/           # Privacy Policy and legal pages
-│   │
-│   ├── context/             # React context providers (AuthContext, etc.)
-│   ├── hooks/               # Custom React hooks
-│   ├── layouts/             # Route layouts and wrappers
-│   ├── router/              # App router configuration
-│   ├── data/                # Static/mock data files
-│   ├── config/              # Firebase and app configuration
-│   ├── utils/               # Utility functions
-│   ├── styles/              # Global CSS styles
-│   └── App.jsx
-│
-├── .env.example             # Environment variable template
-├── index.html
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-└── vercel.json              # Vercel deployment config (SPA rewrites)
+│   │   ├── learn/           # LearnHub, LessonPage, Staircase logic
+│   │   ├── dashboard/       # Leaderboard, Hall of Fame, Main Stats
+│   │   ├── profile/         # Legends Archive (Public/Private profiles)
+│   │   └── clash/           # Arena Hub & competitive triggers
+│   ├── hooks/               # useLeaderboard, useUserData, useSubmissions
+│   └── data/                # Python, JS, C++, Java core curriculum
+└── vite.config.js           # Proxy configuration for multi-lang execution
 ```
 
 ------------------------------------------------------------------------
@@ -160,93 +82,41 @@ Codequest/
 ## 🛠 Getting Started
 
 ### Prerequisites
-
-Make sure you have the following installed:
-
--   **Node.js** (v16 or higher)
--   **npm** (v8 or higher)
-
-Check versions:
-
-```bash
-node -v
-npm -v
-```
-
-------------------------------------------------------------------------
-
-### Environment Variables
-
-Copy the example env file and fill in your Firebase credentials:
-
-```bash
-cp .env.example .env.local
-```
-
-Open `.env.local` and configure all required variables (Firebase API key, project ID, etc.). See `.env.example` for the full list of required keys.
-
-------------------------------------------------------------------------
+- **Node.js** (v18+)
+- **npm** (v9+)
 
 ### Installation
 
-**1️⃣ Clone the repository:**
-
+1️⃣ **Clone & Install**
 ```bash
 git clone https://github.com/AyushPandey218/Codequest
-cd Codequest
-```
-
-**2️⃣ Install dependencies:**
-
-```bash
 npm install
 ```
 
-**3️⃣ Set up environment variables** (see above).
+2️⃣ **Configure Environment**
+Create `.env.local` and add your Firebase credentials (see `.env.example`).
 
-------------------------------------------------------------------------
-
-## ▶️ Usage
-
-Run the development server:
-
+3️⃣ **Ignite the Engine**
 ```bash
 npm run dev
 ```
 
-The app will start at:
+------------------------------------------------------------------------
 
-```
-http://localhost:5173
-```
-
-**Other scripts:**
-
-```bash
-npm run build      # Build for production
-npm run preview    # Preview the production build locally
-npm run lint       # Run ESLint
-```
+## 🔮 Roadmap
+- [ ] **AI SENSEI**: Real-time AI tutoring and code optimization hints.
+- [ ] **GUILD WARS**: Team-based competitive coding clusters.
+- [ ] **CERTIFICATION**: Verifiable on-chain mastery badges.
 
 ------------------------------------------------------------------------
 
-## 🌐 Deployment
-
-CodeQuest is configured for deployment on **[Vercel](https://vercel.com)**.
-
-The `vercel.json` includes SPA rewrite rules to ensure React Router works correctly on page refresh. Simply connect the repository to Vercel and configure your environment variables in the Vercel dashboard.
+## 👨‍💻 Author
+**Ayush Pandey** — [GitHub](https://github.com/AyushPandey218)
 
 ------------------------------------------------------------------------
 
-## 🔮 Future Improvements
-
--   🤖 AI-powered code review and hints
--   🏅 Badges and achievement system
--   📊 Detailed analytics and skill tracking
--   🌐 Multiplayer quest collaboration
--   🧪 Expanded unit testing coverage
-
-------------------------------------------------------------------------
+## 📄 License
+This project is private. All rights reserved © 2026 Ayush Pandey.
 
 ## 👨‍💻 Contributors
 

@@ -1,39 +1,51 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore'
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
 /**
- * Hook to fetch leaderboard data from Firestore (users collection)
- * @param {number} limitCount - Number of top users to fetch (default: 50)
- * @param {string} currentUserId - (Optional) Current logged-in user ID to highlight
- * @returns {Object} { leaderboard, loading, error, refresh }
+ * Hook to fetch leaderboard data from Firestore in real-time with period filtering
+ * @param {string} period - 'all', 'today', 'weekly', 'monthly'
+ * @param {number} limitCount - Number of top users to fetch
+ * @param {string} currentUserId - Current logged-in user ID
  */
-export const useLeaderboard = (limitCount = 50, currentUserId = null) => {
+export const useLeaderboard = (period = 'all', limitCount = 50, currentUserId = null) => {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetchLeaderboard = async () => {
-    try {
-      setLoading(true)
-      const q = query(
-        collection(db, 'users'),
-        orderBy('xp', 'desc'),
-        limit(limitCount)
-      )
+  useEffect(() => {
+    setLoading(true)
+    
+    // Map period to field name
+    const periodMap = {
+      all: 'xp',
+      today: 'xp_today',
+      weekly: 'xp_weekly',
+      monthly: 'xp_monthly'
+    }
 
-      const querySnapshot = await getDocs(q)
+    const sortField = periodMap[period] || 'xp'
+
+    const q = query(
+      collection(db, 'users'),
+      orderBy(sortField, 'desc'),
+      limit(limitCount)
+    )
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const leaderboardData = []
-
       let index = 0
+      
       querySnapshot.forEach((doc) => {
         const data = doc.data()
-
-        // Show all users normally
+        
+        // Use the appropriate XP for display based on period
+        const displayXP = Number(data[sortField]) || 0
 
         leaderboardData.push({
           id: doc.id,
           ...data,
+          displayXP, // Field used for the leaderboard value
           xp: Number(data.xp) || 0,
           questsCompleted: Number(data.questsCompleted) || Number(data.completedQuests) || 0,
           rank: index + 1,
@@ -43,20 +55,18 @@ export const useLeaderboard = (limitCount = 50, currentUserId = null) => {
       })
 
       setLeaderboard(leaderboardData)
+      setLoading(false)
       setError(null)
-    } catch (err) {
+    }, (err) => {
       console.error('Firestore error fetching leaderboard:', err.message)
       setError(err.message)
-    } finally {
       setLoading(false)
-    }
-  }
+    })
 
-  useEffect(() => {
-    fetchLeaderboard()
-  }, [limitCount, currentUserId])
+    return () => unsubscribe()
+  }, [period, limitCount, currentUserId])
 
-  return { leaderboard, loading, error, refresh: fetchLeaderboard }
+  return { leaderboard, loading, error }
 }
 
 export default useLeaderboard

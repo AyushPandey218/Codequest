@@ -48,7 +48,7 @@ const TRACK_META = {
   },
 }
 
-const POSITIONS = ['left', 'center', 'right', 'center', 'left', 'center']
+const POSITIONS = ['left', 'right']
 
 const LearnHub = () => {
   const { trackId = 'python' } = useParams()
@@ -159,9 +159,7 @@ const LearnHub = () => {
             const nextLesson = module.lessons.find(l => !completedLessons[l.id])
             const pos = POSITIONS[index % POSITIONS.length]
             
-            const offsetClass =
-              pos === 'left' ? 'mr-auto ml-0' :
-              pos === 'right' ? 'ml-auto mr-0' : 'mx-auto'
+            const offsetClass = pos === 'left' ? 'mr-auto ml-0' : 'ml-auto mr-0'
 
             return (
               <div key={module.id} className={`relative flex flex-col items-center animate-slide-up animate-delay-${(index % 5) * 100}`}>

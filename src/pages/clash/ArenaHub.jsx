@@ -84,7 +84,13 @@ const ArenaHub = () => {
                 
                 <div className="flex items-center justify-between mt-auto">
                     <span className="text-xs font-bold text-primary/80 uppercase tracking-widest">{arena.stats}</span>
-                    <Button variant="primary" className="group-hover:px-8 transition-all" icon="bolt">Enter Arena</Button>
+                    <Button 
+                      variant="primary" 
+                      className="group-hover:px-8 transition-all" 
+                      icon={arena.id === 'clash' ? 'bolt' : 'leaderboard'}
+                    >
+                      {arena.id === 'clash' ? 'Enter Arena' : 'View Rankings'}
+                    </Button>
                 </div>
               </div>
             </Card>

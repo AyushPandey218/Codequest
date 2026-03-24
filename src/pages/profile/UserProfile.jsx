@@ -59,36 +59,46 @@ const EloChart = ({ data }) => {
   )
 }
 
-/**
- * User Profile Page - Rebuilt to match the premium dark theme design
- * Features Sidebar info and Dashboard-style stats
- */
+import { useUserData } from '../../hooks/useUserData'
+import { useSubmissions } from '../../hooks/useSubmissions'
+
 const UserProfile = () => {
   const navigate = useNavigate()
   const { userId } = useParams()
   const { user: currentUser } = useAuth()
-  const { userStats, userProgress, submissions, isLoading } = useUser()
-
-  const [activeHistoryTab, setActiveHistoryTab] = useState('All')
-
-  // Determine if viewing own profile
+  
+  // 1. Determine whose profile we're looking at
   const isOwnProfile = !userId || userId === currentUser?.username
 
-  // Fetch real global rank from leaderboard
-  const { leaderboard } = useLeaderboard(100, isOwnProfile ? currentUser?.uid : null)
-  const realRank = leaderboard.find(l => l.id === currentUser?.uid)?.rank || userStats?.rank || '100+'
-  // Compute an percentile (mocked if not rank 1)
+  // 2. Get global leaderboard to find rank and UID (if we only have username)
+  const { leaderboard, loading: leaderboardLoading } = useLeaderboard('all', 100)
+  
+  // 3. Resolve the target UID
+  const profileUserId = isOwnProfile 
+    ? currentUser?.uid 
+    : leaderboard.find(l => l.username === userId)?.id
+
+  // 4. Fetch the target user's specific data
+  const { userData: targetUserData, loading: userLoading } = useUserData(profileUserId)
+  const { submissions: targetSubmissions, loading: subLoading } = useSubmissions(profileUserId)
+  
+  const loading = leaderboardLoading || userLoading || subLoading
+  const [activeHistoryTab, setActiveHistoryTab] = useState('All')
+
+  // Real rank calculation
+  const userInLeaderboard = leaderboard.find(l => l.id === profileUserId)
+  const realRank = userInLeaderboard?.rank || '100+'
   const percentile = typeof realRank === 'number' ? Math.max(1, 100 - realRank) : 50
 
   // 12-day Activity Chart Data
   const recent12Days = (() => {
-    if (!submissions || !submissions.length) return Array(12).fill(0)
+    if (!targetSubmissions || !targetSubmissions.length) return Array(12).fill(0)
     const result = []
     for (let i = 11; i >= 0; i--) {
       const d = new Date()
       d.setDate(d.getDate() - i)
       const dateStr = d.toISOString().split('T')[0]
-      const count = submissions.filter(s => {
+      const count = targetSubmissions.filter(s => {
         if (!s.timestamp) return false
         const sDate = s.timestamp?.toDate ? s.timestamp.toDate() : new Date(s.timestamp)
         return sDate.toISOString().split('T')[0] === dateStr
@@ -97,47 +107,47 @@ const UserProfile = () => {
     }
     return result
   })()
-  const maxActivity = Math.max(...recent12Days, 1)
 
-  // Profile data mapping - real data from Firestore/Auth
+  // Profile data mapping - uses targetUserData and targetSubmissions
   const profile = {
-    username: isOwnProfile ? (currentUser?.displayName || currentUser?.username || 'User') : userId,
-    handle: `@${(isOwnProfile ? currentUser?.username : userId)?.toLowerCase().replace(/\s/g, '_')}_dev`,
-    avatar: isOwnProfile ? currentUser?.avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
-    bio: isOwnProfile ? (currentUser?.bio || 'No bio yet') : 'CS Student | Coding Enthusiast | Building the future one line at a time 🚀',
-    location: isOwnProfile ? (currentUser?.university || 'Global') : 'San Francisco, CA',
-    joinDate: isOwnProfile ? (currentUser?.createdAt?.toDate ? `Joined ${currentUser.createdAt.toDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : 'Joined September 2024') : 'Joined September 2024',
-    github: isOwnProfile ? (currentUser?.website?.replace('https://', '') || `github.com/${currentUser?.username?.toLowerCase()}`) : `github.com/${userId?.toLowerCase()}`,
-    level: userStats?.level || 1,
-    xp: userStats?.totalXP || 0,
-    totalXPNeeded: (userStats?.level || 1) * 200, // Fixed cost per level for now
-    levelTitle: (userStats?.level || 1) > 20 ? 'Logic Legend' : (userStats?.level || 1) > 10 ? 'Algorithm Architect' : 'Code Initiate',
-    streak: userStats?.streak || 0,
-    completedCount: userStats?.completedQuests || 0,
-    badges: userStats?.achievements?.length || 0,
-    codingHours: (userStats?.completedQuests || 0) * 2 + 5,
+    username: targetUserData?.username || userId || 'User',
+    handle: `@${(targetUserData?.username || userId)?.toLowerCase().replace(/\s/g, '_')}_dev`,
+    avatar: targetUserData?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+    bio: targetUserData?.bio || (isOwnProfile ? 'No bio yet' : 'Logic Architect | Building the future 🚀'),
+    location: targetUserData?.university || targetUserData?.location || 'Global',
+    joinDate: targetUserData?.createdAt?.toDate 
+      ? `Joined ${targetUserData.createdAt.toDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` 
+      : 'Joined Recently',
+    github: targetUserData?.website?.replace('https://', '') || (targetUserData?.username ? `github.com/${targetUserData.username.toLowerCase()}` : ''),
+    level: Math.max(1, Math.floor((targetUserData?.xp || 0) / 200) + 1),
+    xp: Number(targetUserData?.xp) || 0,
+    totalXPNeeded: (Math.max(1, Math.floor((targetUserData?.xp || 0) / 200) + 1)) * 200,
+    streak: Number(targetUserData?.streak) || 0,
+    completedCount: Number(targetUserData?.completedQuests) || 0,
+    badges: targetUserData?.achievements?.length || 0,
+    codingHours: (Number(targetUserData?.completedQuests) || 0) * 2 + 5,
     globalRank: realRank,
     percentile: percentile,
-    rating: userStats?.rating || 1000,
-    ratingHistory: userStats?.ratingHistory || [],
-    languageStats: userStats?.languageStats || {},
-    winRate: userStats?.clashesTotal > 0
-      ? ((userStats.clashesWon / userStats.clashesTotal) * 100).toFixed(1)
+    rating: Number(targetUserData?.rating) || 1200,
+    ratingHistory: targetUserData?.ratingHistory || [],
+    languageStats: targetUserData?.languageStats || {},
+    winRate: (targetUserData?.clashesTotal > 0)
+      ? ((targetUserData.clashesWon / targetUserData.clashesTotal) * 100).toFixed(1)
       : '0.0'
   }
 
-  // Get quest history (the real ones completed)
+  // Get quest history
   const historyQuests = quests
-    .filter(q => userProgress[q.id]?.completed)
+    .filter(q => targetUserData?.completedQuestsList?.includes(q.id) || false) // We should probably have a better way to track this
     .map(q => ({
       ...q,
-      date: userProgress[q.id]?.completedAt ? new Date(userProgress[q.id].completedAt).toLocaleDateString() : 'N/A',
+      date: 'N/A',
       score: '100%',
       status: 'SUCCESS'
     }))
 
   // Get real earned achievements data
-  const earnedAchievements = (userStats?.achievements || [])
+  const earnedAchievements = (targetUserData?.achievements || [])
     .map(id => allAchievements.find(a => a.id === id))
     .filter(Boolean)
 
@@ -149,8 +159,25 @@ const UserProfile = () => {
   })
 
   return (
-    <div className="max-w-[1400px] mx-auto p-4 lg:p-8 min-h-screen bg-background-dark text-white selection:bg-primary/30">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="max-w-[1400px] mx-auto p-4 lg:p-8 min-h-screen bg-background-dark text-white selection:bg-primary/30 space-y-8">
+      
+      {/* Back Button / Breadcrumb (Shared public view only) */}
+      {!isOwnProfile && (
+        <div className="flex items-center gap-4 animate-fade-in">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="group p-3 rounded-2xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-90 flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined text-lg">west</span>
+          </button>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Returning to the Climb</p>
+            <h1 className="text-xl font-black text-white uppercase tracking-tighter">Legends Archive</h1>
+          </div>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 ${isOwnProfile ? 'pt-4' : ''}`}>
 
         {/* --- SIDEBAR (Left Column) --- */}
         <div className="lg:col-span-3 space-y-6">
@@ -268,7 +295,7 @@ const UserProfile = () => {
             <div className="relative h-3 bg-white/5 rounded-full overflow-hidden mb-2">
               <div
                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-purple-500 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)] transition-all duration-1000 ease-out"
-                style={{ width: `${(getLevelProgress(userStats?.totalXP || 0) * 100) || 0}%` }}
+                style={{ width: `${(getLevelProgress(profile.xp) * 100) || 0}%` }}
               ></div>
             </div>
             <div className="flex justify-between text-[10px] uppercase tracking-tighter text-slate-500 font-bold">
@@ -352,7 +379,7 @@ const UserProfile = () => {
                   <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary transition-all duration-1000"
-                      style={{ width: `${Math.min(100, (count / (userStats?.clashesTotal || 1)) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (count / (targetUserData?.clashesTotal || 1)) * 100)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -378,7 +405,7 @@ const UserProfile = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
               {allAchievements.map((achievement, i) => {
-                const isEarned = userStats?.achievements?.includes(achievement.id)
+                const isEarned = targetUserData?.achievements?.includes(achievement.id)
                 return (
                   <div key={i} className={`flex flex-col items-center gap-3 group ${!isEarned ? 'opacity-30 grayscale' : ''}`}>
                     <div className={`size-16 rounded-2xl ${isEarned ? achievement.bgColor : 'bg-white/5'} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-all duration-300 relative`}>

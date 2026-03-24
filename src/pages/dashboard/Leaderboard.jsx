@@ -1,21 +1,30 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useLeaderboard } from '../../hooks/useLeaderboard'
 import { useUser } from '../../context/UserContext'
 import Card from '../../components/common/Card'
 import Avatar from '../../components/common/Avatar'
+import ProfileQuickView from '../../components/profile/ProfileQuickView'
 import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const Leaderboard = () => {
   const { user } = useAuth()
-  const { leaderboard, loading, error, refresh } = useLeaderboard(100, user?.uid)
+  const [period, setPeriod] = useState('all') // today, weekly, monthly, all
+  const { leaderboard, loading, error } = useLeaderboard(period, 50, user?.uid)
   const { userStats } = useUser()
-  const [timeFilter, setTimeFilter] = useState('weekly')
-  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [quickViewUser, setQuickViewUser] = useState(null)
 
-  // Normalize each entries' data from Firestore field names
+  useEffect(() => {
+    const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY })
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
+  // Normalize data
   const safeNum = (val) => {
     const n = parseFloat(val)
     return isNaN(n) ? 0 : Math.floor(n)
@@ -24,294 +33,266 @@ const Leaderboard = () => {
   const normalizedLeaderboard = leaderboard.map(p => ({
     ...p,
     xp: safeNum(p.xp),
-    questsCompleted: safeNum(p.questsCompleted) || safeNum(p.totalCompletedQuests),
+    displayXP: safeNum(p.displayXP),
+    questsCompleted: safeNum(p.questsCompleted) || safeNum(p.totalCompletedQuests) || 0,
   }))
 
-  // Get top 3 for podium
-  const topThree = normalizedLeaderboard.slice(0, 3).map(player => ({
-    ...player,
-    badge: player.rank === 1 ? 'Gold' : player.rank === 2 ? 'Silver' : 'Bronze'
-  }))
-  // Podium display order: 2nd, 1st, 3rd
+  const topThree = normalizedLeaderboard.slice(0, 3)
   const podiumOrder = [topThree[1], topThree[0], topThree[2]].filter(Boolean)
-
-  // Get remaining players for list (ranks 4+)
   const leaderboardList = normalizedLeaderboard.slice(3)
 
-  // Find current user's rank in the leaderboard
-  const currentUserEntry = normalizedLeaderboard.find(p => p.isCurrentUser)
-  const currentUserRank = currentUserEntry || {
+  const currentUserRank = normalizedLeaderboard.find(p => p.isCurrentUser) || {
     rank: '?',
     username: user?.username || user?.displayName || 'You',
     avatar: user?.avatar || user?.photoURL,
     xp: userStats?.totalXP || 0,
+    displayXP: 0,
     questsCompleted: userStats?.completedQuests || 0,
   }
 
-  const getPodiumHeight = (rank) => {
-    if (rank === 1) return 'h-48'
-    if (rank === 2) return 'h-40'
-    if (rank === 3) return 'h-32'
-    return 'h-32'
-  }
+  const periods = [
+    { id: 'today', label: 'Today', icon: 'today' },
+    { id: 'weekly', label: 'Weekly', icon: 'date_range' },
+    { id: 'monthly', label: 'Monthly', icon: 'calendar_month' },
+    { id: 'all', label: 'All Time', icon: 'stars' },
+  ]
 
-  const getPodiumColor = (rank) => {
-    if (rank === 1) return 'from-yellow-400 to-orange-600'
-    if (rank === 2) return 'from-slate-300 to-slate-500'
-    if (rank === 3) return 'from-orange-400 to-orange-600'
-    return 'from-slate-400 to-slate-600'
-  }
-
-  // Loading skeleton
-  if (loading) {
+  if (loading && leaderboard.length === 0) {
     return (
-      <div className="max-w-[1200px] mx-auto space-y-6">
-        <div>
-          <div className="h-10 bg-slate-200 dark:bg-[#282839] rounded animate-pulse w-1/2 mb-2"></div>
-          <div className="h-5 bg-slate-200 dark:bg-[#282839] rounded animate-pulse w-1/3"></div>
+      <div className="max-w-[1000px] mx-auto space-y-8 pt-10">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="size-16 rounded-3xl bg-white/5 animate-pulse" />
+          <div className="h-10 w-64 bg-white/5 rounded-xl animate-pulse" />
         </div>
-        <Card variant="elevated" className="p-8">
-          <div className="h-64 bg-slate-200 dark:bg-[#282839] rounded animate-pulse"></div>
-        </Card>
-      </div>
-    )
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="max-w-[1200px] mx-auto">
-        <Card variant="elevated" className="p-8 text-center">
-          <span className="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-            Failed to Load Leaderboard
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-4">{error}</p>
-          <Button variant="primary" onClick={() => window.location.reload()}>
-            Retry
-          </Button>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-64">
+           {[1, 2, 3].map(i => <div key={i} className="glass-card-premium animate-pulse" />)}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-slide-up">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-            Leaderboard 🏆
-          </h1>
-          <p className="text-slate-600 dark:text-text-secondary mt-1">
-            Compete with students worldwide
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          icon="refresh"
-          onClick={refresh}
-          isLoading={loading}
-        >
-          Refresh
-        </Button>
+    <div className="max-w-[1000px] mx-auto space-y-10 pb-24 relative px-4 pt-10">
+      
+      {/* Dynamic background for depth */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div 
+          className="absolute size-[600px] rounded-full blur-[140px] opacity-10 transition-transform duration-1000 bg-primary"
+          style={{ transform: `translate(${mousePos.x / 15}px, ${mousePos.y / 15}px)` }}
+        />
+        <div className="absolute top-1/4 right-0 size-[400px] rounded-full blur-[120px] opacity-5 bg-purple-500 animate-pulse" />
       </div>
 
-      {/* Filters */}
-      <Card variant="elevated" className="p-4 animate-fade-in animate-delay-100">
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Time Filter */}
-          <div className="flex-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-              Time Period
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {['daily', 'weekly', 'monthly', 'all'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setTimeFilter(filter)}
-                  className={`flex-1 min-w-[80px] px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${timeFilter === filter
-                    ? 'bg-primary text-white'
-                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
-                    }`}
-                >
-                  {filter.charAt(0).toUpperCase() + filter.slice(1).replace('-', ' ')}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div className="flex-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-              Category
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {['all', 'python', 'javascript', 'algos'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setCategoryFilter(filter)}
-                  className={`flex-1 min-w-[70px] px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${categoryFilter === filter
-                    ? 'bg-primary text-white'
-                    : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
-                    }`}
-                >
-                  {filter === 'algos' ? 'Algos' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Header Section */}
+      <div className="text-center space-y-4 animate-fade-in">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em]">
+          <span className="material-symbols-outlined text-sm animate-glow-pulse">leaderboard</span>
+          Global Rankings Live
         </div>
-      </Card>
+        <h1 className="text-5xl font-black text-white tracking-tighter">
+          Hall of <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-primary to-purple-500 drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">Legendary</span> Coders
+        </h1>
+        <p className="text-slate-500 text-sm font-medium tracking-wide">COMPETE WITH MINDS WORLDWIDE. RISE TO THE PINNACLE.</p>
+      </div>
 
-      {/* Top 3 Podium */}
-      <Card variant="elevated" className="p-8 overflow-hidden relative animate-scale-in animate-delay-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 pointer-events-none" />
-
-        <div className="relative flex flex-col md:flex-row items-center md:items-end justify-center gap-6 md:gap-8">
-          {podiumOrder.map((leader) => (
-            <div
-              key={leader.rank}
-              className="flex flex-col items-center group"
+      {/* Period Selection Tabs */}
+      <div className="flex justify-center">
+        <div className="p-1 liquid-glass rounded-2xl border border-white/10 flex gap-1">
+          {periods.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setPeriod(p.id)}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                period === p.id 
+                ? 'bg-primary text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] border border-primary/30' 
+                : 'text-slate-500 hover:text-white hover:bg-white/5'
+              }`}
             >
-              {/* Crown for #1 */}
-              {leader.rank === 1 && (
-                <span className="text-3xl mb-1">👑</span>
-              )}
-              {/* Avatar */}
-              <div className="relative mb-4">
-                <Avatar
-                  src={leader.avatar}
-                  name={leader.username}
-                  size="xl"
-                  ring
-                  ringColor={
-                    leader.rank === 1 ? 'ring-yellow-400' :
-                      leader.rank === 2 ? 'ring-slate-400' :
-                        'ring-orange-600'
-                  }
-                  className="transform group-hover:scale-110 transition-transform"
-                />
-                {/* Rank Badge */}
-                <div className={`absolute -top-2 -right-2 size-8 rounded-full bg-gradient-to-br ${getPodiumColor(leader.rank)} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
-                  #{leader.rank}
-                </div>
-              </div>
-
-              {/* User Info */}
-              <Link to={`/app/profile/${leader.username}`}>
-                <h3 className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors">
-                  {leader.username}
-                  {leader.isCurrentUser && <span className="ml-1 text-primary text-xs">(You)</span>}
-                </h3>
-              </Link>
-              <p className="text-sm text-slate-600 dark:text-text-secondary mb-2">
-                {leader.questsCompleted} quest{leader.questsCompleted !== 1 ? 's' : ''} done
-              </p>
-              <Badge variant="warning" icon="stars">
-                {leader.xp.toLocaleString()} XP
-              </Badge>
-
-              {/* Podium */}
-              <div className={`w-full md:w-40 ${getPodiumHeight(leader.rank)} bg-gradient-to-b ${getPodiumColor(leader.rank)} rounded-t-xl mt-4 flex items-center justify-center relative overflow-hidden hidden md:flex`}>
-                <div className="absolute inset-0 bg-white/10" />
-                <span className="text-white text-4xl md:text-5xl font-black relative z-10">
-                  {leader.rank}
-                </span>
-              </div>
-            </div>
+              <span className="material-symbols-outlined text-sm">{p.icon}</span>
+              {p.label}
+            </button>
           ))}
         </div>
-      </Card>
+      </div>
 
-      {/* Your Rank */}
-      <Card variant="elevated" className="p-4 sm:p-6 bg-primary/5 border-primary/20 animate-slide-up animate-delay-300">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="size-10 sm:size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold sm:text-lg flex-shrink-0">
-            #{currentUserRank.rank}
-          </div>
-          <Avatar src={currentUserRank.avatar || user?.avatar || user?.photoURL} name={currentUserRank.username} size="md" ring ringColor="ring-primary" />
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-slate-900 dark:text-white truncate">
-              {currentUserRank.username} <span className="text-primary text-xs sm:text-sm">(You)</span>
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-text-secondary">
-              {currentUserRank.questsCompleted || userStats?.completedQuests || 0} quests
-            </p>
-          </div>
-          <Badge variant="warning" icon="stars" size="sm" className="sm:size-md">
-            {(currentUserRank.xp || userStats?.totalXP || 0).toLocaleString()} XP
-          </Badge>
+      {/* Podium Stage */}
+      <div className="relative pt-6">
+        <div className="flex flex-col md:flex-row items-center md:items-end justify-center gap-8 md:gap-4 lg:gap-8">
+          {podiumOrder.map((leader, i) => {
+             const isFirst = leader.rank === 1
+             const isSecond = leader.rank === 2
+             const height = isFirst ? 'h-56' : isSecond ? 'h-44' : 'h-36'
+             const colors = isFirst ? 'from-yellow-400/40 to-orange-500/10 border-yellow-400/50 shadow-[0_0_40px_rgba(250,204,21,0.2)]' : 
+                            isSecond ? 'from-blue-400/30 to-slate-500/10 border-blue-400/40 shadow-[0_0_30px_rgba(96,165,250,0.15)]' : 
+                            'from-orange-600/30 to-red-600/10 border-orange-600/40 shadow-[0_0_30px_rgba(234,88,12,0.15)]'
+             
+             return (
+               <motion.div 
+                 key={leader.id}
+                 initial={{ opacity: 0, y: 50 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: i * 0.1 }}
+                 className={`relative flex flex-col items-center group w-full md:w-64`}
+               >
+                 {/* Floating Avatar Hub */}
+                 <div className="relative z-20 mb-6 flex flex-col items-center">
+                    {isFirst && <motion.span animate={{ rotate: [0, 10, -10, 0], y: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 4 }} className="text-4xl mb-2 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">👑</motion.span>}
+                    <div className="relative">
+                      <Avatar 
+                        src={leader.avatar} 
+                        name={leader.username} 
+                        size="xl" 
+                        ring 
+                        ringColor={isFirst ? 'ring-yellow-400' : isSecond ? 'ring-blue-400' : 'ring-orange-600'}
+                        className="shadow-2xl group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className={`absolute -bottom-2 right-0 size-8 rounded-full flex items-center justify-center text-white font-black text-sm border-2 shadow-lg ${
+                        isFirst ? 'bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-300' : 
+                        isSecond ? 'bg-gradient-to-br from-blue-400 to-indigo-600 border-blue-300' : 
+                        'bg-gradient-to-br from-orange-600 to-red-700 border-orange-400'
+                      }`}>
+                        #{leader.rank}
+                      </div>
+                    </div>
+                    <div onClick={() => setQuickViewUser(leader)} className="mt-4 text-center cursor-pointer group/name">
+                      <h3 className="font-black text-white text-lg group-hover/name:text-primary transition-colors">{leader.username}</h3>
+                      <p className={`text-[10px] font-black uppercase tracking-[0.2em] drop-shadow-[0_0_10px_currentColor] ${isFirst ? 'text-yellow-400' : isSecond ? 'text-blue-400' : 'text-orange-500'}`}>
+                        {leader.displayXP.toLocaleString()} XP
+                      </p>
+                    </div>
+                 </div>
+
+                 {/* The 3D Podium Block */}
+                 <div className={`w-full ${height} liquid-glass-strong rounded-[2.5rem] border-2 flex flex-col items-center justify-center relative overflow-hidden hidden md:flex ${colors}`}>
+                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Interior glow */}
+                    <div className={`absolute inset-0 opacity-20 blur-3xl ${isFirst ? 'bg-yellow-400' : isSecond ? 'bg-blue-400' : 'bg-orange-600'}`} />
+                    
+                    <span className={`text-7xl font-black italic relative z-10 drop-shadow-2xl ${isFirst ? 'text-yellow-400' : isSecond ? 'text-blue-400' : 'text-orange-600'}`}>
+                      {leader.rank}
+                    </span>
+                    <div className="mt-2 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] relative z-10">Ascended</div>
+                 </div>
+               </motion.div>
+             )
+          })}
+        </div>
+      </div>
+
+      {/* User Status Bar */}
+      <Card variant="elevated" className="p-1 glass-card-premium group relative overflow-hidden">
+        <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
+        <div className="rounded-[22px] bg-white/[0.02] p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+           <div className="flex items-center gap-6">
+              <div className="size-14 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-2xl font-black text-white border border-white/20 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                #{currentUserRank.rank}
+              </div>
+              <Avatar src={currentUserRank.avatar} name={currentUserRank.username} size="lg" ring ringColor="ring-primary/40" />
+              <div>
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Your Standing</p>
+                <h3 className="text-xl font-black text-white">{currentUserRank.username} <span className="text-slate-500 text-xs">(YOU)</span></h3>
+              </div>
+           </div>
+           
+           <div className="flex items-center gap-8">
+              <div className="text-center">
+                <p className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">{currentUserRank.displayXP.toLocaleString()}</p>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Period XP</p>
+              </div>
+              <div className="text-center border-l border-white/10 pl-8">
+                <p className="text-xl font-black text-white">{currentUserRank.questsCompleted}</p>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Total Quests</p>
+              </div>
+              <div className="liquid-glass px-4 py-2 rounded-xl border border-white/10 group-hover:animate-glow-pulse">
+                <span className="text-xs font-black text-primary uppercase tracking-tighter">Live Sync Active</span>
+              </div>
+           </div>
         </div>
       </Card>
 
-      {/* Leaderboard List */}
-      <Card variant="elevated" className="overflow-hidden animate-fade-in animate-delay-400">
-        <div className="p-6 border-b border-slate-200 dark:border-border-dark">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Rankings
+      {/* The Rankings List */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-xl font-black text-white tracking-widest uppercase flex items-center gap-3">
+            <span className="size-2 rounded-full bg-primary animate-ping" /> Elite Contenders
           </h2>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Showing Top 50</span>
         </div>
+        
+        <div className="space-y-3">
+          <AnimatePresence mode="popLayout">
+            {leaderboardList.map((leader) => (
+              <motion.div 
+                key={leader.id}
+                layout
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="glass-card-premium p-1 hover:scale-[1.01] transition-transform duration-300 group"
+              >
+                <div className="p-4 flex items-center justify-between gap-4 relative overflow-hidden rounded-xl">
+                  {/* Subtle rank-based background glow */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 opacity-40 ${
+                    leader.rank <= 5 ? 'bg-yellow-400' : 
+                    leader.rank <= 10 ? 'bg-blue-400' : 
+                    'bg-slate-700'
+                  }`} />
 
-        <div className="divide-y divide-slate-200 dark:divide-border-dark">
-          {leaderboardList.map((leader) => (
-            <div
-              key={leader.rank}
-              className="p-6 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-[#1f1f35] transition-colors"
-            >
-              {/* Rank */}
-              <div className="w-8 sm:w-12 text-center">
-                <span className="text-sm sm:text-lg font-bold text-slate-900 dark:text-white">
-                  #{leader.rank}
-                </span>
-              </div>
-
-              {/* Change Indicator */}
-              <div className="w-6">
-                {leader.change === 'up' && (
-                  <span className="material-symbols-outlined text-green-500 text-xl">trending_up</span>
-                )}
-                {leader.change === 'down' && (
-                  <span className="material-symbols-outlined text-red-500 text-xl">trending_down</span>
-                )}
-                {leader.change === 'same' && (
-                  <span className="material-symbols-outlined text-slate-400 text-xl">remove</span>
-                )}
-              </div>
-
-              {/* Avatar & Info */}
-              <Avatar src={leader.avatar} name={leader.username} size="sm" className="sm:size-md" />
-              <div className="flex-1 min-w-0">
-                <Link to={`/app/profile/${leader.username}`}>
-                  <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white hover:text-primary transition-colors truncate">
-                    {leader.username}
-                    {leader.isCurrentUser && <span className="ml-1 text-primary text-[10px] sm:text-sm">(You)</span>}
-                  </h3>
-                </Link>
-                <p className="text-[10px] sm:text-sm text-slate-600 dark:text-text-secondary truncate">
-                  {leader.questsCompleted} quest{leader.questsCompleted !== 1 ? 's' : ''} completed
-                </p>
-              </div>
-
-              {/* XP */}
-              <div className="text-right">
-                <p className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
-                  {leader.xp.toLocaleString()}
-                </p>
-                <p className="text-[10px] sm:text-xs text-slate-600 dark:text-text-secondary uppercase">XP</p>
-              </div>
-            </div>
-          ))}
+                  <div className="flex items-center gap-6 relative z-10">
+                    <span className={`w-8 text-center text-sm font-black ${
+                      leader.rank <= 10 ? 'text-white' : 'text-slate-500'
+                    }`}>#{leader.rank}</span>
+                    <Avatar src={leader.avatar} name={leader.username} size="sm" />
+                    <div>
+                    <div 
+                      onClick={() => setQuickViewUser(leader)}
+                      className="font-black text-white hover:text-primary transition-colors cursor-pointer block leading-tight"
+                    >
+                      {leader.username}
+                    </div>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{leader.questsCompleted} Quests Mastered</p>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right flex items-center gap-8 relative z-10">
+                    <div className="hidden md:block text-center mr-4">
+                       <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic mb-1">Consistency</p>
+                       <div className="h-1 w-20 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, (leader.displayXP / 500) * 100)}%` }}
+                            className="h-full bg-gradient-to-r from-primary to-cyan-400" 
+                          />
+                       </div>
+                    </div>
+                    <div>
+                      <span className="text-xl font-black text-white tracking-tighter group-hover:text-primary transition-colors">{leader.displayXP.toLocaleString()}</span>
+                      <span className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">XP</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          
+          {leaderboardList.length === 0 && (
+             <div className="text-center py-20 glass-card-premium rounded-3xl border-dashed border-white/10">
+                <p className="text-slate-500 font-black uppercase tracking-widest">No legends found in this period... yet.</p>
+             </div>
+          )}
         </div>
+      </div>
 
-        {/* Load More */}
-        <div className="p-6 border-t border-slate-200 dark:border-border-dark">
-          <Button variant="outline" className="w-full">
-            Load More Rankings
-          </Button>
-        </div>
-      </Card>
+      <AnimatePresence>
+        {quickViewUser && (
+          <ProfileQuickView 
+            username={quickViewUser.username}
+            userId={quickViewUser.id}
+            onClose={() => setQuickViewUser(null)}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   )
 }
