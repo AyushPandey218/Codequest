@@ -55,7 +55,10 @@ const AcademyHub = () => {
                   <div className="size-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 border border-emerald-500/30 shadow-lg shadow-emerald-500/10">
                     <span className="material-symbols-outlined text-3xl">rocket_launch</span>
                   </div>
-                  <Button variant="primary" size="md" className="bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-600/20" icon="arrow_forward">Start Coding Now</Button>
+                  <div className="flex items-center justify-center gap-2 px-6 h-12 font-bold rounded-xl transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-600/20 hover:scale-[1.01] active:scale-[0.98]">
+                    <span>Start Coding Now</span>
+                    <span className="material-symbols-outlined text-xl">arrow_forward</span>
+                  </div>
                 </div>
                 
                 <h2 className="text-3xl font-black text-white mb-3 tracking-tight uppercase">Quick Quests</h2>
@@ -93,7 +96,10 @@ const AcademyHub = () => {
                 <h3 className="text-lg font-bold text-white">Learning Paths</h3>
               </div>
               <p className="text-sm text-slate-400 mb-4">Follow structured, expert-curated journeys to master specific domains from scratch.</p>
-              <Button variant="ghost" className="w-full text-primary" size="sm" icon="chevron_right">Explore Paths</Button>
+              <div className="w-full h-9 px-4 text-sm inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all text-primary hover:bg-primary/10">
+                <span>Explore Paths</span>
+                <span className="material-symbols-outlined text-xl">chevron_right</span>
+              </div>
             </Card>
           </Link>
 
@@ -106,7 +112,10 @@ const AcademyHub = () => {
                 <h3 className="text-lg font-bold text-white">Project Modules</h3>
               </div>
               <p className="text-sm text-slate-400 mb-4">Deep-dive into specialized tools and real-world projects with step-by-step guidance.</p>
-              <Button variant="ghost" className="w-full text-purple-400" size="sm" icon="chevron_right">View Modules</Button>
+              <div className="w-full h-9 px-4 text-sm inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all text-purple-400 hover:bg-purple-500/10">
+                <span>View Modules</span>
+                <span className="material-symbols-outlined text-xl">chevron_right</span>
+              </div>
             </Card>
           </Link>
         </div>

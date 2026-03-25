@@ -223,17 +223,18 @@ const LearnHub = () => {
                        </div>
 
                        {unlocked && (
-                         <Link to={`/app/learn/${trackId}/${module.id}/${nextLesson ? nextLesson.id : module.lessons[0].id}`}>
-                           <button className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 mt-4 ${
+                         <Link 
+                           to={`/app/learn/${trackId}/${module.id}/${nextLesson ? nextLesson.id : module.lessons[0].id}`}
+                           className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 mt-4 no-underline ${
                              isComplete 
                                ? 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10' 
                                : `bg-gradient-to-r ${module.color} text-white hover:brightness-110 active:scale-95`
-                           }`}>
-                             <span className="material-symbols-outlined text-sm">
-                               {isComplete ? 'refresh' : 'play_arrow'}
-                             </span>
-                             {isComplete ? 'Review Content' : isStarted ? 'Continue Journey' : 'Begin Module'}
-                           </button>
+                           }`}
+                         >
+                           <span className="material-symbols-outlined text-sm">
+                             {isComplete ? 'refresh' : 'play_arrow'}
+                           </span>
+                           {isComplete ? 'Review Content' : isStarted ? 'Continue Journey' : 'Begin Module'}
                          </Link>
                        )}
                     </div>

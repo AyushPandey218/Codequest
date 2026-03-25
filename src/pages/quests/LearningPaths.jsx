@@ -98,14 +98,18 @@ const LearningPaths = () => {
                                         <ProgressBar value={progress} />
                                     </div>
 
-                                    <Link to={`/app/paths/${path.id}`} className="block pt-2">
-                                        <Button
-                                            variant={isCompleted ? 'outline' : 'primary'}
-                                            className="w-full"
-                                            icon={isCompleted ? 'workspace_premium' : 'arrow_forward'}
-                                        >
-                                            {isCompleted ? 'View Path Details' : isStarted ? 'Continue Journey' : 'Begin Journey'}
-                                        </Button>
+                                    <Link 
+                                        to={`/app/paths/${path.id}`} 
+                                        className={`block w-full text-center py-2.5 rounded-xl font-bold transition-all mt-4 border-2 flex items-center justify-center gap-2 ${
+                                            isCompleted 
+                                                ? 'border-primary text-primary hover:bg-primary/10' 
+                                                : 'bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/25'
+                                        }`}
+                                    >
+                                        <span className="material-symbols-outlined text-xl">
+                                            {isCompleted ? 'workspace_premium' : 'arrow_forward'}
+                                        </span>
+                                        {isCompleted ? 'View Path Details' : isStarted ? 'Continue Journey' : 'Begin Journey'}
                                     </Link>
                                 </div>
                             </div>

@@ -284,15 +284,18 @@ const QuestSelection = () => {
             </div>
 
             {/* Action Button */}
-            <Link to={`/app/quests/${quest.id}`}>
-              <Button
-                variant={completedQuestIds.has(quest.id) ? 'outline' : 'primary'}
-                size="md"
-                className="w-full"
-                icon={completedQuestIds.has(quest.id) ? 'replay' : 'rocket_launch'}
-              >
-                {completedQuestIds.has(quest.id) ? 'Solve Again' : 'Start Quest'}
-              </Button>
+            <Link 
+              to={`/app/quests/${quest.id}`}
+              className={`w-full py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
+                completedQuestIds.has(quest.id)
+                  ? 'border-2 border-primary text-primary hover:bg-primary/10'
+                  : 'bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/25'
+              }`}
+            >
+              <span className="material-symbols-outlined text-xl">
+                {completedQuestIds.has(quest.id) ? 'replay' : 'rocket_launch'}
+              </span>
+              {completedQuestIds.has(quest.id) ? 'Solve Again' : 'Start Quest'}
             </Link>
           </Card>
         ))}
