@@ -2,7 +2,7 @@ export const learningPaths = [
     {
         id: 'front-end-fundamentals',
         title: 'Frontend Fundamentals',
-        description: 'Master the core building blocks of the web: HTML, CSS, and basic JavaScript interactions.',
+        description: 'Master the core building blocks of the web: HTML, CSS, JavaScript, and TypeScript.',
         icon: '🎨',
         color: 'from-blue-500 to-indigo-500',
         questIds: ['q1', 'q2', 'q3', 'q4', 'q5'], 

@@ -4,6 +4,8 @@ import { pythonModules, getModuleProgress, isModuleUnlocked } from '../../data/p
 import { jsModules, getJSModuleProgress, isJSModuleUnlocked } from '../../data/jsLessons'
 import { cppModules, getCPPModuleProgress, isCPPModuleUnlocked } from '../../data/cppLessons'
 import { javaModules, getJavaModuleProgress, isJavaModuleUnlocked } from '../../data/javaLessons'
+import { tsModules, getTSModuleProgress, isTSModuleUnlocked } from '../../data/tsLessons'
+import { sqlModules, getSQLModuleProgress, isSQLModuleUnlocked } from '../../data/sqlLessons'
 import Badge from '../../components/common/Badge'
 import ProgressBar from '../../components/common/ProgressBar'
 import { useLessonProgress } from '../../hooks/useLessonProgress'
@@ -45,6 +47,24 @@ const TRACK_META = {
     modules: javaModules,
     getProgress: getJavaModuleProgress,
     isUnlocked: isJavaModuleUnlocked,
+  },
+  ts: {
+    label: 'TypeScript',
+    icon: '📘',
+    color: 'from-[#3178c6] to-[#2b5a97]',
+    glowColor: 'rgba(49, 120, 198, 0.4)',
+    modules: tsModules,
+    getProgress: getTSModuleProgress,
+    isUnlocked: isTSModuleUnlocked,
+  },
+  sql: {
+    label: 'SQL',
+    icon: '🗄️',
+    color: 'from-[#00758f] to-[#3178c6]',
+    glowColor: 'rgba(0, 117, 143, 0.4)',
+    modules: sqlModules,
+    getProgress: getSQLModuleProgress,
+    isUnlocked: isSQLModuleUnlocked,
   },
 }
 

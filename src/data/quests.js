@@ -546,10 +546,12 @@ export const questDetails = {
         solution: {
             Python3: `def solution(arr):\n    return sum(arr)`,
             JavaScript: `function solution(arr) {\n    return arr.reduce((a, b) => a + b, 0);\n}`,
+            TypeScript: `function solution(arr: number[]): number {\n    return arr.reduce((a, b) => a + b, 0);\n}`,
         },
         starterCode: {
             Python3: `def solution(arr):\n    # Your code here\n    pass`,
             JavaScript: `function solution(arr) {\n    // Your code here\n}`,
+            TypeScript: `function solution(arr: number[]): number {\n    // Your code here\n    return 0;\n}`,
             Java: `public class Solution {\n    public static int solution(int[] arr) {\n        // Your code here\n        return 0;\n    }\n}`,
         },
         testCases: [
@@ -579,10 +581,12 @@ export const questDetails = {
         solution: {
             Python3: `def solution(s):\n    return s[::-1]`,
             JavaScript: `function solution(s) {\n    return s.split('').reverse().join('');\n}`,
+            TypeScript: `function solution(s: string): string {\n    return s.split('').reverse().join('');\n}`,
         },
         starterCode: {
             Python3: `def solution(s):\n    # Your code here\n    pass`,
             JavaScript: `function solution(s) {\n    // Your code here\n}`,
+            TypeScript: `function solution(s: string): string {\n    // Your code here\n    return "";\n}`,
             Java: `public class Solution {\n    public static String solution(String s) {\n        // Your code here\n        return "";\n    }\n}`,
         },
         testCases: [
@@ -611,10 +615,12 @@ export const questDetails = {
         ],
         solution: {
             Python3: `def solution(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append("FizzBuzz")\n        elif i % 3 == 0:\n            result.append("Fizz")\n        elif i % 5 == 0:\n            result.append("Buzz")\n        else:\n            result.append(str(i))\n    return result`,
+            TypeScript: `function solution(n: number): string[] {\n    const result: string[] = [];\n    for (let i = 1; i <= n; i++) {\n        if (i % 15 === 0) result.push("FizzBuzz");\n        else if (i % 3 === 0) result.push("Fizz");\n        else if (i % 5 === 0) result.push("Buzz");\n        else result.push(i.toString());\n    }\n    return result;\n}`,
         },
         starterCode: {
             Python3: `def solution(n):\n    # Return a list of strings\n    result = []\n    # Your code here\n    return result`,
             JavaScript: `function solution(n) {\n    const result = [];\n    // Your code here\n    return result;\n}`,
+            TypeScript: `function solution(n: number): string[] {\n    const result: string[] = [];\n    // Your code here\n    return result;\n}`,
             Java: `import java.util.*;\npublic class Solution {\n    public static List<String> solution(int n) {\n        List<String> result = new ArrayList<>();\n        // Your code here\n        return result;\n    }\n}`,
         },
         testCases: [
@@ -643,10 +649,12 @@ export const questDetails = {
         ],
         solution: {
             Python3: `def solution(s):\n    s = s.lower()\n    return s == s[::-1]`,
+            TypeScript: `function solution(s: string): boolean {\n    const str = s.toLowerCase();\n    return str === str.split('').reverse().join('');\n}`,
         },
         starterCode: {
             Python3: `def solution(s):\n    # Your code here\n    pass`,
             JavaScript: `function solution(s) {\n    // Your code here\n}`,
+            TypeScript: `function solution(s: string): boolean {\n    // Your code here\n    return false;\n}`,
             Java: `public class Solution {\n    public static boolean solution(String s) {\n        // Your code here\n        return false;\n    }\n}`,
         },
         testCases: [
@@ -675,10 +683,12 @@ export const questDetails = {
         ],
         solution: {
             Python3: `def solution(s):\n    return sum(1 for c in s.lower() if c in 'aeiou')`,
+            TypeScript: `function solution(s: string): number {\n    return s.toLowerCase().split('').filter(c => 'aeiou'.includes(c)).length;\n}`,
         },
         starterCode: {
             Python3: `def solution(s):\n    count = 0\n    # Your code here\n    return count`,
             JavaScript: `function solution(s) {\n    let count = 0;\n    // Your code here\n    return count;\n}`,
+            TypeScript: `function solution(s: string): number {\n    let count = 0;\n    // Your code here\n    return count;\n}`,
             Java: `public class Solution {\n    public static int solution(String s) {\n        int count = 0;\n        // Your code here\n        return count;\n    }\n}`,
         },
         testCases: [

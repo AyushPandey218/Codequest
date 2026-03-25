@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react'
 import { pythonModules } from '../data/pythonLessons'
 import { jsModules } from '../data/jsLessons'
+import { cppModules } from '../data/cppLessons'
+import { javaModules } from '../data/javaLessons'
+import { tsModules } from '../data/tsLessons'
+import { sqlModules } from '../data/sqlLessons'
 
 const STORAGE_KEY = (trackId) => `cq_lesson_progress_${trackId}`
 
@@ -22,8 +26,15 @@ const saveProgress = (trackId, progress) => {
 }
 
 const getModulesForTrack = (trackId) => {
-  if (trackId === 'js') return jsModules
-  return pythonModules
+  const map = {
+    python: pythonModules,
+    js: jsModules,
+    cpp: cppModules,
+    java: javaModules,
+    ts: tsModules,
+    sql: sqlModules
+  }
+  return map[trackId] || pythonModules
 }
 
 export const useLessonProgress = (trackId = 'python') => {

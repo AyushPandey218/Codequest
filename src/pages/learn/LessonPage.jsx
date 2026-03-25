@@ -4,6 +4,8 @@ import { pythonModules } from '../../data/pythonLessons'
 import { jsModules } from '../../data/jsLessons'
 import { cppModules } from '../../data/cppLessons'
 import { javaModules } from '../../data/javaLessons'
+import { tsModules } from '../../data/tsLessons'
+import { sqlModules } from '../../data/sqlLessons'
 import { useLessonProgress } from '../../hooks/useLessonProgress'
 import { useUser } from '../../context/UserContext'
 import { useAuth } from '../../context/AuthContext'
@@ -141,12 +143,56 @@ const runJavaScript = (code) => {
   }
 }
 
-const runCode = async (code, trackId) => {
+// ─── SQL runner (sql.js) ─────────────────────────────────────────────────
+let sqlInstance = null
+const getSQL = async () => {
+  if (sqlInstance) return sqlInstance
+  if (!window.initSqlJs) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js'
+      script.onload = resolve
+      script.onerror = reject
+      document.head.appendChild(script)
+    })
+  }
+  const config = {
+    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+  }
+  sqlInstance = await window.initSqlJs(config)
+  return sqlInstance
+}
+
+const runSQL = async (code, setupSQL = '') => {
+  try {
+    const SQL = await getSQL()
+    const db = new SQL.Database()
+    
+    // 1. Run setup SQL (create tables, insert data)
+    if (setupSQL) db.run(setupSQL)
+    
+    // 2. Run user code
+    const res = db.exec(code)
+    
+    if (res.length === 0) return { output: '(Query executed successfully, no data returned)', error: null }
+    
+    // 3. Format result as a simple text table
+    const table = res[0]
+    const header = table.columns.join(' | ')
+    const rows = table.values.map(v => v.join(' | ')).join('\n')
+    return { output: `${header}\n${'-'.repeat(header.length)}\n${rows}`, error: null }
+  } catch (err) {
+    return { output: null, error: err.message }
+  }
+}
+
+const runCode = async (code, trackId, lesson = null) => {
   if (trackId === 'js') return runJavaScript(code)
   if (trackId === 'python') return runPython(code)
+  if (trackId === 'sql') return runSQL(code, lesson?.setupSQL)
   
   // For C++, Java, etc. use Wandbox via executeCodePlayground
-  const langMap = { cpp: 'C++', java: 'Java' }
+  const langMap = { cpp: 'C++', java: 'Java', ts: 'TypeScript' }
   const result = await executeCodePlayground(code, langMap[trackId] || trackId)
   return { output: result.output, error: result.error }
 }
@@ -157,6 +203,8 @@ const getTrackData = (trackId, moduleId, lessonId) => {
   if (trackId === 'js') modules = jsModules
   else if (trackId === 'cpp') modules = cppModules
   else if (trackId === 'java') modules = javaModules
+  else if (trackId === 'ts') modules = tsModules
+  else if (trackId === 'sql') modules = sqlModules
 
   const moduleData = modules.find(m => m.id === moduleId)
   const lesson = moduleData?.lessons.find(l => l.id === lessonId) || null
@@ -168,6 +216,7 @@ const LessonPage = () => {
   const { trackId = 'python', moduleId, lessonId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { userData } = useUser()
 
   const { modules, moduleData, lesson } = getTrackData(trackId, moduleId, lessonId)
   const moduleIndex = modules.findIndex(m => m.id === moduleId)
@@ -197,7 +246,8 @@ const LessonPage = () => {
         js: '// Write your code here\n',
         python: '# Write your code here\n',
         cpp: '// Write your code here\n',
-        java: '// Write your code here\n'
+        java: '// Write your code here\n',
+        ts: '// Write your code here\n'
       }[trackId] || '// Write your code here\n'
       setChallengeCode(starterComment)
       setStep(0)
@@ -221,13 +271,13 @@ const LessonPage = () => {
 
   const handleRunTry = async () => {
     setTryRunning(true); setTryOutput(null); setTryError(null)
-    const { output, error } = await runCode(tryCode, trackId)
+    const { output, error } = await runCode(tryCode, trackId, lesson)
     setTryOutput(output); setTryError(error); setTryRunning(false)
   }
 
   const handleRunChallenge = async () => {
     setChallengeRunning(true); setChallengeOutput(null); setChallengeError(null); setChallengePassed(false)
-    const { output, error } = await runCode(challengeCode, trackId)
+    const { output, error } = await runCode(challengeCode, trackId, lesson)
     setChallengeOutput(output); setChallengeError(error); setChallengeRunning(false)
     
     if (!error && lesson.challenge.testFn(output || '')) {
@@ -322,6 +372,8 @@ const LessonPage = () => {
     js: { icon: '⚡', label: 'JavaScript', lang: 'javascript' },
     cpp: { icon: '🏗️', label: 'C++', lang: 'cpp' },
     java: { icon: '☕', label: 'Java', lang: 'java' },
+    ts: { icon: '📘', label: 'TypeScript', lang: 'typescript' },
+    sql: { icon: '🗄️', label: 'SQL', lang: 'sql' },
   }
   const { icon: trackIcon, label: trackLabel, lang: editorLanguage } = trackMap[trackId] || trackMap.python
 

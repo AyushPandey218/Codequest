@@ -3,6 +3,8 @@ import { pythonModules, getModuleProgress } from '../../data/pythonLessons'
 import { jsModules, getJSModuleProgress } from '../../data/jsLessons'
 import { cppModules, getCPPModuleProgress } from '../../data/cppLessons'
 import { javaModules, getJavaModuleProgress } from '../../data/javaLessons'
+import { tsModules, getTSModuleProgress } from '../../data/tsLessons'
+import { sqlModules, getSQLModuleProgress } from '../../data/sqlLessons'
 import { useLessonProgress } from '../../hooks/useLessonProgress'
 import { useState, useEffect } from 'react'
 
@@ -59,6 +61,32 @@ const TRACKS = [
     difficultyColor: 'text-orange-400',
     modules: javaModules,
   },
+  {
+    id: 'ts',
+    label: 'TypeScript',
+    icon: '📘',
+    gradient: 'from-[#3178c6] to-[#2b5a97]',
+    glowColor: 'rgba(49, 120, 198, 0.4)',
+    tagline: 'Type-safe JavaScript',
+    description: 'The industry standard for large-scale web apps. Catch bugs before they happen.',
+    uses: ['🏗️ Architecture', '🌐 Web', '🛡️ Safety'],
+    difficulty: 'Medium',
+    difficultyColor: 'text-blue-400',
+    modules: tsModules,
+  },
+  {
+    id: 'sql',
+    label: 'SQL',
+    icon: '🗄️',
+    gradient: 'from-[#00758f] to-[#3178c6]',
+    glowColor: 'rgba(0, 117, 143, 0.4)',
+    tagline: 'Master the data',
+    description: 'Learn to query, filter, and join data in relational databases. Essential for any developer.',
+    uses: ['📊 Data', '⚙️ Backend', '🏛️ Architecture'],
+    difficulty: 'Easy',
+    difficultyColor: 'text-green-400',
+    modules: sqlModules,
+  },
 ]
 
 const LearnLanding = () => {
@@ -66,6 +94,8 @@ const LearnLanding = () => {
   const { completedLessons: jsCompleted, getTotalXP: jsXP } = useLessonProgress('js')
   const { completedLessons: cppCompleted, getTotalXP: cppXP } = useLessonProgress('cpp')
   const { completedLessons: javaCompleted, getTotalXP: javaXP } = useLessonProgress('java')
+  const { completedLessons: tsCompleted, getTotalXP: tsXP } = useLessonProgress('ts')
+  const { completedLessons: sqlCompleted, getTotalXP: sqlXP } = useLessonProgress('sql')
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
@@ -87,6 +117,8 @@ const LearnLanding = () => {
     else if (track.id === 'js') { completed = jsCompleted; xp = jsXP() }
     else if (track.id === 'cpp') { completed = cppCompleted; xp = cppXP() }
     else if (track.id === 'java') { completed = javaCompleted; xp = javaXP() }
+    else if (track.id === 'ts') { completed = tsCompleted; xp = tsXP() }
+    else if (track.id === 'sql') { completed = sqlCompleted; xp = sqlXP() }
 
     const totalLessons = track.modules.flatMap(m => m.lessons).length
     const doneCount = Object.keys(completed).length
