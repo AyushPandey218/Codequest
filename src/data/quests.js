@@ -1469,7 +1469,8 @@ export const questDetails = {
         starterCode: {
             Python3: `# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, x):\n#         self.val = x\n#         self.next = None\n\ndef solution(head):\n    # Your code here\n    pass`,
             JavaScript: `/**\n * Definition for singly-linked list.\n * function ListNode(val) {\n *     this.val = val;\n *     this.next = null;\n * }\n */\n\nfunction solution(head) {\n    // Your code here\n}`,
-            Java: `class ListNode {\n    int val;\n    ListNode next;\n    ListNode(int x) {\n        val = x;\n        next = null;\n    }\n}\npublic class Solution {\n    public boolean solution(ListNode head) {\n        // Your code here\n        return false;\n    }\n}`,
+            Java: `public class Solution {\n    public boolean solution(ListNode head) {\n        // Your code here\n        return false;\n    }\n}`,
+            "C++": `bool solution(ListNode* head) {\n    // Use Floyd's Cycle-Finding Algorithm\n    // Your code here\n    return false;\n}`,
         },
         testCases: [
             { id: 'tc1', description: 'Cycle present', input: '{"head": [3,2,0,-4], "pos": 1}', expectedOutput: 'true', isHidden: false },

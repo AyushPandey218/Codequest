@@ -236,16 +236,99 @@ public class Main {
 }
 `
     case 'C++': return `
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <map>
+#include <set>
+#include <queue>
+#include <stack>
+
 using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+// Helper to build list from vector
+ListNode* buildList(vector<int> vals) {
+    if (vals.empty()) return NULL;
+    ListNode* head = new ListNode(vals[0]);
+    ListNode* curr = head;
+    for (size_t i = 1; i < vals.size(); i++) {
+        curr->next = new ListNode(vals[i]);
+        curr = curr->next;
+    }
+    return head;
+}
+
+// Helper to build list with cycle
+ListNode* buildCycleList(vector<int> vals, int pos) {
+    if (vals.empty()) return NULL;
+    vector<ListNode*> nodes;
+    ListNode* head = new ListNode(vals[0]);
+    nodes.push_back(head);
+    ListNode* curr = head;
+    for (size_t i = 1; i < vals.size(); i++) {
+        curr->next = new ListNode(vals[i]);
+        curr = curr->next;
+        nodes.push_back(curr);
+    }
+    if (pos >= 0 && pos < nodes.size()) {
+        curr->next = nodes[pos];
+    }
+    return head;
+}
 
 ${userCode}
 
 int main() {
     string line;
-    getline(cin, line);
-    if (!line.empty() && line[0] == '[') {
-        // Parse array
+    if (!getline(cin, line)) return 0;
+    
+    // Simplistic guess for Linked List Cycle input: {"head": [3,2,0,-4], "pos": 1}
+    if (line.find("\"head\"") != string::npos) {
+        // Extract array part
+        size_t start = line.find("[");
+        size_t end = line.find("]");
+        if (start != string::npos && end != string::npos) {
+            string arrStr = line.substr(start + 1, end - start - 1);
+            vector<int> vals;
+            stringstream ss(arrStr);
+            string tok;
+            while (getline(ss, tok, ',')) {
+                if (!tok.empty()) vals.push_back(stoi(tok));
+            }
+            
+            // Extract pos part
+            int pos = -1;
+            size_t posIdx = line.find("\"pos\"");
+            if (posIdx != string::npos) {
+                size_t colon = line.find(":", posIdx);
+                size_t comma = line.find(",", colon);
+                if (comma == string::npos) comma = line.find("}", colon);
+                if (colon != string::npos && comma != string::npos) {
+                    pos = stoi(line.substr(colon + 1, comma - colon - 1));
+                }
+            }
+            
+            ListNode* head = buildCycleList(vals, pos);
+            // We assume the user has solution(ListNode*) or hasCycle(ListNode*)
+            // For now, let's call solution
+            cout << (solution(head) ? "true" : "false") << endl;
+        }
+    } else if (line[0] == '[') {
         vector<int> arr;
         string inner = line.substr(1, line.size()-2);
         stringstream ss(inner);
@@ -253,8 +336,7 @@ int main() {
         while (getline(ss, tok, ',')) {
             if (!tok.empty()) arr.push_back(stoi(tok));
         }
-        auto res = solution(arr);
-        cout << res << endl;
+        cout << solution(arr) << endl;
     } else {
         cout << solution(stoi(line)) << endl;
     }
