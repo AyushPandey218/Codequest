@@ -474,12 +474,11 @@ const runJDoodle = async (code, language, input) => {
     return { stdout: null, error: `Language "${language}" is not supported yet.` }
   }
 
-  const clientId = import.meta.env.VITE_JDOODLE_CLIENT_ID
+  const clientId = import.meta.env.VITE_JDOODLE_CLIENT_ID || import.meta.env.VITE_ONLINECOMPILER_API_KEY
   const clientSecret = import.meta.env.VITE_JDOODLE_CLIENT_SECRET
 
   if (!clientId || !clientSecret) {
-    // If no JDoodle keys, fallback to Piston!
-    return runPiston(code, language, input)
+    return { stdout: null, error: `JDoodle API keys missing! Please create a .env.local file with VITE_JDOODLE_CLIENT_ID and VITE_JDOODLE_CLIENT_SECRET. (Piston public API is no longer available)` }
   }
 
   const program = buildJDoodleProgram(code, language)
@@ -534,8 +533,8 @@ const executeTestCase = async (code, selectedLanguage, testCase) => {
     } else if (selectedLanguage === 'JavaScript') {
       execResult = await runJavaScript(code, testCase.input)
     } else {
-      // Use Piston for all compiled languages — it's free and reliable!
-      execResult = await runPiston(code, selectedLanguage, testCase.input)
+      // Use JDoodle for all compiled languages
+      execResult = await runJDoodle(code, selectedLanguage, testCase.input)
     }
 
     result.executionTime = Date.now() - startTime
@@ -553,6 +552,7 @@ const executeTestCase = async (code, selectedLanguage, testCase) => {
 
   } catch (err) {
     result.error = err.message
+    result.actualOutput = err.message
     result.executionTime = Date.now() - startTime
     result.passed = false
   }
@@ -644,8 +644,8 @@ export const executeCodePlayground = async (code, language = 'Python3') => {
       await pyodide.runPythonAsync(code)
       result = { stdout: stdout.trim(), error: null }
     } else {
-      // Compiled languages via Piston
-      result = await runPiston(code, language, '')
+      // Compiled languages via JDoodle
+      result = await runJDoodle(code, language, '')
     }
     return { success: true, output: result.stdout || result.error, executionTime: 0, error: result.error }
   } catch (e) {

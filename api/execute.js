@@ -80,7 +80,7 @@ export default async function handler(req, res) {
 
     // Engine B: Wandbox
     if (compiler) {
-      engines.push(postRequest('https://online.wandbox.org/api/compile.json', { 
+      engines.push(postRequest('https://wandbox.org/api/compile.json', { 
         compiler, code, stdin, save: false 
       }, { 
         timeout: 9000,
@@ -111,8 +111,8 @@ export default async function handler(req, res) {
         return res.status(200).json(successful.value.data);
       }
 
-      // If no success, aggregate errors
-      const errors = results.map(r => r.status === 'fulfilled' ? (r.value.data.run.stderr || 'No error message') : r.reason.message);
+      // If no success, aggregate errors safely
+      const errors = results.map(r => r.status === 'fulfilled' ? (r.value?.data?.run?.stderr || r.value?.data?.message || 'No error message') : r.reason.message);
       return res.status(200).json({ // Return 200 even on compilation error so frontend can show it
         run: {
           stdout: '',
