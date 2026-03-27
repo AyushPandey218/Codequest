@@ -1,20 +1,28 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/common/Button'
 
 const PasswordRecovery = () => {
   const navigate = useNavigate()
+  const { resetPassword } = useAuth()
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
+    setError('')
 
-    // TODO: Replace with actual API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    const result = await resetPassword(email)
     
-    navigate('/auth/password-recovery-confirmation')
+    if (result.success) {
+      navigate('/auth/password-recovery-confirmation', { state: { email } })
+    } else {
+      setError(result.error || 'Failed to send reset email')
+    }
+    
     setIsLoading(false)
   }
 
@@ -38,6 +46,11 @@ const PasswordRecovery = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg text-center">
+              {error}
+            </div>
+          )}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="email">
               Email Address

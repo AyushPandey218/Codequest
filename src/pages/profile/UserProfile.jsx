@@ -61,6 +61,7 @@ const EloChart = ({ data }) => {
 
 import { useUserData } from '../../hooks/useUserData'
 import { useSubmissions } from '../../hooks/useSubmissions'
+import { useUserByUsername } from '../../hooks/useUserByUsername'
 
 const UserProfile = () => {
   const navigate = useNavigate()
@@ -74,15 +75,18 @@ const UserProfile = () => {
   const { leaderboard, loading: leaderboardLoading } = useLeaderboard('all', 100)
   
   // 3. Resolve the target UID
+  const leaderboardUser = leaderboard.find(l => l.username === userId)
+  const { uid: resolvedUid, loading: resolvingUid } = useUserByUsername(isOwnProfile ? null : userId)
+  
   const profileUserId = isOwnProfile 
     ? currentUser?.uid 
-    : leaderboard.find(l => l.username === userId)?.id
+    : (leaderboardUser?.id || resolvedUid)
 
   // 4. Fetch the target user's specific data
   const { userData: targetUserData, loading: userLoading } = useUserData(profileUserId)
   const { submissions: targetSubmissions, loading: subLoading } = useSubmissions(profileUserId)
   
-  const loading = leaderboardLoading || userLoading || subLoading
+  const loading = leaderboardLoading || userLoading || subLoading || resolvingUid
   const [activeHistoryTab, setActiveHistoryTab] = useState('All')
 
   // Real rank calculation

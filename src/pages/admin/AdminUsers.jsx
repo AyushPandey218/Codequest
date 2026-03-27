@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAdminUsers } from '../../hooks/useAdminUsers'
 
 const Badge = ({ status }) => {
@@ -14,6 +15,7 @@ const Badge = ({ status }) => {
 }
 
 const AdminUsers = () => {
+    const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
     const { users, isLoading, updateUserStatus, deleteUser } = useAdminUsers()
@@ -62,7 +64,7 @@ const AdminUsers = () => {
                         placeholder="Search by username or email..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full bg-[#12122a] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 transition-colors"
+                        className="w-full bg-[#12122a] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all shadow-inner"
                     />
                 </div>
                 <div className="flex gap-2">
@@ -118,6 +120,7 @@ const AdminUsers = () => {
                                     <td className="px-5 py-4">
                                         <div className="flex items-center justify-end gap-2">
                                             <button
+                                                onClick={() => navigate(`/app/profile/${user.username}`)}
                                                 title="View Profile"
                                                 className="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                                             >

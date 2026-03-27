@@ -7,7 +7,7 @@ import BlurText from '../common/BlurText';
 const SpaceHero = () => {
     const navigate = useNavigate();
     const navLinks = ["Quests", "Leaderboard", "Compilers", "Community", "Dashboard"];
-    const partners = ["Stack Overflow", "localhost:3000", "npm install", "undefined", "// TODO: fix later"];
+    const partners = ["GitHub", "Microsoft", "Google", "Amazon", "OpenAI"];
 
     return (
         <section className="relative h-screen w-full overflow-hidden flex flex-col bg-background text-foreground selection:bg-white/30 selection:text-white">

@@ -1,10 +1,17 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/common/Button'
 
 const PasswordRecoveryConfirmation = () => {
-  const handleResend = () => {
-    // TODO: Implement resend functionality
-    alert('Password reset link resent!')
+  const location = useLocation()
+  const { resetPassword } = useAuth()
+  const email = location.state?.email || 'your email'
+
+  const handleResend = async () => {
+    if (email && email !== 'your email') {
+      await resetPassword(email)
+      alert('Password reset link resent!')
+    }
   }
 
   return (
@@ -20,7 +27,7 @@ const PasswordRecoveryConfirmation = () => {
             </h1>
             <p className="text-slate-500 dark:text-[#9d9db9] text-sm md:text-base leading-relaxed">
               We have sent a password reset link to{' '}
-              <span className="font-medium text-slate-900 dark:text-white">student@university.edu</span>
+              <span className="font-medium text-slate-900 dark:text-white">{email}</span>
             </p>
           </div>
         </div>

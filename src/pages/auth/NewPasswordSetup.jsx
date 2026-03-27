@@ -1,9 +1,14 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/common/Button'
 
 const NewPasswordSetup = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { confirmReset } = useAuth()
+  
+  const [oobCode, setOobCode] = useState('')
   const [formData, setFormData] = useState({
     newPassword: '',
     confirmPassword: ''
@@ -13,6 +18,17 @@ const NewPasswordSetup = () => {
     confirm: false
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const code = params.get('oobCode')
+    if (code) {
+      setOobCode(code)
+    } else {
+      setError('Invalid or expired reset link. Please request a new one.')
+    }
+  }, [location])
 
   // Calculate password strength
   const getPasswordStrength = (password) => {
@@ -46,11 +62,22 @@ const NewPasswordSetup = () => {
     }
 
     setIsLoading(true)
+    setError('')
 
-    // TODO: Replace with actual API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    if (!oobCode) {
+      setError('Missing reset code. Please request a new password reset.')
+      setIsLoading(false)
+      return
+    }
+
+    const result = await confirmReset(oobCode, formData.newPassword)
     
-    navigate('/auth/password-changed')
+    if (result.success) {
+      navigate('/auth/password-changed')
+    } else {
+      setError(result.error || 'Failed to reset password. The link may have expired.')
+    }
+    
     setIsLoading(false)
   }
 
@@ -82,6 +109,11 @@ const NewPasswordSetup = () => {
 
         {/* Form Content */}
         <form className="px-8 pb-8 flex flex-col gap-5" onSubmit={handleSubmit}>
+          {error && (
+            <div className={`text-xs p-3 rounded-lg text-center ${error.includes('expired') ? 'bg-orange-500/10 border border-orange-500/20 text-orange-500' : 'bg-red-500/10 border border-red-500/20 text-red-500'}`}>
+              {error}
+            </div>
+          )}
           {/* New Password Field */}
           <div className="flex flex-col gap-2">
             <label 

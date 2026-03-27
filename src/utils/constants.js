@@ -63,7 +63,7 @@ export const STORAGE_KEYS = {
 
 // API Endpoints (for future use)
 export const API_ENDPOINTS = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || '/api',
   LOGIN: '/auth/login',
   SIGNUP: '/auth/signup',
   LOGOUT: '/auth/logout',

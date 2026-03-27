@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { learningPaths } from '../../data/learningPaths'
-import { quests } from '../../data/quests'
+import { useQuestList } from '../../hooks/useQuestList'
 import { useUser } from '../../context/UserContext'
 import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
@@ -11,8 +11,22 @@ const PathDetail = () => {
     const { pathId } = useParams()
     const navigate = useNavigate()
     const { userProgress } = useUser()
+    const { quests, loading: questsLoading } = useQuestList()
 
     const path = learningPaths.find(p => p.id === pathId)
+
+    if (questsLoading) {
+        return (
+            <div className="max-w-[1000px] mx-auto space-y-8 animate-pulse">
+                <div className="h-48 bg-slate-200 dark:bg-[#282839] rounded-2xl"></div>
+                <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="h-24 bg-slate-200 dark:bg-[#282839] rounded-xl"></div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
 
     if (!path) {
         return (

@@ -103,11 +103,6 @@ npm run dev
 
 ------------------------------------------------------------------------
 
-## 🔮 Roadmap
-- [ ] **AI SENSEI**: Real-time AI tutoring and code optimization hints.
-- [ ] **GUILD WARS**: Team-based competitive coding clusters.
-- [ ] **CERTIFICATION**: Verifiable on-chain mastery badges.
-
 ------------------------------------------------------------------------
 
 ## 👨‍💻 Author

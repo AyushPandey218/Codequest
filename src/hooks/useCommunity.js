@@ -287,9 +287,32 @@ export function useCommunity() {
     const deletePost = async (postId) => {
         try {
             await deleteDoc(doc(db, 'communityPosts', postId))
+            // Also delete all replies for this post
+            const q = query(collection(db, 'communityReplies'))
+            const snapshot = await getDocs(q)
+            const repliesToDelete = snapshot.docs.filter(d => d.data().postId === postId)
+            for (const r of repliesToDelete) {
+                await deleteDoc(doc(db, 'communityReplies', r.id))
+            }
             await fetchPosts() // Refresh the list
         } catch (error) {
             console.error("Error deleting post:", error)
+            throw error
+        }
+    }
+
+    const deleteReply = async (postId, replyId) => {
+        try {
+            await deleteDoc(doc(db, 'communityReplies', replyId))
+            // Decrement the parent counter
+            await updateDoc(doc(db, 'communityPosts', postId), {
+                replies: increment(-1)
+            })
+            // We don't refetch all posts here since we usually call this from PostView 
+            // which has local state, but we return true for success
+            return true
+        } catch (error) {
+            console.error("Error deleting reply:", error)
             throw error
         }
     }

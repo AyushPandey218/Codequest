@@ -4,14 +4,15 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
+const DIFFICULTIES = ['Easy', 'Medium', 'Hard', 'Expert']
 const CATEGORIES = ['arrays', 'strings', 'math', 'algorithms', 'stacks', 'trees', 'graphs', 'dynamic-programming', 'sorting', 'searching', 'recursion', 'other']
-const LANGUAGES = ['Python3', 'JavaScript', 'Java']
+const LANGUAGES = ['Python3', 'JavaScript', 'TypeScript', 'Java']
 
 const difficultyColor = {
     Easy: 'bg-green-500/15 text-green-400 border-green-500/30',
     Medium: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
     Hard: 'bg-red-500/15 text-red-400 border-red-500/30',
+    Expert: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
 }
 
 const emptyTestCase = () => ({ id: `tc${Date.now()}`, description: '', input: '', expectedOutput: '', isHidden: false })
@@ -454,6 +455,7 @@ const AdminQuestManager = () => {
     const [editingQuest, setEditingQuest] = useState(null)
     const [deleteTarget, setDeleteTarget] = useState(null)
     const [toasts, setToasts] = useState([])
+    const [isSyncing, setIsSyncing] = useState(false)
 
     useEffect(() => {
         fetchQuests()
@@ -523,6 +525,44 @@ const AdminQuestManager = () => {
         }
     }
 
+    const handleCloudSync = async () => {
+        if (!window.confirm("This will migrate all quests from the local static file to Firestore. New quests with matching IDs will be skipped. Proceed?")) return
+        
+        setIsSyncing(true)
+        try {
+            // Dynamically import data to keep bundle smaller
+            const { questDetails } = await import('../../data/quests')
+            const detailsArray = Object.values(questDetails)
+            
+            let uploaded = 0
+            let skipped = 0
+            
+            for (const q of detailsArray) {
+                // Check if already exists in current list
+                if (quests.some(existing => existing.id === q.id)) {
+                    skipped++
+                    continue
+                }
+                
+                // Add to Firestore
+                await addDoc(collection(db, 'quests'), {
+                    ...q,
+                    createdAt: serverTimestamp(),
+                    completions: q.completions || '0'
+                })
+                uploaded++
+            }
+            
+            addToast(`Successfully synced ${uploaded} quests (${skipped} skipped)`)
+            fetchQuests()
+        } catch (error) {
+            console.error("Sync error:", error)
+            addToast("Cloud sync failed", "error")
+        } finally {
+            setIsSyncing(false)
+        }
+    }
+
     const filtered = quests.filter(q => {
         const matchSearch = q.title.toLowerCase().includes(search.toLowerCase()) ||
             q.category?.toLowerCase().includes(search.toLowerCase())
@@ -550,13 +590,26 @@ const AdminQuestManager = () => {
                     </div>
                     <p className="text-slate-500 text-sm ml-12">Add, edit, and delete coding quests</p>
                 </div>
-                <button
-                    onClick={openAdd}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-blue-600 text-white font-bold transition-all shadow-lg shadow-primary/25 hover:scale-[1.01] active:scale-[0.98]"
-                >
-                    <span className="material-symbols-outlined text-xl">add</span>
-                    Add Quest
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleCloudSync}
+                        disabled={isSyncing}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#282839] border border-[#3b3b54] text-slate-300 hover:text-white hover:bg-[#3b3b54] transition-all font-bold disabled:opacity-50"
+                        title="Seed database from local file"
+                    >
+                        <span className={`material-symbols-outlined text-xl ${isSyncing ? 'animate-spin' : ''}`}>
+                            {isSyncing ? 'sync' : 'cloud_upload'}
+                        </span>
+                        {isSyncing ? 'Syncing...' : 'Cloud Sync'}
+                    </button>
+                    <button
+                        onClick={openAdd}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-blue-600 text-white font-bold transition-all shadow-lg shadow-primary/25 hover:scale-[1.01] active:scale-[0.98]"
+                    >
+                        <span className="material-symbols-outlined text-xl">add</span>
+                        Add Quest
+                    </button>
+                </div>
             </div>
 
             {/* Stats Row */}
@@ -575,15 +628,15 @@ const AdminQuestManager = () => {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-4 items-center bg-[#1c1c27] p-4 rounded-2xl border border-[#3b3b54]/50 shadow-inner">
                 {/* Search */}
-                <div className="relative flex-1">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
+                <div className="relative flex-1 w-full">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">search</span>
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        placeholder="Search quests by title or category..."
-                        className="w-full bg-[#1c1c27] border border-[#3b3b54] rounded-xl pl-10 pr-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary transition-colors text-sm"
+                        placeholder="Search quests by title, category, or tags..."
+                        className="w-full bg-[#12121a] border border-[#3b3b54] rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                     />
                 </div>
                 {/* Difficulty filter */}

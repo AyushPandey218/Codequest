@@ -6,12 +6,15 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile as firebaseUpdateProfile,
-  sendEmailVerification
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  confirmPasswordReset
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment } from 'firebase/firestore'
 import { auth, db, googleProvider } from '../config/firebase'
 import { STORAGE_KEYS } from '../utils/constants'
 import { checkAchievements } from '../utils/achievementChecker'
+import { getAuthErrorMessage } from '../utils/errorHandlers'
 // Removed Capacitor initialization as the project is now web-only
 
 const AuthContext = createContext(null)
@@ -90,7 +93,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: getAuthErrorMessage(error.code) }
     }
   }
 
@@ -129,7 +132,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true }
     } catch (error) {
       console.error('Signup error:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: getAuthErrorMessage(error.code) }
     }
   }
 
@@ -142,7 +145,7 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: 'User not found or already verified.' }
     } catch (error) {
       console.error('Resend verification error:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: getAuthErrorMessage(error.code) }
     }
   }
 
@@ -188,7 +191,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true, isAdmin }
     } catch (error) {
       console.error('Google login error:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: getAuthErrorMessage(error.code) }
     }
   }
 
@@ -254,6 +257,26 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const resetPassword = async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email)
+      return { success: true }
+    } catch (error) {
+      console.error('Reset password error:', error)
+      return { success: false, error: getAuthErrorMessage(error.code) }
+    }
+  }
+  
+  const confirmReset = async (oobCode, newPassword) => {
+    try {
+      await confirmPasswordReset(auth, oobCode, newPassword)
+      return { success: true }
+    } catch (error) {
+      console.error('Confirm reset error:', error)
+      return { success: false, error: getAuthErrorMessage(error.code) }
+    }
+  }
+
   const isAdmin = user?.role === 'admin'
 
   const value = {
@@ -269,6 +292,8 @@ export const AuthProvider = ({ children }) => {
     resendVerification,
     updateXP,
     completeLesson,
+    resetPassword,
+    confirmReset,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
