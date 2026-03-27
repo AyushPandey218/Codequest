@@ -382,7 +382,14 @@ const runPiston = async (code, language, input) => {
       }),
     })
 
-    if (!res.ok) throw new Error(`Piston API error: ${res.status}`)
+    if (!res.ok) {
+      let msg = `API error: ${res.status}`;
+      try {
+        const errData = await res.json();
+        if (errData.message || errData.error) msg = errData.message || errData.error;
+      } catch (e) {}
+      throw new Error(msg);
+    }
 
     const data = await res.json()
     // Piston response: { run: { stdout, stderr, code, signal, output } }
