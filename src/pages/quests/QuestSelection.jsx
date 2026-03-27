@@ -8,7 +8,6 @@ import Button from '../../components/common/Button'
 import ProgressBar from '../../components/common/ProgressBar'
 
 const QuestSelection = () => {
-  const [activeCategory, setActiveCategory] = useState('all')
   const [activeDifficulty, setActiveDifficulty] = useState('all')
 
   const { quests, loading, error } = useQuestList()
@@ -17,13 +16,6 @@ const QuestSelection = () => {
     Object.keys(userProgress).filter(id => userProgress[id].completed)
   )
 
-  const categories = [
-    { id: 'all', label: 'All Quests', icon: 'grid_view' },
-    { id: 'python', label: 'Python', icon: 'code' },
-    { id: 'javascript', label: 'JavaScript', icon: 'javascript' },
-    { id: 'algorithms', label: 'Algorithms', icon: 'psychology' },
-    { id: 'web', label: 'Web Dev', icon: 'web' },
-  ]
 
   const difficulties = ['all', 'easy', 'medium', 'hard', 'expert']
 
@@ -48,16 +40,15 @@ const QuestSelection = () => {
   }
 
   const filteredQuests = (questsWithProgress || []).filter(q => {
-    // 1. Category Filter
-    const matchesCategory = activeCategory === 'all' || 
-      (q.category && q.category.toLowerCase() === activeCategory.toLowerCase());
-    if (!matchesCategory) return false;
-
-    // 2. Difficulty Filter
-    const matchesDifficulty = activeDifficulty === 'all' || 
-      (q.difficulty && q.difficulty.toLowerCase() === activeDifficulty.toLowerCase());
+    // 1. Get raw difficulty from any possible field name
+    const rawDiff = q.difficulty || q.Difficulty || '';
     
-    return matchesDifficulty;
+    // 2. Normalize both for comparison
+    const qDiff = rawDiff.toString().toLowerCase().trim();
+    const aDiff = activeDifficulty.toLowerCase().trim();
+    
+    // 3. Apply filter
+    return aDiff === 'all' || qDiff === aDiff;
   });
 
   // Calculate stats — use localStorage completions as source of truth
@@ -183,26 +174,6 @@ const QuestSelection = () => {
       {/* Filters */}
       <Card variant="elevated" className="p-6 animate-fade-in animate-delay-200">
         {/* Category Filter */}
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider">
-            Category
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {categories.map(category => (
-              <button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeCategory === category.id
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                  : 'bg-slate-100 dark:bg-[#282839] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#323267]'
-                  }`}
-              >
-                <span className="material-symbols-outlined text-lg">{category.icon}</span>
-                {category.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Difficulty Filter */}
         <div>
@@ -324,7 +295,6 @@ const QuestSelection = () => {
           <Button
             variant="primary"
             onClick={() => {
-              setActiveCategory('all')
               setActiveDifficulty('all')
             }}
           >
