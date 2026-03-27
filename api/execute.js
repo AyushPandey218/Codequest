@@ -29,10 +29,10 @@ const postRequest = (url, body, options = {}) => {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(data),
-          'User-Agent': 'CodeQuest-Server/1.0',
+          'User-Agent': 'Mozilla/5.0',
           ...(options.headers || {})
         },
-        timeout: options.timeout || 10000
+        timeout: options.timeout || 9500
       };
 
       const req = https.request(reqOptions, (res) => {
@@ -41,19 +41,19 @@ const postRequest = (url, body, options = {}) => {
         res.on('end', () => {
           try {
             const parsed = JSON.parse(responseBody);
-            resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, status: res.statusCode, data: parsed });
+            resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, status: res.statusCode, data: parsed, engine: urlObj.hostname });
           } catch (e) {
-            resolve({ ok: false, status: res.statusCode, data: { error: 'Invalid JSON', raw: responseBody.slice(0, 100) } });
+            reject(new Error(`Invalid JSON from ${urlObj.hostname}: ${responseBody.substring(0, 100)}`));
           }
         });
       });
 
       req.on('error', (err) => reject(new Error(`NetworkError: ${err.message}`)));
-      req.on('timeout', () => { req.destroy(); reject(new Error('GatewayTimeout')); });
+      req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
       req.write(data);
       req.end();
     } catch (err) {
-      reject(new Error(`SetupError: ${err.message}`));
+      reject(err);
     }
   });
 };
@@ -62,49 +62,70 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    // 1. Parse body safely
     let body = req.body;
     if (typeof body === 'string') {
-      try { body = JSON.parse(body); } catch (e) { return res.status(400).json({ error: 'Invalid JSON body' }); }
+      try { body = JSON.parse(body); } catch (e) { return res.status(400).json({ error: 'Invalid JSON' }); }
     }
     
     const { language, version, files, stdin } = body || {};
-    if (!language || !files || !files[0]) return res.status(400).json({ error: 'Missing required fields (language/files)' });
+    if (!language || !files) return res.status(400).json({ error: 'Missing fields' });
 
     const code = files[0].content;
-
-    // 2. Try Piston
-    try {
-      const piston = await postRequest('https://emkc.org/api/v2/piston/execute', { language, version, files, stdin }, { timeout: 7000 });
-      if (piston.ok && (!piston.data.message || !piston.data.message.includes('Unauthorized'))) {
-        return res.status(200).json(piston.data);
-      }
-    } catch (e) {
-      console.warn('Piston fail:', e.message);
-    }
-
-    // 3. Fallback to Wandbox
     const compiler = WANDBOX_COMPILERS[language];
+
+    const engines = [];
+    
+    // Engine A: Piston
+    engines.push(postRequest('https://emkc.org/api/v2/piston/execute', { language, version, files, stdin }, { timeout: 9000 }));
+
+    // Engine B: Wandbox
     if (compiler) {
-      try {
-        const wandbox = await postRequest('https://online.wandbox.org/api/compile.json', { compiler, code, stdin, save: false }, { 
-          timeout: 10000,
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-        });
-        if (wandbox.ok) {
-          return res.status(200).json({
-            run: { stdout: wandbox.data.program_output || '', stderr: wandbox.data.program_error || wandbox.data.program_message || '', code: wandbox.data.status === "0" ? 0 : 1 }
-          });
-        }
-      } catch (e) {
-        console.warn('Wandbox fail:', e.message);
-      }
+      engines.push(postRequest('https://online.wandbox.org/api/compile.json', { 
+        compiler, code, stdin, save: false 
+      }, { 
+        timeout: 9000,
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      }).then(r => {
+        // Transform Wandbox format to Piston-like format
+        return {
+          ok: r.ok && r.data.status === "0",
+          status: r.status,
+          engine: 'wandbox',
+          data: {
+            run: {
+              stdout: r.data.program_output || '',
+              stderr: r.data.program_error || r.data.program_message || r.data.compiler_error || '',
+              code: r.data.status === "0" ? 0 : 1
+            }
+          }
+        };
+      }));
     }
 
-    return res.status(502).json({ error: 'Execution engines failing or timeout. Please retry.', engines_attempted: ['piston', 'wandbox'] });
+    try {
+      // PROMISE.ANY is good, but we want to catch if ALL fail and show why
+      const results = await Promise.allSettled(engines);
+      
+      const successful = results.find(r => r.status === 'fulfilled' && r.value.ok);
+      if (successful) {
+        return res.status(200).json(successful.value.data);
+      }
+
+      // If no success, aggregate errors
+      const errors = results.map(r => r.status === 'fulfilled' ? (r.value.data.run.stderr || 'No error message') : r.reason.message);
+      return res.status(200).json({ // Return 200 even on compilation error so frontend can show it
+        run: {
+          stdout: '',
+          stderr: `Engines failed. Details:\n1. Piston: ${errors[0] || 'N/A'}\n2. Wandbox: ${errors[1] || 'N/A'}`,
+          code: 1
+        }
+      });
+
+    } catch (err) {
+      return res.status(502).json({ error: 'Internal execution orchestration failure', message: err.message });
+    }
 
   } catch (error) {
-    console.error('CRASH:', error);
-    return res.status(500).json({ error: 'Handler Crash', message: error.message, stack: error.stack });
+    return res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
 }

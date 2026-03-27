@@ -15,12 +15,6 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/jdoodle/, ''),
       },
-      // Proxy Piston API calls for local development
-      '/api/execute': {
-        target: 'https://emkc.org',
-        changeOrigin: true,
-        rewrite: (path) => '/api/v2/piston/execute',
-      },
     },
   },
 })

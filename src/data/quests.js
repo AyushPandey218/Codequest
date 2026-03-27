@@ -1076,6 +1076,7 @@ export const questDetails = {
             Python3: `def solution(s, t):\n    # Your code here\n    pass`,
             JavaScript: `function solution(s, t) {\n    // Your code here\n}`,
             Java: `public class Solution {\n    public static boolean solution(String s, String t) {\n        // Your code here\n        return false;\n    }\n}`,
+            "C++": `bool solution(string s, string t) {\n    // Your code here\n    return false;\n}`,
         },
         testCases: [
             { id: 'tc1', description: 'Valid anagram', input: '{"s": "anagram", "t": "nagaram"}', expectedOutput: 'true', isHidden: false },

@@ -235,7 +235,46 @@ public class Main {
     }
 }
 `
-    case 'C++': return `
+    case 'C++': {
+      // DYNAMIC WRAPPER GENERATOR
+      let mainFunc = '';
+      if (quest.id === 'q25') {
+        mainFunc = `
+int main() {
+    string line; if (!getline(cin, line)) return 0;
+    size_t s = line.find("["); size_t e = line.find("]");
+    if (s == string::npos || e == string::npos) return 0;
+    vector<int> v; stringstream ss(line.substr(s+1, e-s-1)); string t;
+    while (getline(ss, t, ',')) { if (!t.empty()) v.push_back(stoi(t)); }
+    int p = -1; size_t pi = line.find("\\"pos\\"");
+    if (pi != string::npos) { size_t c = line.find(":", pi); size_t cm = line.find_first_of(",}", c); if (c != string::npos && cm != string::npos) p = stoi(line.substr(c+1, cm-c-1)); }
+    cout << (solution(buildCycleList(v, p)) ? "true" : "false") << endl; return 0;
+}`;
+      } else if (quest.id === 'q13') {
+        mainFunc = `
+int main() {
+    string line; if (!getline(cin, line)) return 0;
+    auto gs = [&](string k) {
+        size_t pk = line.find("\\"" + k + "\\""); size_t c = line.find(":", pk);
+        size_t s = line.find("\\"", c); size_t e = line.find("\\"", s + 1);
+        return line.substr(s + 1, e - s - 1);
+    };
+    cout << (solution(gs("s"), gs("t")) ? "true" : "false") << endl; return 0;
+}`;
+      } else {
+        mainFunc = `
+int main() {
+    string line; if (!getline(cin, line)) return 0;
+    if (line[0] == '[') {
+        vector<int> v; stringstream ss(line.substr(1, line.size()-2)); string t;
+        while (getline(ss, t, ',')) { if (!t.empty()) v.push_back(stoi(t)); }
+        cout << solution(v) << endl;
+    } else { cout << solution(stoi(line)) << endl; }
+    return 0;
+}`;
+      }
+
+      return `
 #include <iostream>
 #include <vector>
 #include <string>
@@ -245,104 +284,35 @@ public class Main {
 #include <set>
 #include <queue>
 #include <stack>
-
 using namespace std;
 
 struct ListNode {
-    int val;
-    ListNode *next;
+    int val; ListNode *next;
     ListNode(int x) : val(x), next(NULL) {}
 };
 
 struct TreeNode {
-    int val;
-    TreeNode *left;
-    TreeNode *right;
+    int val; TreeNode *left; TreeNode *right;
     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
-// Helper to build list from vector
-ListNode* buildList(vector<int> vals) {
-    if (vals.empty()) return NULL;
-    ListNode* head = new ListNode(vals[0]);
-    ListNode* curr = head;
-    for (size_t i = 1; i < vals.size(); i++) {
-        curr->next = new ListNode(vals[i]);
-        curr = curr->next;
-    }
-    return head;
-}
-
-// Helper to build list with cycle
 ListNode* buildCycleList(vector<int> vals, int pos) {
     if (vals.empty()) return NULL;
     vector<ListNode*> nodes;
-    ListNode* head = new ListNode(vals[0]);
-    nodes.push_back(head);
+    ListNode* head = new ListNode(vals[0]); nodes.push_back(head);
     ListNode* curr = head;
     for (size_t i = 1; i < vals.size(); i++) {
-        curr->next = new ListNode(vals[i]);
-        curr = curr->next;
-        nodes.push_back(curr);
+        curr->next = new ListNode(vals[i]); curr = curr->next; nodes.push_back(curr);
     }
-    if (pos >= 0 && pos < nodes.size()) {
-        curr->next = nodes[pos];
-    }
+    if (pos >= 0 && pos < (int)nodes.size()) curr->next = nodes[pos];
     return head;
 }
 
 ${userCode}
 
-int main() {
-    string line;
-    if (!getline(cin, line)) return 0;
-    
-    // Simplistic guess for Linked List Cycle input: {"head": [3,2,0,-4], "pos": 1}
-    if (line.find("\"head\"") != string::npos) {
-        // Extract array part
-        size_t start = line.find("[");
-        size_t end = line.find("]");
-        if (start != string::npos && end != string::npos) {
-            string arrStr = line.substr(start + 1, end - start - 1);
-            vector<int> vals;
-            stringstream ss(arrStr);
-            string tok;
-            while (getline(ss, tok, ',')) {
-                if (!tok.empty()) vals.push_back(stoi(tok));
-            }
-            
-            // Extract pos part
-            int pos = -1;
-            size_t posIdx = line.find("\"pos\"");
-            if (posIdx != string::npos) {
-                size_t colon = line.find(":", posIdx);
-                size_t comma = line.find(",", colon);
-                if (comma == string::npos) comma = line.find("}", colon);
-                if (colon != string::npos && comma != string::npos) {
-                    pos = stoi(line.substr(colon + 1, comma - colon - 1));
-                }
-            }
-            
-            ListNode* head = buildCycleList(vals, pos);
-            // We assume the user has solution(ListNode*) or hasCycle(ListNode*)
-            // For now, let's call solution
-            cout << (solution(head) ? "true" : "false") << endl;
-        }
-    } else if (line[0] == '[') {
-        vector<int> arr;
-        string inner = line.substr(1, line.size()-2);
-        stringstream ss(inner);
-        string tok;
-        while (getline(ss, tok, ',')) {
-            if (!tok.empty()) arr.push_back(stoi(tok));
-        }
-        cout << solution(arr) << endl;
-    } else {
-        cout << solution(stoi(line)) << endl;
+${mainFunc}
+`;
     }
-    return 0;
-}
-`
     case 'C': return `
 #include <stdio.h>
 #include <stdlib.h>
