@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { collection, query, where, onSnapshot, updateDoc, doc, writeBatch, serverTimestamp, addDoc } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, updateDoc, doc, writeBatch, serverTimestamp, addDoc, orderBy, limit } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from './AuthContext'
 import AchievementToast from '../components/common/AchievementToast'
@@ -15,47 +15,79 @@ export const useNotification = () => {
 }
 
 export const NotificationProvider = ({ children }) => {
-    const { user } = useAuth()
+    const { user, updateProfile } = useAuth()
     const [notifications, setNotifications] = useState([])
     const [toasts, setToasts] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
 
-    // Real-time listener for Firestore notifications
+    // Real-time listener for both Private and Global notifications
     useEffect(() => {
         if (!user?.uid) {
             setNotifications([])
+            setIsLoading(false)
             return
         }
 
-        const q = query(
+        setIsLoading(true)
+
+        // 1. Private Notifications Listener
+        const privateQuery = query(
             collection(db, 'notifications'),
-            where('uid', '==', user.uid)
+            where('uid', '==', user.uid),
+            orderBy('createdAt', 'desc'),
+            limit(50)
         )
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const notifs = snapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }))
+        // 2. Global Notifications Listener
+        const globalQuery = query(
+            collection(db, 'global_notifications'),
+            orderBy('createdAt', 'desc'),
+            limit(20)
+        )
+
+        let privateNotifs = []
+        let globalNotifs = []
+
+        const updateMergedNotifs = () => {
+            const merged = [...privateNotifs, ...globalNotifs]
                 .sort((a, b) => {
-                    // Sort by createdAt descending (newest first)
                     const aTime = a.createdAt?.seconds || 0
                     const bTime = b.createdAt?.seconds || 0
                     return bTime - aTime
                 })
-            setNotifications(notifs)
+            
+            // Mark global notifications as read based on user's lastReadGlobal timestamp
+            const processed = merged.map(n => {
+                if (n.isGlobal) {
+                    const lastRead = user.lastReadGlobal?.seconds || 0
+                    const createdAt = n.createdAt?.seconds || 0
+                    return { ...n, read: createdAt <= lastRead }
+                }
+                return n
+            })
+
+            setNotifications(processed)
+            setIsLoading(false)
+        }
+
+        const unsubPrivate = onSnapshot(privateQuery, (snapshot) => {
+            privateNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isGlobal: false }))
+            updateMergedNotifs()
         })
 
-        return () => unsubscribe()
-    }, [user?.uid])
+        const unsubGlobal = onSnapshot(globalQuery, (snapshot) => {
+            globalNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isGlobal: true }))
+            updateMergedNotifs()
+        })
 
-    /**
-     * Shows an achievement notification (Toast)
-     * And optionally creates a persistent notification record
-     */
-    const showAchievement = useCallback(async (achievementId, persist = true) => {
-        // Show Toast
+        return () => {
+            unsubPrivate()
+            unsubGlobal()
+        }
+    }, [user?.uid, user?.lastReadGlobal])
+
+    const showAchievement = useCallback(async (achievementId) => {
         setToasts(prev => [...prev, { id: Date.now(), achievementId, type: 'achievement' }])
-
-        // Persist to Firestore if needed (Achievements data is already in achievements.js)
-        // We'll handle persistent achievement creation in AuthContext to avoid duplication
     }, [])
 
     const createNotification = useCallback(async (notif, targetUid = null) => {
@@ -73,37 +105,54 @@ export const NotificationProvider = ({ children }) => {
         }
     }, [user?.uid])
 
-    const markAsRead = useCallback(async (id) => {
+    const markAsRead = useCallback(async (id, isGlobal = false) => {
         try {
-            await updateDoc(doc(db, 'notifications', id), { read: true })
+            if (isGlobal) {
+                // For global notifs, we update the user's lastReadGlobal to NOW
+                await updateProfile({ lastReadGlobal: serverTimestamp() })
+            } else {
+                await updateDoc(doc(db, 'notifications', id), { read: true })
+            }
         } catch (error) {
             console.error('Error marking notification as read:', error)
         }
-    }, [])
+    }, [updateProfile])
 
     const markAllAsRead = useCallback(async () => {
         if (!user?.uid) return
         try {
             const batch = writeBatch(db)
-            notifications.filter(n => !n.read).forEach(n => {
-                batch.update(doc(db, 'notifications', n.id), { read: true })
-            })
+            
+            // 1. Mark private as read
+            notifications
+                .filter(n => !n.read && !n.isGlobal)
+                .forEach(n => {
+                    batch.update(doc(db, 'notifications', n.id), { read: true })
+                })
+            
             await batch.commit()
+
+            // 2. Mark global as read (update user timestamp)
+            await updateProfile({ lastReadGlobal: serverTimestamp() })
+
         } catch (error) {
             console.error('Error marking all as read:', error)
         }
-    }, [user?.uid, notifications])
+    }, [user?.uid, notifications, updateProfile])
 
     const clearAll = useCallback(async () => {
         if (!user?.uid) return
         try {
             const batch = writeBatch(db)
-            notifications.forEach(n => {
-                batch.delete(doc(db, 'notifications', n.id))
-            })
+            // Only clear private notifications (deleting global is an admin action)
+            notifications
+                .filter(n => !n.isGlobal)
+                .forEach(n => {
+                    batch.delete(doc(db, 'notifications', n.id))
+                })
             await batch.commit()
         } catch (error) {
-            console.error('Error clearing all notifications:', error)
+            console.error('Error clearing notifications:', error)
         }
     }, [user?.uid, notifications])
 
@@ -117,6 +166,7 @@ export const NotificationProvider = ({ children }) => {
         <NotificationContext.Provider value={{
             notifications,
             unreadCount,
+            isLoading,
             showAchievement,
             createNotification,
             markAsRead,
@@ -125,7 +175,6 @@ export const NotificationProvider = ({ children }) => {
         }}>
             {children}
 
-            {/* Render Toasts */}
             <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-4">
                 {toasts.map((t) => (
                     <AchievementToast

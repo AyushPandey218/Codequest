@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAdminStats } from '../../hooks/useAdminStats'
 import { useAdminBroadcasts } from '../../hooks/useAdminBroadcasts'
+import { useAdminNotifications } from '../../hooks/useAdminNotifications'
 import Card from '../../components/common/Card'
 
 const StatCard = ({ icon, label, value, sub, color, isLoading }) => (
@@ -38,11 +39,29 @@ const QuickLink = ({ to, icon, label, desc, color }) => (
 )
 
 const AdminDashboard = () => {
+    const handlePushGlobal = async (e) => {
+        e.preventDefault()
+        if (!newPush.title || !newPush.message) return
+        setIsPushing(true)
+        try {
+            await pushGlobalNotification(newPush)
+            setNewPush({ title: '', message: '', type: 'system', link: '' })
+            alert('Global notification pushed successfully!')
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setIsPushing(false)
+        }
+    }
+
     const { totalUsers, activeQuests, completionsToday, recentActivity, isLoading } = useAdminStats()
     const { broadcasts, createBroadcast, deleteBroadcast, toggleBroadcast, isLoading: broadcastsLoading } = useAdminBroadcasts()
+    const { pushGlobalNotification } = useAdminNotifications()
     
     const [newBroadcast, setNewBroadcast] = useState({ title: '', message: '', type: 'info' })
+    const [newPush, setNewPush] = useState({ title: '', message: '', type: 'system', link: '' })
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isPushing, setIsPushing] = useState(false)
 
     const handleCreateBroadcast = async (e) => {
         e.preventDefault()
@@ -106,8 +125,8 @@ const AdminDashboard = () => {
                             <QuickLink
                                 to="/admin/users"
                                 icon="person_search"
-                                label="User Operations"
-                                desc="Search, reward, or suspend users"
+                                label="User Accounts"
+                                desc="Manage accounts, rewards, and access"
                                 color={{ border: 'border-blue-500/20', bg: 'bg-blue-500/15', text: 'text-blue-400', hoverBg: 'bg-blue-500/5' }}
                             />
                             <QuickLink
@@ -134,49 +153,52 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Broadcast mini-form */}
+                    {/* Push notification mini-form */}
                     <Card className="p-6 border-white/5 bg-[#12122a] shadow-2xl">
                         <h2 className="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-blue-400 text-lg">campaign</span>
-                            New Broadcast
+                            <span className="material-symbols-outlined text-purple-400 text-lg">notifications_active</span>
+                            Global Push
                         </h2>
-                        <form onSubmit={handleCreateBroadcast} className="space-y-4">
+                        <form onSubmit={handlePushGlobal} className="space-y-4">
                             <input 
                                 type="text"
-                                placeholder="Broadcast Title (e.g. Server Update)"
-                                value={newBroadcast.title}
-                                onChange={e => setNewBroadcast({...newBroadcast, title: e.target.value})}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                                placeholder="Push Title (e.g. New Quest!)"
+                                value={newPush.title}
+                                onChange={e => setNewPush({...newPush, title: e.target.value})}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors"
                             />
                             <textarea 
-                                placeholder="Message for all users..."
-                                value={newBroadcast.message}
-                                onChange={e => setNewBroadcast({...newBroadcast, message: e.target.value})}
-                                rows={3}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
+                                placeholder="Message for all bells..."
+                                value={newPush.message}
+                                onChange={e => setNewPush({...newPush, message: e.target.value})}
+                                rows={2}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors resize-none"
                             />
                             <div className="flex gap-2">
-                                {['info', 'success', 'warning', 'error'].map(t => (
-                                    <button 
-                                        key={t}
-                                        type="button"
-                                        onClick={() => setNewBroadcast({...newBroadcast, type: t})}
-                                        className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-tighter border transition-all ${
-                                            newBroadcast.type === t 
-                                            ? 'bg-blue-500/20 border-blue-500/40 text-blue-400 shadow-lg' 
-                                            : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'
-                                        }`}
-                                    >
-                                        {t}
-                                    </button>
-                                ))}
+                                <select 
+                                    value={newPush.type}
+                                    onChange={e => setNewPush({...newPush, type: e.target.value})}
+                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-[10px] text-slate-300 focus:outline-none"
+                                >
+                                    <option value="system">System</option>
+                                    <option value="achievement">Achievement</option>
+                                    <option value="clash">Clash</option>
+                                    <option value="social">Social</option>
+                                </select>
+                                <input 
+                                    type="text"
+                                    placeholder="Link (optional)"
+                                    value={newPush.link}
+                                    onChange={e => setNewPush({...newPush, link: e.target.value})}
+                                    className="flex-[2] bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-white focus:outline-none"
+                                />
                             </div>
                             <button 
                                 type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-900/20 active:scale-[0.98]"
+                                disabled={isPushing}
+                                className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-purple-900/20 active:scale-[0.98]"
                             >
-                                {isSubmitting ? 'Transmitting...' : 'Transmit Broadcast'}
+                                {isPushing ? 'Pushing...' : 'Push to All Users'}
                             </button>
                         </form>
                     </Card>
@@ -187,8 +209,8 @@ const AdminDashboard = () => {
                     {/* Active Broadcasts Manager */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Active Transmissions</h2>
-                            <span className="text-[10px] font-bold text-slate-500 bg-white/5 py-1 px-3 rounded-full uppercase">Live Feed</span>
+                            <h2 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Active Broadcasts</h2>
+                            <span className="text-[10px] font-bold text-slate-500 bg-white/5 py-1 px-3 rounded-full uppercase">Current Alerts</span>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {broadcastsLoading ? (

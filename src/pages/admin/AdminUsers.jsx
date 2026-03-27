@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { doc, updateDoc, arrayUnion, increment } from 'firebase/firestore'
+import { doc, updateDoc, arrayUnion, increment, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import { useAdminUsers } from '../../hooks/useAdminUsers'
+import { useAdminNotifications } from '../../hooks/useAdminNotifications'
 import { achievements } from '../../data/achievements'
 import ConfirmationModal from '../../components/common/ConfirmationModal'
 
@@ -134,13 +135,103 @@ const AwardModal = ({ isOpen, onClose, onAward, username }) => {
     )
 }
 
+const PushModal = ({ isOpen, onClose, onPush, username }) => {
+    const [title, setTitle] = useState('')
+    const [message, setMessage] = useState('')
+    const [type, setType] = useState('system')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    if (!isOpen) return null
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (!title || !message) return
+        setIsSubmitting(true)
+        try {
+            await onPush({ title, message, type })
+            setTitle('')
+            setMessage('')
+            onClose()
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-[#161632] border border-white/10 w-full max-w-md rounded-3xl p-8 shadow-2xl space-y-6">
+                <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                    <div className="size-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-purple-400 text-2xl">notifications_active</span>
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Direct Push</h2>
+                        <p className="text-xs text-slate-400 uppercase tracking-widest font-black">Target: {username}</p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Alert Type</label>
+                        <select 
+                            value={type}
+                            onChange={e => setType(e.target.value)}
+                            className="w-full bg-[#0b0b1e] border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 appearance-none text-sm"
+                        >
+                            <option value="system">General System</option>
+                            <option value="achievement">Achievement Alert</option>
+                            <option value="clash">Clash Notification</option>
+                            <option value="social">Social Update</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Notification Title</label>
+                        <input 
+                            type="text" 
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            className="w-full bg-[#0b0b1e] border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                            placeholder="e.g. Profile Verified"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Message Body</label>
+                        <textarea 
+                            value={message}
+                            onChange={e => setMessage(e.target.value)}
+                            rows={3}
+                            className="w-full bg-[#0b0b1e] border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 resize-none"
+                            placeholder="Type your message here..."
+                        />
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                        <button type="button" onClick={onClose} className="flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-white/5 transition-all">Cancel</button>
+                        <button 
+                            type="submit" 
+                            disabled={isSubmitting}
+                            className="flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-purple-600 hover:bg-purple-500 shadow-xl shadow-purple-900/20 active:scale-95 transition-all"
+                        >
+                            {isSubmitting ? 'Sending...' : 'Send Push'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
 const AdminUsers = () => {
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
     const { users, isLoading, updateUserStatus, deleteUser } = useAdminUsers()
+    const { pushDirectNotification } = useAdminNotifications()
     
     const [awardModal, setAwardModal] = useState({ isOpen: false, user: null })
+    const [pushModal, setPushModal] = useState({ isOpen: false, user: null })
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', user: null })
 
     const handleActionClick = (type, user) => {
@@ -179,6 +270,16 @@ const AdminUsers = () => {
         }
     }
 
+    const handlePushNotify = async (notif) => {
+        try {
+            await pushDirectNotification(pushModal.user.id, notif)
+            return true
+        } catch (error) {
+            console.error("Error pushing notification:", error)
+            throw error
+        }
+    }
+
     const filtered = users.filter(u => {
         const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
         const matchesFilter = filter === 'all' || u.status === filter
@@ -189,8 +290,8 @@ const AdminUsers = () => {
         <div className="space-y-6 animate-fade-in">
             <div className="bg-[#161632] p-8 rounded-3xl border border-white/5 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight uppercase">User Operations</h1>
-                    <p className="text-slate-400 mt-1">Registry of all citizen coders. Promote growth or enforce protocols.</p>
+                    <h1 className="text-3xl font-bold text-white tracking-tight uppercase">User Management</h1>
+                    <p className="text-slate-400 mt-1">Manage user access, rewards, and platform communication.</p>
                 </div>
                 <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
                     {['all', 'active', 'suspended'].map(f => (
@@ -198,7 +299,7 @@ const AdminUsers = () => {
                             key={f}
                             onClick={() => setFilter(f)}
                             className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === f
-                                ? 'bg-red-600 text-white shadow-lg'
+                                ? 'bg-blue-600 text-white shadow-lg'
                                 : 'text-slate-500 hover:text-slate-300'
                             }`}
                         >
@@ -208,29 +309,27 @@ const AdminUsers = () => {
                 </div>
             </div>
 
-            {/* Controls */}
             <div className="relative">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
                 <input
                     type="text"
-                    placeholder="Identify user by terminal ID or registered email..."
+                    placeholder="Search users by name or email address..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="w-full bg-[#12122a] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/50 transition-all shadow-2xl"
+                    className="w-full bg-[#12122a] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-all shadow-2xl"
                 />
             </div>
 
-            {/* Table */}
             <div className="bg-[#12122a] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-white/5 text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
-                                <th className="text-left px-6 py-5">User Profile</th>
-                                <th className="text-left px-6 py-5">Skill Level</th>
-                                <th className="text-left px-6 py-5 text-center">Protocol Status</th>
-                                <th className="text-left px-6 py-5">Onboarding Date</th>
-                                <th className="text-right px-6 py-5">Operations</th>
+                                <th className="text-left px-6 py-5">User Account</th>
+                                <th className="text-left px-6 py-5">Level / XP</th>
+                                <th className="text-left px-6 py-5 text-center">Status</th>
+                                <th className="text-left px-6 py-5">Joined Date</th>
+                                <th className="text-right px-6 py-5">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -262,6 +361,13 @@ const AdminUsers = () => {
                                     <td className="px-6 py-5 text-right">
                                         <div className="flex items-center justify-end gap-1">
                                             <button
+                                                onClick={() => setPushModal({ isOpen: true, user })}
+                                                title="Push Notification"
+                                                className="p-2 rounded-xl text-slate-500 hover:text-purple-400 hover:bg-purple-500/10 transition-all"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">notifications_active</span>
+                                            </button>
+                                            <button
                                                 onClick={() => setAwardModal({ isOpen: true, user })}
                                                 title="Grant Reward"
                                                 className="p-2 rounded-xl text-slate-500 hover:text-yellow-500 hover:bg-yellow-500/10 transition-all"
@@ -270,14 +376,14 @@ const AdminUsers = () => {
                                             </button>
                                             <button
                                                 onClick={() => navigate(`/app/profile/${user.username}`)}
-                                                title="Intel Access"
+                                                title="View Profile"
                                                 className="p-2 rounded-xl text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                                             >
                                                 <span className="material-symbols-outlined text-lg">visibility</span>
                                             </button>
                                             <button
                                                 onClick={() => handleActionClick(user.status === 'suspended' ? 'activate' : 'suspend', user)}
-                                                title={user.status === 'suspended' ? 'De-isolate' : 'Isolate'}
+                                                title={user.status === 'suspended' ? 'Restore Access' : 'Suspend Access'}
                                                 className={`p-2 rounded-xl transition-all ${user.status === 'suspended'
                                                     ? 'text-green-500 hover:bg-green-500/10'
                                                     : 'text-orange-500 hover:bg-orange-500/10'
@@ -289,7 +395,7 @@ const AdminUsers = () => {
                                             </button>
                                             <button
                                                 onClick={() => handleActionClick('delete', user)}
-                                                title="Terminate Link"
+                                                title="Delete Account"
                                                 className="p-2 rounded-xl text-slate-500 hover:text-red-500 hover:bg-red-500/10 transition-all"
                                                 disabled={user.role === 'admin'}
                                             >
@@ -299,19 +405,8 @@ const AdminUsers = () => {
                                     </td>
                                 </tr>
                             ))}
-                            {filtered.length === 0 && !isLoading && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-20 text-center text-slate-600 italic">
-                                        No citizen found matching the provided identifier.
-                                    </td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
-                </div>
-                <div className="px-6 py-4 border-t border-white/5 text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 flex justify-between items-center bg-white/[0.01]">
-                    <span>Registry Scan: {filtered.length} matching entities found</span>
-                    <span>System Status: Online</span>
                 </div>
             </div>
 
@@ -322,16 +417,23 @@ const AdminUsers = () => {
                 username={awardModal.user?.username}
             />
 
+            <PushModal 
+                isOpen={pushModal.isOpen}
+                onClose={() => setPushModal({ isOpen: false, user: null })}
+                onPush={handlePushNotify}
+                username={pushModal.user?.username}
+            />
+
             <ConfirmationModal 
                 isOpen={confirmModal.isOpen}
                 onClose={() => setConfirmModal({ isOpen: false, type: '', user: null })}
                 onConfirm={executeAction}
-                title={confirmModal.type === 'delete' ? 'Terminate Citizen Link?' : (confirmModal.type === 'suspend' ? 'Isolate Citizen?' : 'De-isolate Citizen?')}
+                title={confirmModal.type === 'delete' ? 'Delete User Account?' : (confirmModal.type === 'suspend' ? 'Suspend User?' : 'Restore User Access?')}
                 message={confirmModal.type === 'delete' 
                     ? `Are you absolutely sure you want to permanently delete "${confirmModal.user?.username}"? This action cannot be undone.`
                     : `Confirm status protocol change for ${confirmModal.user?.username}. This will ${confirmModal.type === 'suspend' ? 'block' : 'restore'} their platform access.`
                 }
-                confirmText={confirmModal.type === 'delete' ? 'Terminate' : (confirmModal.type === 'suspend' ? 'Isolate' : 'De-isolate')}
+                confirmText={confirmModal.type === 'delete' ? 'Delete' : (confirmModal.type === 'suspend' ? 'Suspend' : 'Restore')}
                 variant={confirmModal.type === 'delete' || confirmModal.type === 'suspend' ? 'danger' : 'success'}
             />
         </div>

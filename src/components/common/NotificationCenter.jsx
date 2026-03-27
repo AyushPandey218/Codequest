@@ -93,7 +93,7 @@ const NotificationCenter = ({ isOpen, onClose }) => {
                         {notifications.map((n) => (
                             <div
                                 key={n.id}
-                                onClick={() => !n.read && markAsRead(n.id)}
+                                onClick={() => !n.read && markAsRead(n.id, n.isGlobal)}
                                 className={`p-4 hover:bg-white/2 transition-colors cursor-pointer group relative ${!n.read ? 'bg-primary/5' : ''}`}
                             >
                                 <div className="flex gap-3">
