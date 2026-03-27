@@ -47,17 +47,18 @@ const QuestSelection = () => {
     return colors[d] || 'default'
   }
 
-  const filteredQuests = questsWithProgress.filter(quest => {
-    const qCat = (quest.category || '').trim().toLowerCase()
-    const qDiff = (quest.difficulty || '').trim().toLowerCase()
-    const aCat = (activeCategory || 'all').trim().toLowerCase()
-    const aDiff = (activeDifficulty || 'all').trim().toLowerCase()
+  const filteredQuests = (questsWithProgress || []).filter(q => {
+    // 1. Category Filter
+    const matchesCategory = activeCategory === 'all' || 
+      (q.category && q.category.toLowerCase() === activeCategory.toLowerCase());
+    if (!matchesCategory) return false;
 
-    const categoryMatch = aCat === 'all' || qCat === aCat
-    const difficultyMatch = aDiff === 'all' || qDiff === aDiff
+    // 2. Difficulty Filter
+    const matchesDifficulty = activeDifficulty === 'all' || 
+      (q.difficulty && q.difficulty.toLowerCase() === activeDifficulty.toLowerCase());
     
-    return categoryMatch && difficultyMatch
-  })
+    return matchesDifficulty;
+  });
 
   // Calculate stats — use localStorage completions as source of truth
   const totalQuests = quests.length
