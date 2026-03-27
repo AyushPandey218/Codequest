@@ -1,3 +1,13 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/wandbox/:path*",
+      "destination": "https://online.wandbox.org/:path*"
+    },
+    {
+      "source": "/jdoodle/:path*",
+      "destination": "https://api.jdoodle.com/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
