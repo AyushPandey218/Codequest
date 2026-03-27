@@ -65,14 +65,14 @@ const NotificationCenter = ({ isOpen, onClose }) => {
                 <div className="flex items-center gap-3">
                     {notifications.length > 0 && (
                         <button
-                            onClick={markAllAsRead}
+                            onClick={(e) => { e.stopPropagation(); markAllAsRead(); }}
                             className="text-[9px] font-black text-blue-400 hover:text-white uppercase tracking-[0.2em] transition-all bg-blue-500/10 hover:bg-blue-600 px-3 py-1.5 rounded-full border border-blue-500/20"
                         >
                             Sync All
                         </button>
                     )}
                     <button
-                        onClick={onClose}
+                        onClick={(e) => { e.stopPropagation(); onClose(); }}
                         className="size-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all border border-white/5"
                     >
                         <span className="material-symbols-outlined text-base">close</span>
@@ -83,7 +83,7 @@ const NotificationCenter = ({ isOpen, onClose }) => {
             {/* List */}
             <div className="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar space-y-2 mb-4">
                 {notifications.length === 0 ? (
-                    <div className="py-20 text-center relative overflow-hidden">
+                    <div className="py-20 text-center relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
                         <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent blur-3xl"></div>
                         <div className="size-20 rounded-[2rem] bg-white/[0.02] border border-white/5 flex items-center justify-center mx-auto mb-6 relative">
                             <span className="material-symbols-outlined text-4xl text-slate-700">sensors_off</span>
@@ -93,11 +93,11 @@ const NotificationCenter = ({ isOpen, onClose }) => {
                         <p className="text-[9px] text-slate-600 mt-2 uppercase tracking-widest leading-relaxed">System standby. All parameters nominal.</p>
                     </div>
                 ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                         {notifications.map((n) => (
                             <div
                                 key={n.id}
-                                onClick={() => !n.read && markAsRead(n.id, n.isGlobal)}
+                                onClick={(e) => { e.stopPropagation(); !n.read && markAsRead(n.id, n.isGlobal); }}
                                 className={`group p-4 rounded-2xl transition-all border relative overflow-hidden cursor-pointer ${
                                     !n.read 
                                     ? 'bg-blue-600/[0.07] border-blue-500/20 hover:bg-blue-600/[0.1]' 
@@ -133,7 +133,7 @@ const NotificationCenter = ({ isOpen, onClose }) => {
                                             <div className="mt-3 flex">
                                                 <Link
                                                     to={n.link}
-                                                    onClick={onClose}
+                                                    onClick={(e) => { e.stopPropagation(); onClose(); }}
                                                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all border ${
                                                         !n.read 
                                                         ? 'bg-blue-600/10 border-blue-500/20 text-blue-400 hover:bg-blue-600 hover:text-white' 
@@ -157,13 +157,13 @@ const NotificationCenter = ({ isOpen, onClose }) => {
 
             {/* Footer */}
             {notifications.length > 0 && (
-                <div className="p-4 bg-gradient-to-t from-white/[0.03] to-transparent border-t border-white/5">
+                <div className="p-4 bg-gradient-to-t from-white/[0.03] to-transparent border-t border-white/5" onClick={(e) => e.stopPropagation()}>
                     <button
-                        onClick={clearAll}
+                        onClick={(e) => { e.stopPropagation(); clearAll(); }}
                         className="w-full py-3 text-[10px] font-black text-slate-600 hover:text-red-400 uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 bg-white/[0.01] hover:bg-red-500/5 rounded-2xl border border-white/5 hover:border-red-500/20"
                     >
                         <span className="material-symbols-outlined text-sm">terminal</span>
-                        Clear Encryption Keys
+                        Clear Notifications
                     </button>
                 </div>
             )}
