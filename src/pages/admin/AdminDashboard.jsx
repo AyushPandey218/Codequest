@@ -5,6 +5,7 @@ import { useAdminBroadcasts } from '../../hooks/useAdminBroadcasts'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
 import { useNotification } from '../../context/NotificationContext'
 import Card from '../../components/common/Card'
+import TrafficRadar from '../../components/admin/TrafficRadar'
 const StatCard = ({ icon, label, value, sub, color, isLoading }) => (
     <div className={`relative bg-[#0b0b1e]/40 backdrop-blur-xl border ${color.border} rounded-3xl p-6 flex items-center gap-5 shadow-2xl transition-all hover:scale-[1.03] hover:shadow-${color.text.split('-')[1]}-500/10 group overflow-hidden`}>
         <div className={`absolute -right-4 -bottom-4 size-24 ${color.bg.replace('15', '5')} blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700`}></div>
@@ -126,7 +127,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <StatCard
                     icon="group"
                     label="Total Users"
@@ -141,7 +142,6 @@ const AdminDashboard = () => {
                     isLoading={isLoading}
                     color={{ border: 'border-yellow-500/20', bg: 'bg-yellow-500/15', text: 'text-yellow-400' }}
                 />
-                <SystemHealth />
                 <StatCard
                     icon="trending_up"
                     label="Completions"
@@ -149,6 +149,44 @@ const AdminDashboard = () => {
                     isLoading={isLoading}
                     color={{ border: 'border-purple-500/20', bg: 'bg-purple-500/15', text: 'text-purple-400' }}
                 />
+                <SystemHealth />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                <TrafficRadar />
+                
+                {/* Secondary Monitoring Panel */}
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                    <div className="bg-[#0b0b1e]/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 shadow-2xl flex-1 flex flex-col justify-between group overflow-hidden relative">
+                        <div className="absolute -right-4 -top-4 size-32 bg-purple-500/5 blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Quick Relay</h3>
+                                <span className="material-symbols-outlined text-purple-400 text-sm">bolt</span>
+                            </div>
+                            <h4 className="text-white font-black text-lg mb-1 leading-tight">Broadcast History</h4>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">View recent sitewide transmissions</p>
+                        </div>
+                        
+                        <div className="mt-6 space-y-3">
+                            {broadcasts.slice(0, 3).map((b, i) => (
+                                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+                                    <div className="size-2 rounded-full bg-blue-500/50"></div>
+                                    <p className="text-[11px] text-slate-400 font-medium truncate">{b.message}</p>
+                                </div>
+                            ))}
+                            {broadcasts.length === 0 && <p className="text-[10px] text-slate-600 italic">No recent broadcasts</p>}
+                        </div>
+
+                        <Link 
+                            to="/admin/dashboard" 
+                            className="mt-6 flex items-center justify-center gap-2 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[10px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all group/btn"
+                        >
+                            View All Logs
+                            <span className="material-symbols-outlined text-sm transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
+                        </Link>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
