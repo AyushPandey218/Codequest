@@ -101,7 +101,7 @@ def parse_input(raw):
 
 target = _get_target()
 if not target:
-    raise NameError('No executable function or class found. Please define at least one function.')
+    raise NameError('No executable function found. You MUST wrap your code in a function (e.g. "def solution(...):").')
 
 args = parse_input(${JSON.stringify(input)})
 result = target(*args)
