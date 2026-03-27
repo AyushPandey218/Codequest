@@ -71,6 +71,8 @@ import PrivacyPolicy from '../pages/legal/PrivacyPage'
 
 // Landing Page
 import LandingPage from '../pages/LandingPage'
+import MaintenancePage from '../pages/MaintenancePage'
+import MaintenanceGuard from './MaintenanceGuard'
 
 // Placeholder components (will be created in next phases)
 const PlaceholderPage = ({ title }) => (
@@ -92,8 +94,16 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       {
+        path: 'maintenance',
+        element: <MaintenancePage />,
+      },
+      {
         index: true,
-        element: <LandingPage />,
+        element: (
+          <MaintenanceGuard>
+            <LandingPage />
+          </MaintenanceGuard>
+        ),
       },
 
       // Auth Routes
@@ -142,7 +152,11 @@ const router = createBrowserRouter([
       // Protected App Routes
       {
         path: 'app',
-        element: <AppLayoutWrapper />,
+        element: (
+          <MaintenanceGuard>
+            <AppLayoutWrapper />
+          </MaintenanceGuard>
+        ),
         children: [
           {
             index: true,
@@ -308,6 +322,10 @@ const router = createBrowserRouter([
       {
         path: 'moderation',
         element: <AdminModeration />,
+      },
+      {
+        path: 'moderation/post/:id',
+        element: <PostView />,
       },
       {
         path: 'analytics',

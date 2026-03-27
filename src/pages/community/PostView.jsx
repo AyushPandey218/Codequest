@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import ConfirmationModal from '../../components/common/ConfirmationModal'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import Avatar from '../../components/common/Avatar'
@@ -11,10 +12,12 @@ const PostView = () => {
     const { id } = useParams()
     const navigate = useNavigate()
     const { user } = useAuth()
-    const { fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost, markAsResolved } = useCommunity()
+    const { fetchPost, incrementView, toggleLike, addReply, deletePost, deleteReply, toggleFlag, markAsResolved } = useCommunity()
 
     const [post, setPost] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [modalConfig, setModalConfig] = useState({ isOpen: false, type: null, data: null })
 
     // Reply Form
     const [replyContent, setReplyContent] = useState('')
@@ -35,6 +38,14 @@ const PostView = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id])
 
+    const openModal = (type, data = null) => {
+        setModalConfig({ isOpen: true, type, data })
+    }
+
+    const closeModal = () => {
+        setModalConfig({ isOpen: false, type: null, data: null })
+    }
+
     const handleLikeToggle = async () => {
         if (!user) return alert("Must be logged in to like posts.")
         const isCurrentlyLiked = post.likedBy.includes(user.uid)
@@ -52,26 +63,28 @@ const PostView = () => {
     }
 
     const handleDelete = async () => {
-        if (window.confirm('Permanently delete this post?')) {
-            try {
-                await deletePost(id)
-                navigate('/app/community')
-            } catch (error) {
-                console.error(error)
-                alert('Failed to delete post')
-            }
+        setIsDeleting(true)
+        try {
+            await deletePost(id)
+            navigate('/app/community')
+        } catch (err) {
+            console.error(err)
+            alert('Failed to delete post')
+        } finally {
+            setIsDeleting(false)
+            closeModal()
         }
     }
 
     const handleFlag = async () => {
-        if (window.confirm('Flag this post for review?')) {
-            try {
-                await flagPost(id)
-                await loadPost() // Refresh to show flagged badge
-            } catch (error) {
-                console.error(error)
-                alert('Failed to flag post')
-            }
+        try {
+            await toggleFlag(id, !post.flagged)
+            await loadPost() // Refresh to show flagged badge
+        } catch (err) {
+            console.error(err)
+            alert('Failed to flag post')
+        } finally {
+            closeModal()
         }
     }
 
@@ -84,6 +97,18 @@ const PostView = () => {
                 console.error(error)
                 alert('Failed to mark as resolved')
             }
+        }
+    }
+
+    const handleDeleteReply = async (replyId) => {
+        try {
+            await deleteReply(id, replyId)
+            await loadPost() // Refresh thread
+        } catch (err) {
+            console.error(err)
+            alert('Failed to delete reply')
+        } finally {
+            closeModal()
         }
     }
 
@@ -130,13 +155,31 @@ const PostView = () => {
 
     return (
         <div className="max-w-[1000px] mx-auto space-y-6">
-            <Link to="/app/community" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+            {user?.role === 'admin' && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-red-400">shield_person</span>
+                        </div>
+                        <div>
+                            <h2 className="text-sm font-bold text-white uppercase tracking-wider">Moderation Mode</h2>
+                            <p className="text-xs text-red-400/70">Reviewing post context as Administrator</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] sm:text-xs">
+                        <span className="px-2 py-1 rounded bg-black/30 text-slate-400 border border-white/5 uppercase font-mono">ID: {id}</span>
+                        {post?.flags > 0 && <span className="px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30 font-bold uppercase">FLAGGED</span>}
+                    </div>
+                </div>
+            )}
+
+            <Link to={user?.role === 'admin' ? "/admin/moderation" : "/app/community"} className={`inline-flex items-center gap-2 text-sm transition-colors ${user?.role === 'admin' ? 'text-red-400 hover:text-red-300' : 'text-slate-400 hover:text-white'}`}>
                 <span className="material-symbols-outlined text-sm">arrow_back</span>
-                Back to Discussions
+                {user?.role === 'admin' ? "Back to Moderation" : "Back to Discussions"}
             </Link>
 
             {/* Original Post */}
-            <Card variant="elevated" className="p-6 sm:p-8">
+            <Card variant="elevated" className={`p-6 sm:p-8 ${user?.role === 'admin' ? 'border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.05)]' : ''}`}>
                 <div className="flex flex-col sm:flex-row gap-6">
                     <div className="shrink-0 hidden sm:block">
                         <Avatar src={post.avatar} name={post.author} size="xl" />
@@ -158,28 +201,38 @@ const PostView = () => {
                             {user?.role === 'admin' && (
                                 <div className="flex gap-2 shrink-0">
                                     <button
-                                        onClick={handleFlag}
-                                        className="p-2 text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors border border-orange-500/20"
+                                        onClick={() => openModal('flag')}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors border border-orange-500/20"
                                         title="Flag Post"
                                     >
-                                        <span className="material-symbols-outlined text-lg">flag</span>
+                                        <span className="material-symbols-outlined text-sm">flag</span>
+                                        {post.flagged ? 'Flagged' : 'Flag Post'}
                                     </button>
                                     <button
-                                        onClick={handleDelete}
-                                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors border border-red-500/20"
+                                        onClick={() => openModal('deletePost')}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/10 rounded-lg transition-colors border border-red-500/20"
                                         title="Delete Post"
                                     >
-                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                        <span className="material-symbols-outlined text-sm">delete</span>
+                                        Delete
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex items-center gap-3 text-sm text-slate-400 mb-6 border-b border-white/5 pb-6">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400 mb-6 border-b border-white/5 pb-6">
                             <Avatar src={post.avatar} name={post.author} size="sm" className="sm:hidden" />
-                            <span className="font-medium text-slate-300">{post.author}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="font-medium text-slate-300">{post.author}</span>
+                                {user?.role === 'admin' && (
+                                    <span className="text-[10px] bg-white/5 px-1.5 py-0.5 rounded border border-white/10 font-mono text-slate-500">
+                                        UID: {post.authorUid?.slice(0, 8)}...
+                                    </span>
+                                )}
+                            </div>
                             <span>•</span>
                             <span>{post.timeAgo}</span>
+                            {user?.role === 'admin' && <span className="text-[10px] text-slate-600">({new Date(post.createdAt?.seconds * 1000).toLocaleString()})</span>}
                             <span>•</span>
                             <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">visibility</span>{post.views}</span>
                         </div>
@@ -226,7 +279,7 @@ const PostView = () => {
                                     className={`p-5 sm:p-6 transition-all duration-300 ${isAccepted
                                         ? 'bg-green-500/5 ring-1 ring-green-500/30'
                                         : 'bg-[#161632]'
-                                        }`}
+                                        } ${user?.role === 'admin' ? 'border-red-500/10 hover:border-red-500/20' : ''}`}
                                 >
                                     <div className="flex gap-4">
                                         <Avatar src={reply.avatar} name={reply.author} size="md" />
@@ -243,7 +296,7 @@ const PostView = () => {
                                                     )}
                                                 </div>
 
-                                                <div className="flex items-center gap-2">
+                                                 <div className="flex items-center gap-2">
                                                     {user?.uid === post.authorUid && !post.acceptedReplyId && (
                                                         <button
                                                             onClick={() => handleMarkResolved(reply.id, reply.authorUid)}
@@ -252,6 +305,16 @@ const PostView = () => {
                                                         >
                                                             <span className="material-symbols-outlined text-sm">task_alt</span>
                                                             Accept Solution
+                                                        </button>
+                                                    )}
+                                                    {user?.role === 'admin' && (
+                                                        <button
+                                                            onClick={() => openModal('deleteReply', reply.id)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 hover:bg-red-500/10 rounded-lg transition-colors border border-red-500/20"
+                                                            title="Delete Reply"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">delete</span>
+                                                            Delete
                                                         </button>
                                                     )}
                                                 </div>
@@ -298,6 +361,40 @@ const PostView = () => {
                     </div>
                 )}
             </Card>
+
+            {/* Confirmation Modals */}
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen && modalConfig.type === 'deletePost'}
+                onClose={closeModal}
+                onConfirm={handleDelete}
+                title="Delete Post?"
+                message="This will permanently remove the entire thread and all replies. This action cannot be undone."
+                confirmText="Delete Post"
+                variant="danger"
+            />
+
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen && modalConfig.type === 'deleteReply'}
+                onClose={closeModal}
+                onConfirm={() => handleDeleteReply(modalConfig.data)}
+                title="Delete Reply?"
+                message="Are you sure you want to remove this response from the thread?"
+                confirmText="Delete Reply"
+                variant="danger"
+            />
+
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen && modalConfig.type === 'flag'}
+                onClose={closeModal}
+                onConfirm={handleFlag}
+                title={post?.flagged ? "Unflag Post?" : "Flag Post?"}
+                message={post?.flagged
+                    ? "This will remove the safety flag and mark the content as reviewed."
+                    : "This will flag the post for moderator review and mark it as potentially problematic."
+                }
+                confirmText={post?.flagged ? "Unflag Content" : "Flag Content"}
+                variant={post?.flagged ? "info" : "warning"}
+            />
         </div>
     )
 }

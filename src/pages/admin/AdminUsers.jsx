@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { doc, updateDoc, arrayUnion, increment } from 'firebase/firestore'
+import { db } from '../../config/firebase'
 import { useAdminUsers } from '../../hooks/useAdminUsers'
+import { achievements } from '../../data/achievements'
+import ConfirmationModal from '../../components/common/ConfirmationModal'
 
 const Badge = ({ status }) => {
     const map = {
@@ -14,31 +18,164 @@ const Badge = ({ status }) => {
     )
 }
 
+const AwardModal = ({ isOpen, onClose, onAward, username }) => {
+    const [awardType, setAwardType] = useState('xp')
+    const [xpAmount, setXpAmount] = useState(100)
+    const [selectedBadge, setSelectedBadge] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    if (!isOpen) return null
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setIsSubmitting(true)
+        try {
+            if (awardType === 'xp') {
+                await onAward({ type: 'xp', value: parseInt(xpAmount) })
+            } else {
+                const badge = achievements.find(a => a.id === selectedBadge)
+                await onAward({ type: 'badge', value: badge })
+            }
+            onClose()
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-[#161632] border border-white/10 w-full max-w-md rounded-3xl p-8 shadow-2xl space-y-6">
+                <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                    <div className="size-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-yellow-500 text-2xl">military_tech</span>
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Grant Reward</h2>
+                        <p className="text-xs text-slate-400 uppercase tracking-widest font-black">Awarding: {username}</p>
+                    </div>
+                </div>
+
+                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
+                    <button 
+                        onClick={() => setAwardType('xp')}
+                        className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${awardType === 'xp' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        XP Bonus
+                    </button>
+                    <button 
+                        onClick={() => setAwardType('badge')}
+                        className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${awardType === 'badge' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        Official Badge
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {awardType === 'xp' ? (
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">XP Amount</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {[100, 500, 1000].map(amt => (
+                                    <button 
+                                        key={amt}
+                                        type="button"
+                                        onClick={() => setXpAmount(amt)}
+                                        className={`py-3 rounded-xl border transition-all text-sm font-bold ${xpAmount === amt ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' : 'bg-[#0b0b1e] border-white/5 text-slate-500 hover:border-white/20'}`}
+                                    >
+                                        +{amt}
+                                    </button>
+                                ))}
+                            </div>
+                            <input 
+                                type="number" 
+                                value={xpAmount}
+                                onChange={e => setXpAmount(e.target.value)}
+                                className="w-full bg-[#0b0b1e] border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50"
+                                placeholder="Custom amount..."
+                            />
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Select Achievement</label>
+                            <select 
+                                value={selectedBadge}
+                                onChange={e => setSelectedBadge(e.target.value)}
+                                className="w-full bg-[#0b0b1e] border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 appearance-none"
+                            >
+                                <option value="">Choose a badge...</option>
+                                {achievements.map(a => (
+                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    <div className="flex gap-3 pt-4">
+                        <button 
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-white/5 transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit"
+                            disabled={isSubmitting || (awardType === 'badge' && !selectedBadge)}
+                            className={`flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl transition-all active:scale-95 ${awardType === 'xp' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-900/20' : 'bg-purple-600 hover:bg-purple-500 shadow-purple-900/20'}`}
+                        >
+                            {isSubmitting ? 'Processing...' : 'Grant Reward'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
 const AdminUsers = () => {
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
     const { users, isLoading, updateUserStatus, deleteUser } = useAdminUsers()
+    
+    const [awardModal, setAwardModal] = useState({ isOpen: false, user: null })
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', user: null })
 
-    const handleStatusToggle = async (userId, currentStatus) => {
-        const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended'
-        if (window.confirm(`Are you sure you want to ${newStatus === 'suspended' ? 'suspend' : 'activate'} this user?`)) {
-            try {
-                await updateUserStatus(userId, newStatus)
-            } catch (error) {
-                alert("Failed to update user status")
+    const handleActionClick = (type, user) => {
+        setConfirmModal({ isOpen: true, type, user })
+    }
+
+    const executeAction = async () => {
+        const { type, user } = confirmModal
+        try {
+            if (type === 'suspend' || type === 'activate') {
+                await updateUserStatus(user.id, type === 'suspend' ? 'suspended' : 'active')
+            } else if (type === 'delete') {
+                await deleteUser(user.id)
             }
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setConfirmModal({ isOpen: false, type: '', user: null })
         }
     }
 
-    const handleDeleteUser = async (user) => {
-        if (user.role === 'admin') return alert("Cannot delete an administrator account.")
-        if (window.confirm(`Permanently delete account for "${user.username}"? This action is irreversible.`)) {
-            try {
-                await deleteUser(user.id)
-            } catch (error) {
-                alert("Failed to delete user")
+    const handleGrantAward = async ({ type, value }) => {
+        const userRef = doc(db, 'users', awardModal.user.id)
+        try {
+            if (type === 'xp') {
+                await updateDoc(userRef, { xp: increment(value) })
+            } else {
+                await updateDoc(userRef, { 
+                    achievements: arrayUnion(value.id)
+                })
             }
+            return true
+        } catch (error) {
+            console.error("Error granting reward:", error)
+            throw error
         }
     }
 
@@ -49,33 +186,21 @@ const AdminUsers = () => {
     })
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-white">User Management</h1>
-                <p className="text-slate-400 mt-1">View, search, and manage all registered users.</p>
-            </div>
-
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
-                    <input
-                        type="text"
-                        placeholder="Search by username or email..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full bg-[#12122a] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all shadow-inner"
-                    />
+        <div className="space-y-6 animate-fade-in">
+            <div className="bg-[#161632] p-8 rounded-3xl border border-white/5 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-white tracking-tight uppercase">User Operations</h1>
+                    <p className="text-slate-400 mt-1">Registry of all citizen coders. Promote growth or enforce protocols.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
                     {['all', 'active', 'suspended'].map(f => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all ${filter === f
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                : 'bg-[#12122a] text-slate-400 border border-white/10 hover:text-white'
-                                }`}
+                            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === f
+                                ? 'bg-red-600 text-white shadow-lg'
+                                : 'text-slate-500 hover:text-slate-300'
+                            }`}
                         >
                             {f}
                         </button>
@@ -83,87 +208,132 @@ const AdminUsers = () => {
                 </div>
             </div>
 
+            {/* Controls */}
+            <div className="relative">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
+                <input
+                    type="text"
+                    placeholder="Identify user by terminal ID or registered email..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-full bg-[#12122a] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/50 transition-all shadow-2xl"
+                />
+            </div>
+
             {/* Table */}
-            <div className="bg-[#12122a] border border-white/5 rounded-2xl overflow-hidden">
+            <div className="bg-[#12122a] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="border-b border-white/5 text-slate-500 text-xs uppercase tracking-wider">
-                                <th className="text-left px-5 py-4">User</th>
-                                <th className="text-left px-5 py-4">Level</th>
-                                <th className="text-left px-5 py-4">Status</th>
-                                <th className="text-left px-5 py-4">Joined</th>
-                                <th className="text-right px-5 py-4">Actions</th>
+                            <tr className="border-b border-white/5 text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
+                                <th className="text-left px-6 py-5">User Profile</th>
+                                <th className="text-left px-6 py-5">Skill Level</th>
+                                <th className="text-left px-6 py-5 text-center">Protocol Status</th>
+                                <th className="text-left px-6 py-5">Onboarding Date</th>
+                                <th className="text-right px-6 py-5">Operations</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {filtered.map(user => (
-                                <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="size-8 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-sm">
+                                <tr key={user.id} className="hover:bg-white/[0.015] transition-colors group">
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center gap-4">
+                                            <div className="size-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-black text-sm group-hover:scale-110 transition-transform">
                                                 {user.username.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-white">{user.username}</p>
-                                                <p className="text-xs text-slate-500">{user.email}</p>
+                                                <p className="font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight">{user.username}</p>
+                                                <p className="text-[10px] text-slate-500 font-mono italic">{user.email}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4">
-                                        <span className="text-yellow-400 font-semibold">Lv. {user.level}</span>
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-1.5 w-12 bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-full bg-yellow-500" style={{ width: `${(user.level / 50) * 100}%` }}></div>
+                                            </div>
+                                            <span className="text-yellow-500 font-black text-xs">LV.{user.level}</span>
+                                        </div>
                                     </td>
-                                    <td className="px-5 py-4">
+                                    <td className="px-6 py-5 text-center">
                                         <Badge status={user.status} />
                                     </td>
-                                    <td className="px-5 py-4 text-slate-400">{user.joined}</td>
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center justify-end gap-2">
+                                    <td className="px-6 py-5 text-slate-500 text-xs font-medium">{user.joined}</td>
+                                    <td className="px-6 py-5 text-right">
+                                        <div className="flex items-center justify-end gap-1">
                                             <button
-                                                onClick={() => navigate(`/app/profile/${user.username}`)}
-                                                title="View Profile"
-                                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+                                                onClick={() => setAwardModal({ isOpen: true, user })}
+                                                title="Grant Reward"
+                                                className="p-2 rounded-xl text-slate-500 hover:text-yellow-500 hover:bg-yellow-500/10 transition-all"
                                             >
-                                                <span className="material-symbols-outlined text-base">visibility</span>
+                                                <span className="material-symbols-outlined text-lg">military_tech</span>
                                             </button>
                                             <button
-                                                onClick={() => handleStatusToggle(user.id, user.status)}
-                                                title={user.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
-                                                className={`p-1.5 rounded-lg transition-all ${user.status === 'suspended'
-                                                    ? 'text-green-400 hover:bg-green-500/10'
-                                                    : 'text-orange-400 hover:bg-orange-500/10'
+                                                onClick={() => navigate(`/app/profile/${user.username}`)}
+                                                title="Intel Access"
+                                                className="p-2 rounded-xl text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">visibility</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleActionClick(user.status === 'suspended' ? 'activate' : 'suspend', user)}
+                                                title={user.status === 'suspended' ? 'De-isolate' : 'Isolate'}
+                                                className={`p-2 rounded-xl transition-all ${user.status === 'suspended'
+                                                    ? 'text-green-500 hover:bg-green-500/10'
+                                                    : 'text-orange-500 hover:bg-orange-500/10'
                                                     }`}
                                             >
-                                                <span className="material-symbols-outlined text-base">
+                                                <span className="material-symbols-outlined text-lg">
                                                     {user.status === 'suspended' ? 'lock_open' : 'lock'}
                                                 </span>
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteUser(user)}
-                                                title="Delete User"
-                                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                onClick={() => handleActionClick('delete', user)}
+                                                title="Terminate Link"
+                                                className="p-2 rounded-xl text-slate-500 hover:text-red-500 hover:bg-red-500/10 transition-all"
                                                 disabled={user.role === 'admin'}
                                             >
-                                                <span className="material-symbols-outlined text-base">delete</span>
+                                                <span className="material-symbols-outlined text-lg">delete</span>
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
                             ))}
-                            {filtered.length === 0 && (
+                            {filtered.length === 0 && !isLoading && (
                                 <tr>
-                                    <td colSpan={5} className="px-5 py-12 text-center text-slate-500">
-                                        No users found.
+                                    <td colSpan={5} className="px-6 py-20 text-center text-slate-600 italic">
+                                        No citizen found matching the provided identifier.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
-                <div className="px-5 py-3 border-t border-white/5 text-xs text-slate-500">
-                    Showing {filtered.length} of {users.length} users
+                <div className="px-6 py-4 border-t border-white/5 text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 flex justify-between items-center bg-white/[0.01]">
+                    <span>Registry Scan: {filtered.length} matching entities found</span>
+                    <span>System Status: Online</span>
                 </div>
             </div>
+
+            <AwardModal 
+                isOpen={awardModal.isOpen} 
+                onClose={() => setAwardModal({ isOpen: false, user: null })} 
+                onAward={handleGrantAward}
+                username={awardModal.user?.username}
+            />
+
+            <ConfirmationModal 
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, type: '', user: null })}
+                onConfirm={executeAction}
+                title={confirmModal.type === 'delete' ? 'Terminate Citizen Link?' : (confirmModal.type === 'suspend' ? 'Isolate Citizen?' : 'De-isolate Citizen?')}
+                message={confirmModal.type === 'delete' 
+                    ? `Are you absolutely sure you want to permanently delete "${confirmModal.user?.username}"? This action cannot be undone.`
+                    : `Confirm status protocol change for ${confirmModal.user?.username}. This will ${confirmModal.type === 'suspend' ? 'block' : 'restore'} their platform access.`
+                }
+                confirmText={confirmModal.type === 'delete' ? 'Terminate' : (confirmModal.type === 'suspend' ? 'Isolate' : 'De-isolate')}
+                variant={confirmModal.type === 'delete' || confirmModal.type === 'suspend' ? 'danger' : 'success'}
+            />
         </div>
     )
 }

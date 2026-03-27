@@ -14,15 +14,12 @@ export function useAdminStats() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // 1. Fetch total users
                 const usersSnapshot = await getDocs(collection(db, 'users'))
                 const userCount = usersSnapshot.size
 
-                // 2. Fetch active quests
                 const questsSnapshot = await getDocs(collection(db, 'quests'))
                 const questCount = questsSnapshot.size
 
-                // 3. Fetch recent activity (submissions)
                 const activityQuery = query(
                     collection(db, 'submissions'),
                     orderBy('createdAt', 'desc'),
@@ -59,7 +56,7 @@ export function useAdminStats() {
                     isLoading: false
                 })
             } catch (error) {
-                console.error("Error fetching admin stats:", error)
+                console.error("Error fetching stats:", error)
                 setStats(prev => ({ ...prev, isLoading: false }))
             }
         }

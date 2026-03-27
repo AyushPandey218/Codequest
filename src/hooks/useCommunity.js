@@ -340,21 +340,21 @@ export function useCommunity() {
         }
     }
 
-    const flagPost = async (postId) => {
+    const toggleFlag = async (postId, shouldFlag = true) => {
         try {
             await updateDoc(doc(db, 'communityPosts', postId), {
-                flagged: true,
-                flaggedAt: serverTimestamp()
+                flagged: shouldFlag,
+                flaggedAt: shouldFlag ? serverTimestamp() : null
             })
             await fetchPosts() // Refresh the list
         } catch (error) {
-            console.error("Error flagging post:", error)
+            console.error("Error toggling flag on post:", error)
             throw error
         }
     }
 
     return {
         posts, trendingTopics, stats, isLoading, refetch: fetchPosts,
-        createPost, fetchPost, incrementView, toggleLike, addReply, deletePost, flagPost, markAsResolved
+        createPost, fetchPost, incrementView, toggleLike, addReply, deletePost, deleteReply, toggleFlag, markAsResolved
     }
 }

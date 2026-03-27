@@ -1,5 +1,6 @@
 import { Outlet, Link, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import GlobalBroadcast from '../components/common/GlobalBroadcast'
 import { useUser } from '../context/UserContext'
 import { useState } from 'react'
 import Avatar from '../components/common/Avatar'
@@ -76,69 +77,54 @@ const DashboardLayout = () => {
           )}
         </div>
 
-        {isAdmin ? (
-          /* Admin-only nav: only Quest Manager */
-          <nav className="flex-1 overflow-y-auto p-4 pr-2 space-y-1">
-            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-4 mb-2">Admin Panel</p>
-            {adminNavItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
-                    ? 'bg-primary/20 text-primary border border-primary/30'
-                    : 'text-text-muted hover:text-white hover:bg-[#282839]'
-                  }`
-                }
-              >
-                <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </NavLink>
-            ))}
-          </nav>
-        ) : (
-          <>
-            {/* Regular Navigation */}
-            <nav className="flex-1 overflow-y-auto p-4 pr-2 space-y-1">
-              {navigationItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isSidebarOpen ? '' : 'justify-center'} ${isActive
-                      ? 'bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/5'
-                      : 'text-text-muted hover:text-white hover:bg-white/5'
-                    }`
-                  }
-                  title={!isSidebarOpen ? item.label : ''}
-                >
-                  <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                  {isSidebarOpen && <span className="font-medium">{item.label}</span>}
-                </NavLink>
-              ))}
-            </nav>
+        {/* Regular Navigation */}
+        <nav className="flex-1 overflow-y-auto p-4 pr-2 space-y-1">
+          {navigationItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isSidebarOpen ? '' : 'justify-center'} ${isActive
+                  ? 'bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/5'
+                  : 'text-text-muted hover:text-white hover:bg-white/5'
+                }`
+              }
+              title={!isSidebarOpen ? item.label : ''}
+            >
+              <span className="material-symbols-outlined text-xl">{item.icon}</span>
+              {isSidebarOpen && <span className="font-medium">{item.label}</span>}
+            </NavLink>
+          ))}
+          {isAdmin && (
+               <NavLink
+               to="/admin/dashboard"
+               className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-red-400 hover:bg-red-500/10 mt-4 border border-red-500/20"
+             >
+               <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
+               {isSidebarOpen && <span className="font-medium">Admin Panel</span>}
+             </NavLink>
+          )}
+        </nav>
 
-            {/* Bottom Nav */}
-            <div className="p-4 border-t border-border-dark space-y-1">
-              {bottomNavItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isSidebarOpen ? '' : 'justify-center'} ${isActive
-                      ? 'bg-white/10 text-white'
-                      : 'text-text-muted hover:text-white hover:bg-white/5'
-                    }`
-                  }
-                  title={!isSidebarOpen ? item.label : ''}
-                >
-                  <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                  {isSidebarOpen && <span className="font-medium">{item.label}</span>}
-                </NavLink>
-              ))}
-            </div>
-          </>
-        )}
+        {/* Bottom Nav */}
+        <div className="p-4 border-t border-border-dark space-y-1">
+          {bottomNavItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isSidebarOpen ? '' : 'justify-center'} ${isActive
+                  ? 'bg-white/10 text-white'
+                  : 'text-text-muted hover:text-white hover:bg-white/5'
+                }`
+              }
+              title={!isSidebarOpen ? item.label : ''}
+            >
+              <span className="material-symbols-outlined text-xl">{item.icon}</span>
+              {isSidebarOpen && <span className="font-medium">{item.label}</span>}
+            </NavLink>
+          ))}
+        </div>
       </aside>
 
       {/* Overlay for mobile */}
@@ -151,7 +137,7 @@ const DashboardLayout = () => {
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300`}>
-
+        <GlobalBroadcast />
         {/* Top Header */}
         <header className="sticky top-0 z-30 bg-background-dark/80 backdrop-blur-md border-b border-border-dark px-3 sm:px-4 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-4">

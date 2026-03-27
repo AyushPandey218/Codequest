@@ -139,7 +139,11 @@ export const AuthProvider = ({ children }) => {
   const resendVerification = async () => {
     try {
       if (auth.currentUser && !auth.currentUser.emailVerified) {
-        await sendEmailVerification(auth.currentUser)
+        const actionCodeSettings = {
+          url: `${window.location.origin}/auth/login`,
+          handleCodeInApp: true,
+        };
+        await sendEmailVerification(auth.currentUser, actionCodeSettings)
         return { success: true }
       }
       return { success: false, error: 'User not found or already verified.' }
@@ -259,7 +263,11 @@ export const AuthProvider = ({ children }) => {
 
   const resetPassword = async (email) => {
     try {
-      await sendPasswordResetEmail(auth, email)
+      const actionCodeSettings = {
+        url: `${window.location.origin}/auth/reset-password`,
+        handleCodeInApp: true,
+      };
+      await sendPasswordResetEmail(auth, email, actionCodeSettings)
       return { success: true }
     } catch (error) {
       console.error('Reset password error:', error)

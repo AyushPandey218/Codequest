@@ -74,6 +74,7 @@ export function useReports() {
                         reporter: 'System/Moderator',
                         target: data.author || 'Unknown',
                         content: data.title || 'Untitled Post',
+                        postContent: data.content || '',
                         severity: 'medium',
                         status: 'pending',
                         time: createdAt ? Math.floor((new Date() - createdAt) / 86400000) + 'd ago' : 'Unknown',
@@ -92,18 +93,28 @@ export function useReports() {
         }
     }
 
-    const resolveReport = async (reportId, isPost = false) => {
+    const resolveReport = async (reportId, action = 'unflag', isPost = false) => {
         try {
             if (isPost) {
                 const postRef = doc(db, 'communityPosts', reportId)
-                await updateDoc(postRef, { flagged: false })
+                if (action === 'unflag') {
+                    await updateDoc(postRef, { flagged: false })
+                }
+                // For 'keep', we just want to mark the system report as resolved if it exists
             } else {
                 const reportRef = doc(db, 'reports', reportId)
-                await updateDoc(reportRef, { status: 'resolved' })
+                await updateDoc(reportRef, { status: 'resolved', resolvedAt: serverTimestamp() })
+                
+                // If it was a forum flag report, we might need to unflag the actual post too
+                // (Depends on how the report was created)
             }
+            
+            // Local state update
             setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'resolved' } : r))
+            return true
         } catch (error) {
             console.error("Error resolving report:", error)
+            throw error
         }
     }
 
