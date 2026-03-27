@@ -10,12 +10,11 @@ import {
   sendPasswordResetEmail,
   confirmPasswordReset
 } from 'firebase/auth'
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment } from 'firebase/firestore'
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment, onSnapshot as firestoreSnapshot } from 'firebase/firestore'
 import { auth, db, googleProvider } from '../config/firebase'
 import { STORAGE_KEYS } from '../utils/constants'
 import { checkAchievements } from '../utils/achievementChecker'
 import { getAuthErrorMessage } from '../utils/errorHandlers'
-// Removed Capacitor initialization as the project is now web-only
 
 const AuthContext = createContext(null)
 
@@ -33,37 +32,38 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribeUser = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch additional user data from Firestore
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
-        const userData = userDoc.exists() ? userDoc.data() : null
+        // Setup real-time listener for user document
+        unsubscribeUser = firestoreSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            const userData = docSnap.data()
+            
+            if (userData?.status === 'suspended') {
+              signOut(auth)
+              return
+            }
 
-        if (userData?.status === 'suspended') {
-          await signOut(auth)
-          setUser(null)
-          setIsAuthenticated(false)
-          localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
-          localStorage.removeItem(STORAGE_KEYS.USER_DATA)
-          setIsLoading(false)
-          return
-        }
+            const mergedUser = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+              photoURL: firebaseUser.photoURL,
+              bio: userData?.bio || '',
+              university: userData?.university || '',
+              website: userData?.website || '',
+              ...userData
+            }
 
-        const mergedUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-          bio: userData?.bio || '',
-          university: userData?.university || '',
-          website: userData?.website || '',
-          ...userData
-        }
-
-        setUser(mergedUser)
-        setIsAuthenticated(true)
-        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mergedUser))
+            setUser(mergedUser)
+            setIsAuthenticated(true)
+            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mergedUser))
+          }
+        })
       } else {
+        if (unsubscribeUser) unsubscribeUser();
         setUser(null)
         setIsAuthenticated(false)
         localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
@@ -72,7 +72,10 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false)
     })
 
-    return () => unsubscribe()
+    return () => {
+      unsubscribeAuth()
+      if (unsubscribeUser) unsubscribeUser();
+    }
   }, [])
 
   const login = async (email, password) => {
@@ -212,7 +215,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       await updateDoc(doc(db, 'users', user.uid), updates)
-      setUser(prev => ({ ...prev, ...updates }))
+      // Local state is now handled by the onSnapshot listener
     } catch (error) {
       console.error('Update profile error:', error)
     }
@@ -224,7 +227,6 @@ export const AuthProvider = ({ children }) => {
       await updateDoc(doc(db, 'users', user.uid), {
         xp: increment(xpAmount)
       })
-      setUser(prev => ({ ...prev, xp: (prev.xp || 0) + xpAmount }))
     } catch (error) {
       console.error('Update XP error:', error)
     }

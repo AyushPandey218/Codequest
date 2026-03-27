@@ -121,16 +121,15 @@ export const NotificationProvider = ({ children }) => {
     const markAllAsRead = useCallback(async () => {
         if (!user?.uid) return
         try {
-            const batch = writeBatch(db)
-            
             // 1. Mark private as read
-            notifications
-                .filter(n => !n.read && !n.isGlobal)
-                .forEach(n => {
+            const unreadPrivate = notifications.filter(n => !n.read && !n.isGlobal)
+            if (unreadPrivate.length > 0) {
+                const batch = writeBatch(db)
+                unreadPrivate.forEach(n => {
                     batch.update(doc(db, 'notifications', n.id), { read: true })
                 })
-            
-            await batch.commit()
+                await batch.commit()
+            }
 
             // 2. Mark global as read (update user timestamp)
             await updateProfile({ lastReadGlobal: serverTimestamp() })
@@ -143,14 +142,14 @@ export const NotificationProvider = ({ children }) => {
     const clearAll = useCallback(async () => {
         if (!user?.uid) return
         try {
-            const batch = writeBatch(db)
-            // Only clear private notifications (deleting global is an admin action)
-            notifications
-                .filter(n => !n.isGlobal)
-                .forEach(n => {
+            const privateNotifs = notifications.filter(n => !n.isGlobal)
+            if (privateNotifs.length > 0) {
+                const batch = writeBatch(db)
+                privateNotifs.forEach(n => {
                     batch.delete(doc(db, 'notifications', n.id))
                 })
-            await batch.commit()
+                await batch.commit()
+            }
         } catch (error) {
             console.error('Error clearing notifications:', error)
         }

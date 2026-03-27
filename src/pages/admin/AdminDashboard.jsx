@@ -39,6 +39,26 @@ const QuickLink = ({ to, icon, label, desc, color }) => (
 )
 
 const AdminDashboard = () => {
+    const [newBroadcast, setNewBroadcast] = useState({ title: '', message: '', type: 'info' })
+    const [newPush, setNewPush] = useState({ title: '', message: '', type: 'system', link: '' })
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isPushing, setIsPushing] = useState(false)
+
+    const handleCreateBroadcast = async (e) => {
+        e.preventDefault()
+        if (!newBroadcast.title || !newBroadcast.message) return
+        setIsSubmitting(true)
+        try {
+            await createBroadcast(newBroadcast)
+            setNewBroadcast({ title: '', message: '', type: 'info' })
+            alert('Broadcast transmitted!')
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
     const handlePushGlobal = async (e) => {
         e.preventDefault()
         if (!newPush.title || !newPush.message) return
@@ -58,25 +78,6 @@ const AdminDashboard = () => {
     const { broadcasts, createBroadcast, deleteBroadcast, toggleBroadcast, isLoading: broadcastsLoading } = useAdminBroadcasts()
     const { pushGlobalNotification } = useAdminNotifications()
     
-    const [newBroadcast, setNewBroadcast] = useState({ title: '', message: '', type: 'info' })
-    const [newPush, setNewPush] = useState({ title: '', message: '', type: 'system', link: '' })
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isPushing, setIsPushing] = useState(false)
-
-    const handleCreateBroadcast = async (e) => {
-        e.preventDefault()
-        if (!newBroadcast.title || !newBroadcast.message) return
-        
-        setIsSubmitting(true)
-        try {
-            await createBroadcast(newBroadcast)
-            setNewBroadcast({ title: '', message: '', type: 'info' })
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
 
     return (
         <div className="space-y-8 animate-fade-in pb-12">
@@ -153,7 +154,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Push notification mini-form */}
+                    {/* Global Push form */}
                     <Card className="p-6 border-white/5 bg-[#12122a] shadow-2xl">
                         <h2 className="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-purple-400 text-lg">notifications_active</span>
@@ -199,6 +200,53 @@ const AdminDashboard = () => {
                                 className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-purple-900/20 active:scale-[0.98]"
                             >
                                 {isPushing ? 'Pushing...' : 'Push to All Users'}
+                            </button>
+                        </form>
+                    </Card>
+
+                    {/* Site Broadcast Form */}
+                    <Card className="p-6 border-white/5 bg-[#12122a] shadow-2xl">
+                        <h2 className="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-blue-400 text-lg">campaign</span>
+                            Site Broadcast
+                        </h2>
+                        <form onSubmit={handleCreateBroadcast} className="space-y-4">
+                            <input 
+                                type="text"
+                                placeholder="Banner Title"
+                                value={newBroadcast.title}
+                                onChange={e => setNewBroadcast({...newBroadcast, title: e.target.value})}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                            />
+                            <textarea 
+                                placeholder="Message for global banner..."
+                                value={newBroadcast.message}
+                                onChange={e => setNewBroadcast({...newBroadcast, message: e.target.value})}
+                                rows={2}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
+                            />
+                            <div className="flex gap-2">
+                                {['info', 'success', 'warning', 'error'].map(t => (
+                                    <button 
+                                        key={t}
+                                        type="button"
+                                        onClick={() => setNewBroadcast({...newBroadcast, type: t})}
+                                        className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter border transition-all ${
+                                            newBroadcast.type === t 
+                                            ? 'bg-blue-500/20 border-blue-500/40 text-blue-400' 
+                                            : 'bg-white/5 border-white/5 text-slate-500'
+                                        }`}
+                                    >
+                                        {t}
+                                    </button>
+                                ))}
+                            </div>
+                            <button 
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-900/20 active:scale-[0.98]"
+                            >
+                                {isSubmitting ? 'Transmitting...' : 'Send Broadcast'}
                             </button>
                         </form>
                     </Card>
