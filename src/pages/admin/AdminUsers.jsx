@@ -4,6 +4,7 @@ import { doc, updateDoc, arrayUnion, increment, serverTimestamp } from 'firebase
 import { db } from '../../config/firebase'
 import { useAdminUsers } from '../../hooks/useAdminUsers'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
+import { useNotification } from '../../context/NotificationContext'
 import { achievements } from '../../data/achievements'
 import ConfirmationModal from '../../components/common/ConfirmationModal'
 
@@ -229,6 +230,7 @@ const AdminUsers = () => {
     const [filter, setFilter] = useState('all')
     const { users, isLoading, updateUserStatus, deleteUser } = useAdminUsers()
     const { pushDirectNotification } = useAdminNotifications()
+    const { showToast } = useNotification()
     
     const [awardModal, setAwardModal] = useState({ isOpen: false, user: null })
     const [pushModal, setPushModal] = useState({ isOpen: false, user: null })

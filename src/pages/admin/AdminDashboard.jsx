@@ -4,6 +4,7 @@ import { useAdminStats } from '../../hooks/useAdminStats'
 import { useAdminBroadcasts } from '../../hooks/useAdminBroadcasts'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
 import { useNotification } from '../../context/NotificationContext'
+import Card from '../../components/common/Card'
 const StatCard = ({ icon, label, value, sub, color, isLoading }) => (
     <div className={`bg-[#12122a] border ${color.border} rounded-2xl p-5 flex items-center gap-4 shadow-xl transition-all hover:scale-[1.02]`}>
         <div className={`size-12 rounded-xl flex items-center justify-center ${color.bg}`}>
