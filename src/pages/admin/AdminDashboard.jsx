@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAdminStats } from '../../hooks/useAdminStats'
 import { useAdminBroadcasts } from '../../hooks/useAdminBroadcasts'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
-import Card from '../../components/common/Card'
-
+import { useNotification } from '../../context/NotificationContext'
 const StatCard = ({ icon, label, value, sub, color, isLoading }) => (
     <div className={`bg-[#12122a] border ${color.border} rounded-2xl p-5 flex items-center gap-4 shadow-xl transition-all hover:scale-[1.02]`}>
         <div className={`size-12 rounded-xl flex items-center justify-center ${color.bg}`}>
@@ -44,6 +43,11 @@ const AdminDashboard = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isPushing, setIsPushing] = useState(false)
 
+    const { totalUsers, activeQuests, completionsToday, recentActivity, isLoading } = useAdminStats()
+    const { broadcasts, createBroadcast, deleteBroadcast, toggleBroadcast, isLoading: broadcastsLoading } = useAdminBroadcasts()
+    const { pushGlobalNotification } = useAdminNotifications()
+    const { showToast } = useNotification()
+
     const handleCreateBroadcast = async (e) => {
         e.preventDefault()
         if (!newBroadcast.title || !newBroadcast.message) return
@@ -51,9 +55,10 @@ const AdminDashboard = () => {
         try {
             await createBroadcast(newBroadcast)
             setNewBroadcast({ title: '', message: '', type: 'info' })
-            alert('Broadcast transmitted!')
+            showToast('Broadcast transmitted successfully!', 'success')
         } catch (error) {
             console.error(error)
+            showToast('Failed to transmit broadcast.', 'error')
         } finally {
             setIsSubmitting(false)
         }
@@ -66,17 +71,14 @@ const AdminDashboard = () => {
         try {
             await pushGlobalNotification(newPush)
             setNewPush({ title: '', message: '', type: 'system', link: '' })
-            alert('Global notification pushed successfully!')
+            showToast('Global push notification deployed!', 'success')
         } catch (error) {
             console.error(error)
+            showToast('Global push deployment failed.', 'error')
         } finally {
             setIsPushing(false)
         }
     }
-
-    const { totalUsers, activeQuests, completionsToday, recentActivity, isLoading } = useAdminStats()
-    const { broadcasts, createBroadcast, deleteBroadcast, toggleBroadcast, isLoading: broadcastsLoading } = useAdminBroadcasts()
-    const { pushGlobalNotification } = useAdminNotifications()
     
 
     return (

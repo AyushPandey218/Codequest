@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { db } from '../../config/firebase'
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore'
+import { useNotification } from '../../context/NotificationContext'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -36,23 +37,7 @@ const emptyForm = () => ({
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
-function Toast({ toasts }) {
-    return (
-        <div className="fixed bottom-6 right-6 z-[200] flex flex-col gap-2 pointer-events-none">
-            {toasts.map(t => (
-                <div key={t.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm font-medium backdrop-blur-md animate-slide-up
-          ${t.type === 'success' ? 'bg-green-500/20 text-green-300 border-green-500/40' :
-                        t.type === 'error' ? 'bg-red-500/20 text-red-300 border-red-500/40' :
-                            'bg-blue-500/20 text-blue-300 border-blue-500/40'}`}>
-                    <span className="material-symbols-outlined text-lg">
-                        {t.type === 'success' ? 'check_circle' : t.type === 'error' ? 'error' : 'info'}
-                    </span>
-                    {t.message}
-                </div>
-            ))}
-        </div>
-    )
-}
+// Removed local Toast component and using NotificationContext
 
 function DeleteModal({ quest, onConfirm, onCancel }) {
     return (
@@ -454,8 +439,8 @@ const AdminQuestManager = () => {
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [editingQuest, setEditingQuest] = useState(null)
     const [deleteTarget, setDeleteTarget] = useState(null)
-    const [toasts, setToasts] = useState([])
     const [isSyncing, setIsSyncing] = useState(false)
+    const { showToast } = useNotification()
 
     useEffect(() => {
         fetchQuests()
@@ -473,16 +458,12 @@ const AdminQuestManager = () => {
             setQuests(fetchedQuests)
         } catch (error) {
             console.error("Error fetching quests:", error)
-            addToast("Failed to fetch quests", "error")
+            showToast("Failed to fetch quests", "error")
         }
         setLoading(false)
     }
 
-    const addToast = (message, type = 'success') => {
-        const id = Date.now()
-        setToasts(prev => [...prev, { id, message, type }])
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500)
-    }
+    // Local addToast replaced by global showToast
 
     const openAdd = () => { setEditingQuest(null); setDrawerOpen(true) }
     const openEdit = (q) => { setEditingQuest(q); setDrawerOpen(true) }
@@ -496,19 +477,19 @@ const AdminQuestManager = () => {
                     ...formData,
                     updatedAt: serverTimestamp()
                 })
-                addToast(`"${formData.title}" updated successfully`)
+                showToast(`"${formData.title}" updated successfully`)
             } else {
                 await addDoc(collection(db, 'quests'), {
                     ...formData,
                     createdAt: serverTimestamp()
                 })
-                addToast(`"${formData.title}" added to quest list`)
+                showToast(`"${formData.title}" added to quest list`)
             }
             fetchQuests() // Refresh list
             closeDrawer()
         } catch (error) {
             console.error("Error saving quest:", error)
-            addToast("Failed to save quest", "error")
+            showToast("Failed to save quest", "error")
         }
     }
 
@@ -516,12 +497,12 @@ const AdminQuestManager = () => {
         if (!deleteTarget) return
         try {
             await deleteDoc(doc(db, 'quests', deleteTarget.id))
-            addToast(`"${deleteTarget.title}" deleted`, 'error')
+            showToast(`"${deleteTarget.title}" deleted`, 'error')
             setDeleteTarget(null)
             fetchQuests() // Refresh list
         } catch (error) {
             console.error("Error deleting quest:", error)
-            addToast("Failed to delete quest", "error")
+            showToast("Failed to delete quest", "error")
         }
     }
 
@@ -553,11 +534,11 @@ const AdminQuestManager = () => {
                 uploaded++
             }
             
-            addToast(`Successfully synced ${uploaded} quests (${skipped} skipped)`)
+            showToast(`Successfully synced ${uploaded} quests (${skipped} skipped)`)
             fetchQuests()
         } catch (error) {
             console.error("Sync error:", error)
-            addToast("Cloud sync failed", "error")
+            showToast("Cloud sync failed", "error")
         } finally {
             setIsSyncing(false)
         }
@@ -752,7 +733,7 @@ const AdminQuestManager = () => {
             {deleteTarget && (
                 <DeleteModal quest={deleteTarget} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
             )}
-            <Toast toasts={toasts} />
+            {/* Redundant local Toast removed */}
         </div>
     )
 }

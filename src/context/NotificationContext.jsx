@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot, updateDoc, doc, writeBatch, serve
 import { db } from '../config/firebase'
 import { useAuth } from './AuthContext'
 import AchievementToast from '../components/common/AchievementToast'
+import NotificationToast from '../components/common/NotificationToast'
 
 const NotificationContext = createContext(null)
 
@@ -86,8 +87,12 @@ export const NotificationProvider = ({ children }) => {
         }
     }, [user?.uid, user?.lastReadGlobal])
 
-    const showAchievement = useCallback(async (achievementId) => {
+    const showAchievement = useCallback((achievementId) => {
         setToasts(prev => [...prev, { id: Date.now(), achievementId, type: 'achievement' }])
+    }, [])
+
+    const showToast = useCallback((message, type = 'info') => {
+        setToasts(prev => [...prev, { id: Date.now(), message, type }])
     }, [])
 
     const createNotification = useCallback(async (notif, targetUid = null) => {
@@ -167,6 +172,7 @@ export const NotificationProvider = ({ children }) => {
             unreadCount,
             isLoading,
             showAchievement,
+            showToast,
             createNotification,
             markAsRead,
             markAllAsRead,
@@ -176,11 +182,20 @@ export const NotificationProvider = ({ children }) => {
 
             <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-4">
                 {toasts.map((t) => (
-                    <AchievementToast
-                        key={t.id}
-                        achievementId={t.achievementId}
-                        onDismiss={() => dismissToast(t.id)}
-                    />
+                    t.type === 'achievement' ? (
+                        <AchievementToast
+                            key={t.id}
+                            achievementId={t.achievementId}
+                            onDismiss={() => dismissToast(t.id)}
+                        />
+                    ) : (
+                        <NotificationToast
+                            key={t.id}
+                            message={t.message}
+                            type={t.type}
+                            onDismiss={() => dismissToast(t.id)}
+                        />
+                    )
                 ))}
             </div>
         </NotificationContext.Provider>

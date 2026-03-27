@@ -243,8 +243,10 @@ const AdminUsers = () => {
         try {
             if (type === 'suspend' || type === 'activate') {
                 await updateUserStatus(user.id, type === 'suspend' ? 'suspended' : 'active')
+                showToast(`User ${type === 'suspend' ? 'suspended' : 'activated'} successfully.`, 'success')
             } else if (type === 'delete') {
                 await deleteUser(user.id)
+                showToast('User account deleted permanently.', 'success')
             }
         } catch (error) {
             console.error(error)
@@ -263,6 +265,7 @@ const AdminUsers = () => {
                     achievements: arrayUnion(value.id)
                 })
             }
+            showToast(`Reward granted to ${awardModal.user.username}!`, 'success')
             return true
         } catch (error) {
             console.error("Error granting reward:", error)
@@ -273,6 +276,7 @@ const AdminUsers = () => {
     const handlePushNotify = async (notif) => {
         try {
             await pushDirectNotification(pushModal.user.id, notif)
+            showToast(`Notification pushed to ${pushModal.user.username}.`, 'success')
             return true
         } catch (error) {
             console.error("Error pushing notification:", error)

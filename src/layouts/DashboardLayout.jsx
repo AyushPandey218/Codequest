@@ -215,20 +215,48 @@ const DashboardLayout = () => {
           </div>
         </header>
 
-        {/* Profile Completion Reminder Banner */}
+        {/* Profile Completion Mission Card */}
         {!userStats?.profileCompleted && !isLoading && (
-          <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-b border-indigo-500/20 px-4 py-3 flex items-center justify-between animate-fade-in shadow-inner">
-            <div className="flex items-center gap-3">
-              <div className="size-8 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 border border-indigo-500/30">
-                <span className="material-symbols-outlined text-indigo-400 text-sm">how_to_reg</span>
+          <div className="px-3 sm:px-4 md:px-8 py-2">
+            <div className="relative overflow-hidden group">
+              {/* Animated background glow */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
+              
+              <div className="relative bg-[#1a1b26]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+                <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                    {/* Unique Icon Design */}
+                    <div className="relative flex-shrink-0">
+                        <div className="size-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 rotate-3 transition-transform group-hover:rotate-6">
+                            <span className="material-symbols-outlined text-indigo-400 text-3xl">task_alt</span>
+                        </div>
+                        <div className="absolute -top-1 -right-1 size-5 bg-indigo-500 rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-[#1a1b26] animate-bounce">!</div>
+                    </div>
+
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Primary Mission</span>
+                            <div className="size-1 bg-white/20 rounded-full" />
+                            <span className="text-[10px] font-bold text-slate-500">Exp: 250 XP</span>
+                        </div>
+                        <h3 className="text-white font-black text-lg leading-tight mb-1">Complete Your Dossier</h3>
+                        <p className="text-slate-400 text-sm max-w-lg">
+                            Add your bio, university, and website to establish your legacy and unlock the <span className="text-indigo-400 font-bold">Profile Perfectionist</span> trophy.
+                        </p>
+                    </div>
+                </div>
+
+                <Link 
+                    to="/app/profile/edit" 
+                    className="group/btn relative inline-flex items-center justify-center px-8 py-3 font-bold text-white transition-all duration-300 bg-indigo-600 rounded-xl hover:bg-indigo-500 hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] w-full sm:w-auto overflow-hidden text-sm"
+                >
+                    <span className="relative z-10 flex items-center gap-2">
+                        Complete Profile
+                        <span className="material-symbols-outlined text-sm transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
+                    </span>
+                    <div className="absolute inset-x-0 bottom-0 h-1 bg-indigo-400/50 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300" />
+                </Link>
               </div>
-              <p className="text-sm text-indigo-100">
-                <strong className="text-white">Profile Incomplete:</strong> Add your bio, university, and website to earn the <span className="font-bold text-indigo-400">Profile Perfectionist</span> achievement! 🏆
-              </p>
             </div>
-            <Link to="/app/profile/edit" className="whitespace-nowrap ml-4 text-xs font-bold text-white bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg transition-colors">
-              Complete Profile
-            </Link>
           </div>
         )}
 

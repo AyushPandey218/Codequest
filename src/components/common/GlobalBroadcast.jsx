@@ -8,45 +8,57 @@ const GlobalBroadcast = () => {
     if (isLoading || !activeBroadcast || hidden) return null
 
     const typeStyles = {
-        info: 'bg-blue-600/20 text-blue-100 border-blue-500/30',
-        warning: 'bg-orange-600/20 text-orange-100 border-orange-500/30',
-        success: 'bg-green-600/20 text-green-100 border-green-500/30',
-        error: 'bg-red-600/20 text-red-100 border-red-500/30'
+        info: 'from-blue-600/20 to-indigo-600/20 text-blue-100 border-blue-500/30 shadow-blue-500/10',
+        warning: 'from-amber-600/20 to-orange-600/20 text-amber-100 border-amber-500/30 shadow-amber-500/10',
+        success: 'from-emerald-600/20 to-green-600/20 text-emerald-100 border-emerald-500/30 shadow-emerald-500/10',
+        error: 'from-red-600/20 to-rose-600/20 text-red-100 border-red-500/30 shadow-red-500/10'
     }
 
     const icons = {
-        info: 'info',
+        info: 'campaign',
         warning: 'warning',
-        success: 'check_circle',
-        error: 'error'
+        success: 'verified',
+        error: 'report'
     }
 
     return (
-        <div className={`w-full border-b backdrop-blur-md animate-slide-down relative z-[100] ${typeStyles[activeBroadcast.type || 'info']}`}>
-            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 size-8 rounded-full bg-white/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-sm">{icons[activeBroadcast.type || 'info']}</span>
+        <div className={`w-full overflow-hidden relative z-[100] animate-slide-down`}>
+            {/* Elegant glass bar */}
+            <div className={`mx-4 mt-3 mb-1 rounded-2xl border backdrop-blur-xl bg-gradient-to-r ${typeStyles[activeBroadcast.type || 'info']} shadow-lg flex items-center justify-between gap-4 px-6 py-3 transition-all duration-500`}>
+                <div className="flex items-center gap-4">
+                    <div className="relative flex-shrink-0">
+                        <div className="absolute inset-0 bg-white/20 rounded-full animate-ping opacity-20" />
+                        <div className="size-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 relative">
+                            <span className="material-symbols-outlined text-lg">{icons[activeBroadcast.type || 'info']}</span>
+                        </div>
                     </div>
-                    <div>
-                        <span className="text-xs font-black uppercase tracking-widest opacity-60 block leading-none mb-1">Notice</span>
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 whitespace-nowrap">
+                            Transmission
+                        </span>
+                        <div className="h-4 w-[1px] bg-white/10 hidden sm:block" />
                         <p className="text-sm font-bold leading-tight">
-                            <span className="mr-2 opacity-80">{activeBroadcast.title}:</span>
-                            {activeBroadcast.message}
+                            <span className="text-white/90 mr-1">{activeBroadcast.title}:</span>
+                            <span className="opacity-80 font-medium">{activeBroadcast.message}</span>
                         </p>
                     </div>
                 </div>
                 
                 <button 
                     onClick={() => setHidden(true)}
-                    className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                    className="size-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-all transform hover:rotate-90"
                 >
-                    <span className="material-symbols-outlined text-sm">close</span>
+                    <span className="material-symbols-outlined text-lg">close</span>
                 </button>
+
+                {/* Decorative background light */}
+                <div className="absolute top-0 right-1/4 w-32 h-full bg-white/5 skew-x-[30deg] pointer-events-none" />
             </div>
             
-            <div className="absolute bottom-0 left-0 h-[2px] bg-white/20 w-full overflow-hidden">
-                <div className="h-full bg-white/40 animate-progress-slide" />
+            {/* Progress bar line */}
+            <div className="mx-8 h-[1px] bg-white/5 relative overflow-hidden rounded-full">
+                <div className="absolute h-full bg-white/20 animate-progress-slide w-full" />
             </div>
         </div>
     )
