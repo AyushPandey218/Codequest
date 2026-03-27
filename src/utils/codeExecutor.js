@@ -48,19 +48,19 @@ import ast, sys, json
 ${userCode}
 
 def _get_target():
-    if 'solution' in locals():
-        return locals()['solution']
+    if 'solution' in globals():
+        return globals()['solution']
 
     try:
         # Use AST to find the last defined function or class
         tree = ast.parse(${JSON.stringify(userCode)})
         for node in reversed(tree.body):
             if isinstance(node, ast.FunctionDef):
-                if node.name in locals():
-                    return locals()[node.name]
+                if node.name in globals():
+                    return globals()[node.name]
             elif isinstance(node, ast.ClassDef):
-                if node.name in locals():
-                    cls = locals()[node.name]
+                if node.name in globals():
+                    cls = globals()[node.name]
                     # For classes, look for the first public method
                     for item in node.body:
                         if isinstance(item, ast.FunctionDef) and not item.name.startswith('_'):
@@ -281,7 +281,9 @@ int main() {
 #include <sstream>
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 #include <set>
+#include <unordered_set>
 #include <queue>
 #include <stack>
 using namespace std;
@@ -444,9 +446,14 @@ const runPiston = async (code, language, input) => {
     }
 
     const data = await res.json()
-    // Piston response: { run: { stdout, stderr, code, signal, output } }
+    // Piston response: { compile: { stderr, code }, run: { stdout, stderr, code, signal, output } }
     
     if (data.message) throw new Error(data.message)
+
+    if (data.compile && data.compile.code !== 0 && data.compile.stderr) {
+      const cmpErr = data.compile.stderr.trim()
+      return { stdout: null, stderr: cmpErr, error: cmpErr || 'Compilation failed' }
+    }
 
     const stdout = (data.run?.stdout || '').trim()
     const stderr = (data.run?.stderr || '').trim()
