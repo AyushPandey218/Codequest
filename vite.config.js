@@ -37,11 +37,6 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
-      '/jdoodle': {
-        target: 'https://api.jdoodle.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/jdoodle/, ''),
-      },
     },
   },
 })

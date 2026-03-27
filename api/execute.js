@@ -1,19 +1,18 @@
-
 import https from 'https';
 
-const WANDBOX_COMPILERS = {
-  'cpp': 'gcc-13.2.0',
-  'java': 'openjdk-jdk-21+35',
-  'c': 'gcc-13.2.0-c',
-  'csharp': 'mono-6.12.0.199',
-  'go': 'go-1.23.2',
-  'rust': 'rust-1.82.0',
-  'ruby': 'ruby-3.4.1',
-  'php': 'php-8.3.12',
-  'typescript': 'typescript-5.6.2',
-  'kotlin': 'kotlin-1.9.10',
-  'swift': 'swift-6.0.1',
-  'python': 'cpython-3.12.0',
+const JDOODLE_LANGUAGES = {
+  'Java': { language: 'java', versionIndex: '4' },
+  'C++': { language: 'cpp17', versionIndex: '0' },
+  'C': { language: 'c', versionIndex: '5' },
+  'Go': { language: 'go', versionIndex: '4' },
+  'Rust': { language: 'rust', versionIndex: '4' },
+  'Ruby': { language: 'ruby', versionIndex: '4' },
+  'PHP': { language: 'php', versionIndex: '4' },
+  'Kotlin': { language: 'kotlin', versionIndex: '3' },
+  'Swift': { language: 'swift', versionIndex: '4' },
+  'TypeScript': { language: 'nodejs', versionIndex: '4' },
+  'Scala': { language: 'scala', versionIndex: '4' },
+  'C#': { language: 'csharp', versionIndex: '4' }
 };
 
 const postRequest = (url, body, options = {}) => {
@@ -41,7 +40,7 @@ const postRequest = (url, body, options = {}) => {
         res.on('end', () => {
           try {
             const parsed = JSON.parse(responseBody);
-            resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, status: res.statusCode, data: parsed, engine: urlObj.hostname });
+            resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, status: res.statusCode, data: parsed });
           } catch (e) {
             reject(new Error(`Invalid JSON from ${urlObj.hostname}: ${responseBody.substring(0, 100)}`));
           }
@@ -67,65 +66,64 @@ export default async function handler(req, res) {
       try { body = JSON.parse(body); } catch (e) { return res.status(400).json({ error: 'Invalid JSON' }); }
     }
     
-    const { language, version, files, stdin } = body || {};
-    if (!language || !files) return res.status(400).json({ error: 'Missing fields' });
-
-    const code = files[0].content;
-    const compiler = WANDBOX_COMPILERS[language];
-
-    const engines = [];
+    // Accept standard payload from frontend
+    let { language, files, stdin, code } = body || {};
     
-    // Engine A: Piston
-    engines.push(postRequest('https://emkc.org/api/v2/piston/execute', { language, version, files, stdin }, { timeout: 9000 }));
+    // Normalize format
+    if (!code && files && files.length > 0) code = files[0].content;
+    
+    if (!language || !code) return res.status(400).json({ error: 'Missing language or code' });
 
-    // Engine B: Wandbox
-    if (compiler) {
-      engines.push(postRequest('https://wandbox.org/api/compile.json', { 
-        compiler, code, stdin, save: false 
-      }, { 
-        timeout: 9000,
-        headers: { 'User-Agent': 'Mozilla/5.0' }
-      }).then(r => {
-        // Transform Wandbox format to Piston-like format
-        return {
-          ok: r.ok && r.data.status === "0",
-          status: r.status,
-          engine: 'wandbox',
-          data: {
-            run: {
-              stdout: r.data.program_output || '',
-              stderr: r.data.program_error || r.data.program_message || r.data.compiler_error || '',
-              code: r.data.status === "0" ? 0 : 1
-            }
-          }
-        };
-      }));
+    const langConfig = JDOODLE_LANGUAGES[language];
+    if (!langConfig) {
+      return res.status(400).json({ error: `Language ${language} not supported for server execution.` });
     }
 
-    try {
-      // PROMISE.ANY is good, but we want to catch if ALL fail and show why
-      const results = await Promise.allSettled(engines);
-      
-      const successful = results.find(r => r.status === 'fulfilled' && r.value.ok);
-      if (successful) {
-        return res.status(200).json(successful.value.data);
-      }
+    const clientId = process.env.JDOODLE_CLIENT_ID || process.env.VITE_JDOODLE_CLIENT_ID;
+    const clientSecret = process.env.JDOODLE_CLIENT_SECRET || process.env.VITE_JDOODLE_CLIENT_SECRET;
 
-      // If no success, aggregate errors safely
-      const errors = results.map(r => r.status === 'fulfilled' ? (r.value?.data?.run?.stderr || r.value?.data?.message || 'No error message') : r.reason.message);
-      return res.status(200).json({ // Return 200 even on compilation error so frontend can show it
-        run: {
-          stdout: '',
-          stderr: `Engines failed. Details:\n1. Piston: ${errors[0] || 'N/A'}\n2. Wandbox: ${errors[1] || 'N/A'}`,
-          code: 1
-        }
+    if (!clientId || !clientSecret) {
+      return res.status(500).json({ 
+        error: 'Server Misconfiguration', 
+        message: 'JDoodle API keys are missing on the Vercel server instance.' 
       });
-
-    } catch (err) {
-      return res.status(502).json({ error: 'Internal execution orchestration failure', message: err.message });
     }
 
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    const jdoodlePayload = {
+      clientId,
+      clientSecret,
+      script: code,
+      language: langConfig.language,
+      versionIndex: langConfig.versionIndex,
+      stdin: stdin || ''
+    };
+
+    // Execute via JDoodle
+    const response = await postRequest('https://api.jdoodle.com/v1/execute', jdoodlePayload, { timeout: 9000 });
+    
+    if (!response.ok) {
+      return res.status(502).json({
+        error: 'Execution Engine Error',
+        message: response.data.error || 'Unknown JDoodle Error'
+      });
+    }
+
+    // JDoodle returns { output, statusCode, memory, cpuTime }
+    // We seamlessly convert it to our standard frontend expected format:
+    // { stdout: '...', stderr: '...', code: 0 or 1 }
+    
+    const output = (response.data.output || '').trim();
+    // JDoodle compilation errors usually just appear in output. statusCode can be non-200.
+    const isError = response.data.statusCode !== 200;
+
+    return res.status(200).json({
+      stdout: isError ? null : output,
+      stderr: isError ? output : null,
+      error: isError ? output : null
+    });
+
+  } catch (err) {
+    console.error('JDoodle Orchestration Error:', err);
+    return res.status(500).json({ error: 'Internal execution orchestration failure', message: err.message });
   }
 }

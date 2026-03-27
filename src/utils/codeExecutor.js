@@ -407,13 +407,8 @@ public class MainClass {
   }
 }
 
-const runPiston = async (code, language, input) => {
-  const spec = PISTON_LANGUAGES[language]
-  if (!spec) {
-    return { stdout: null, error: `Language "${language}" is not supported via Piston.` }
-  }
-
-  // Build the complete runnable program
+const runServerless = async (code, language, input) => {
+  // Build the complete runnable program for compiled languages
   let program = code
   const needsWrap = 
     (language === 'C#' && !code.includes('static void Main')) ||
@@ -429,9 +424,8 @@ const runPiston = async (code, language, input) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        language: spec.language,
-        version: spec.version,
-        files: [{ content: program }],
+        language: language,
+        code: program,
         stdin: input,
       }),
     })
@@ -446,64 +440,14 @@ const runPiston = async (code, language, input) => {
     }
 
     const data = await res.json()
-    // Piston response: { compile: { stderr, code }, run: { stdout, stderr, code, signal, output } }
+    // Vercel backend response format from api/execute.js:
+    // { stdout: '...', stderr: '...', error: '...' }
     
-    if (data.message) throw new Error(data.message)
-
-    if (data.compile && data.compile.code !== 0 && data.compile.stderr) {
-      const cmpErr = data.compile.stderr.trim()
-      return { stdout: null, stderr: cmpErr, error: cmpErr || 'Compilation failed' }
+    if (data.error) {
+      return { stdout: null, stderr: data.stderr, error: data.error }
     }
 
-    const stdout = (data.run?.stdout || '').trim()
-    const stderr = (data.run?.stderr || '').trim()
-
-    if (data.run?.code !== 0 && !stdout) {
-      return { stdout: null, stderr: stderr, error: stderr || 'Execution failed' }
-    }
-
-    return { stdout, stderr: stderr || null, error: null }
-  } catch (err) {
-    return { stdout: null, error: err.message }
-  }
-}
-
-const runJDoodle = async (code, language, input) => {
-  const spec = JDOODLE_LANGUAGES[language]
-  if (!spec) {
-    return { stdout: null, error: `Language "${language}" is not supported yet.` }
-  }
-
-  const clientId = import.meta.env.VITE_JDOODLE_CLIENT_ID || import.meta.env.VITE_ONLINECOMPILER_API_KEY
-  const clientSecret = import.meta.env.VITE_JDOODLE_CLIENT_SECRET
-
-  if (!clientId || !clientSecret) {
-    return { stdout: null, error: `JDoodle API keys missing! Please create a .env.local file with VITE_JDOODLE_CLIENT_ID and VITE_JDOODLE_CLIENT_SECRET. (Piston public API is no longer available)` }
-  }
-
-  const program = buildJDoodleProgram(code, language)
-
-  try {
-    const res = await fetch('/jdoodle/v1/execute', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientId,
-        clientSecret,
-        script: program,
-        stdin: input,
-        language: spec.language,
-        versionIndex: spec.versionIndex,
-      }),
-    })
-
-    if (!res.ok) throw new Error(`JDoodle API error: ${res.status}`)
-
-    const data = await res.json()
-    // JDoodle response: { output, statusCode, memory, cpuTime }
-    const out = (data.output || '').trim()
-    if (data.statusCode !== 200) throw new Error(out || 'Execution failed')
-    return { stdout: out, error: null }
+    return { stdout: data.stdout || '', stderr: data.stderr || null, error: null }
   } catch (err) {
     return { stdout: null, error: err.message }
   }
@@ -533,8 +477,8 @@ const executeTestCase = async (code, selectedLanguage, testCase) => {
     } else if (selectedLanguage === 'JavaScript') {
       execResult = await runJavaScript(code, testCase.input)
     } else {
-      // Use JDoodle for all compiled languages
-      execResult = await runJDoodle(code, selectedLanguage, testCase.input)
+      // Use Serverless backend for all compiled languages securely
+      execResult = await runServerless(code, selectedLanguage, testCase.input)
     }
 
     result.executionTime = Date.now() - startTime
@@ -644,8 +588,8 @@ export const executeCodePlayground = async (code, language = 'Python3') => {
       await pyodide.runPythonAsync(code)
       result = { stdout: stdout.trim(), error: null }
     } else {
-      // Compiled languages via JDoodle
-      result = await runJDoodle(code, language, '')
+      // Compiled languages via Secure Backend
+      result = await runServerless(code, language, '')
     }
     return { success: true, output: result.stdout || result.error, executionTime: 0, error: result.error }
   } catch (e) {
