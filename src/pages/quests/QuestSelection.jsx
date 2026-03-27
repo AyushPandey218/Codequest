@@ -37,13 +37,14 @@ const QuestSelection = () => {
   }))
 
   const getDifficultyColor = (difficulty) => {
+    const d = (difficulty || '').toLowerCase()
     const colors = {
       easy: 'success',
       medium: 'warning',
       hard: 'danger',
       expert: 'primary',
     }
-    return colors[difficulty] || 'default'
+    return colors[d] || 'default'
   }
 
   const filteredQuests = questsWithProgress.filter(quest => {

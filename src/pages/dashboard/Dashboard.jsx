@@ -54,15 +54,15 @@ const Dashboard = () => {
     },
   ]
 
-  // Get recent quests with progress
-  const recentQuests = quests
-    .filter(quest => userProgress[quest.id])
-    .slice(0, 3)
-    .map(quest => ({
-      ...quest,
-      progress: userProgress[quest.id]?.completed ? 100 :
-        (userProgress[quest.id]?.passedTests / userProgress[quest.id]?.totalTests * 100) || 0
-    }))
+  // Get recent quests with progress - deduplicated by ID
+  const recentQuests = Array.from(new Map(
+    quests
+      .filter(quest => userProgress[quest.id] && !userProgress[quest.id].completed)
+      .map(quest => [quest.id, {
+        ...quest,
+        progress: (userProgress[quest.id]?.passedTests / userProgress[quest.id]?.totalTests * 100) || 0
+      }])
+  ).values()).slice(0, 3)
 
   // Get first incomplete quest as daily challenge
   const dailyChallenge = quests.find(quest => !userProgress[quest.id]?.completed) || null
@@ -313,7 +313,7 @@ const Dashboard = () => {
               Recent Activity
             </h3>
             <div className="space-y-4">
-              {userStats?.recentActivity?.map((activity) => (
+              {userStats?.recentActivity?.slice(0, 1).map((activity) => (
                 <div key={activity.id} className="flex items-start gap-3">
                   <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="material-symbols-outlined text-primary text-sm">
