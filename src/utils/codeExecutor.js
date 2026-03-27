@@ -182,26 +182,24 @@ const JDOODLE_LANGUAGES = {
   Scala: { language: 'scala', versionIndex: '4' },
 }
 
-// ─── Wandbox — free compiled language execution ────────────────────────────
-// No API keys required. Proxied via Vite /wandbox.
+// ─── Piston — Free, reliable compiled language execution ────────────────────
+// No API keys required. Proxied via Vite /piston.
+// Docs: https://github.com/engineer-man/piston
 
-const WANDBOX_COMPILERS = {
-  'C++': 'gcc-13.2.0',
-  'Java': 'openjdk-jdk-21+35',
-  'C': 'gcc-13.2.0-c',
-  'C#': 'mono-6.12.0.199',
-  'Go': 'go-1.23.2',
-  'Rust': 'rust-1.82.0',
-  'Ruby': 'ruby-3.4.1',
-  'PHP': 'php-8.3.12',
-  'TypeScript': 'typescript-5.6.2',
-  'Kotlin': 'kotlin-1.9.10',
-  'Swift': 'swift-6.0.1',
-  'Dart': 'dart-3.1.2',
-  'Scala': 'scala-3.3.1',
-  'Elixir': 'elixir-1.15.5',
-  'Erlang': 'erlang-26.1',
-  'Racket': 'racket-8.10'
+const PISTON_LANGUAGES = {
+  'C++': { language: 'cpp', version: '10.2.0' },
+  'Java': { language: 'java', version: '15.0.2' },
+  'C': { language: 'c', version: '10.2.0' },
+  'C#': { language: 'mono', version: '6.12.0' },
+  'Go': { language: 'go', version: '1.16.2' },
+  'Rust': { language: 'rust', version: '1.50.0' },
+  'Ruby': { language: 'ruby', version: '3.0.0' },
+  'PHP': { language: 'php', version: '8.0.2' },
+  'TypeScript': { language: 'typescript', version: '4.2.3' },
+  'Kotlin': { language: 'kotlin', version: '1.4.31' },
+  'Swift': { language: 'swift', version: '5.3.3' },
+  'Scala': { language: 'scala', version: '3.0.0' },
+  'Python3': { language: 'python', version: '3.10.0' },
 }
 
 // Build a complete runnable program that reads stdin → calls solution() → prints result
@@ -355,13 +353,13 @@ public class MainClass {
   }
 }
 
-const runWandbox = async (code, language, input) => {
-  const compiler = WANDBOX_COMPILERS[language]
-  if (!compiler) {
-    return { stdout: null, error: `Language "${language}" is not supported via Wandbox.` }
+const runPiston = async (code, language, input) => {
+  const spec = PISTON_LANGUAGES[language]
+  if (!spec) {
+    return { stdout: null, error: `Language "${language}" is not supported via Piston.` }
   }
 
-  // Only wrap if the user hasn't provided their own Main method
+  // Build the complete runnable program
   let program = code
   const needsWrap = 
     (language === 'C#' && !code.includes('static void Main')) ||
@@ -373,27 +371,28 @@ const runWandbox = async (code, language, input) => {
   }
 
   try {
-    const res = await fetch('/wandbox/api/compile.json', {
+    const res = await fetch('/piston/api/v2/piston/execute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        compiler,
-        code: program,
+        language: spec.language,
+        version: spec.version,
+        files: [{ content: program }],
         stdin: input,
-        save: false,
       }),
     })
 
-    if (!res.ok) throw new Error(`Wandbox API error: ${res.status}`)
+    if (!res.ok) throw new Error(`Piston API error: ${res.status}`)
 
     const data = await res.json()
-    // Wandbox response: { program_output, program_error, program_message, status }
+    // Piston response: { run: { stdout, stderr, code, signal, output } }
     
-    const stdout = (data.program_output || '').trim()
-    const stderr = (data.program_error || data.program_message || '').trim()
+    if (data.message) throw new Error(data.message)
 
-    // If it's a compilation error, status will be non-zero and stdout empty
-    if (data.status !== "0" && !stdout) {
+    const stdout = (data.run?.stdout || '').trim()
+    const stderr = (data.run?.stderr || '').trim()
+
+    if (data.run?.code !== 0 && !stdout) {
       return { stdout: null, stderr: stderr, error: stderr || 'Execution failed' }
     }
 
@@ -413,8 +412,8 @@ const runJDoodle = async (code, language, input) => {
   const clientSecret = import.meta.env.VITE_JDOODLE_CLIENT_SECRET
 
   if (!clientId || !clientSecret) {
-    // If no JDoodle keys, fallback to Wandbox!
-    return runWandbox(code, language, input)
+    // If no JDoodle keys, fallback to Piston!
+    return runPiston(code, language, input)
   }
 
   const program = buildJDoodleProgram(code, language)
@@ -469,8 +468,8 @@ const executeTestCase = async (code, selectedLanguage, testCase) => {
     } else if (selectedLanguage === 'JavaScript') {
       execResult = await runJavaScript(code, testCase.input)
     } else {
-      // Use Wandbox for all compiled languages — it's free and needs no keys!
-      execResult = await runWandbox(code, selectedLanguage, testCase.input)
+      // Use Piston for all compiled languages — it's free and reliable!
+      execResult = await runPiston(code, selectedLanguage, testCase.input)
     }
 
     result.executionTime = Date.now() - startTime
@@ -579,8 +578,8 @@ export const executeCodePlayground = async (code, language = 'Python3') => {
       await pyodide.runPythonAsync(code)
       result = { stdout: stdout.trim(), error: null }
     } else {
-      // Compiled languages via Wandbox
-      result = await runWandbox(code, language, '')
+      // Compiled languages via Piston
+      result = await runPiston(code, language, '')
     }
     return { success: true, output: result.stdout || result.error, executionTime: 0, error: result.error }
   } catch (e) {
