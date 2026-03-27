@@ -151,18 +151,29 @@ const QuestSelection = () => {
         <div>
           <h3 className="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider">Difficulty</h3>
           <div className="flex flex-wrap gap-2">
-            {difficulties.map(difficulty => (
-              <button
-                key={difficulty}
-                onClick={() => setActiveDifficulty(difficulty)}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all capitalize ${activeDifficulty === difficulty
-                  ? 'bg-primary text-white shadow-lg'
-                  : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
-                  }`}
-              >
-                {difficulty}
-              </button>
-            ))}
+            {difficulties.map(difficulty => {
+              const count = difficulty === 'all' 
+                ? processedQuests.length 
+                : processedQuests.filter(q => (q.difficulty || '').toLowerCase().trim() === difficulty).length;
+              
+              return (
+                <button
+                  key={difficulty}
+                  onClick={() => setActiveDifficulty(difficulty)}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all capitalize flex items-center gap-2 ${activeDifficulty === difficulty
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                    }`}
+                >
+                  {difficulty}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                    activeDifficulty === difficulty ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-500'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </Card>
