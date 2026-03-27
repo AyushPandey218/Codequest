@@ -15,20 +15,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/jdoodle/, ''),
       },
-      // Proxy Wandbox API calls 
-      '/wandbox': {
-        target: 'https://online.wandbox.org',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/wandbox/, ''),
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
-      },
-      // Proxy Piston API calls 
-      '/piston': {
+      // Proxy Piston API calls for local development
+      '/api/execute': {
         target: 'https://emkc.org',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/piston/, ''),
+        rewrite: (path) => '/api/v2/piston/execute',
       },
     },
   },

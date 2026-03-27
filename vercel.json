@@ -1,17 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/wandbox/:path*",
-      "destination": "https://online.wandbox.org/:path*"
-    },
-    {
-      "source": "/piston/:path*",
-      "destination": "https://emkc.org/:path*"
-    },
-    {
-      "source": "/jdoodle/:path*",
-      "destination": "https://api.jdoodle.com/:path*"
-    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

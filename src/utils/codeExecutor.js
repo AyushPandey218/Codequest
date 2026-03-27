@@ -371,7 +371,7 @@ const runPiston = async (code, language, input) => {
   }
 
   try {
-    const res = await fetch('/piston/api/v2/piston/execute', {
+    const res = await fetch('/api/execute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
