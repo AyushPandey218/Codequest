@@ -48,8 +48,14 @@ const QuestSelection = () => {
   }
 
   const filteredQuests = questsWithProgress.filter(quest => {
-    const categoryMatch = activeCategory === 'all' || quest.category?.toLowerCase() === activeCategory.toLowerCase()
-    const difficultyMatch = activeDifficulty === 'all' || quest.difficulty?.toLowerCase() === activeDifficulty.toLowerCase()
+    const qCat = (quest.category || '').trim().toLowerCase()
+    const qDiff = (quest.difficulty || '').trim().toLowerCase()
+    const aCat = (activeCategory || 'all').trim().toLowerCase()
+    const aDiff = (activeDifficulty || 'all').trim().toLowerCase()
+
+    const categoryMatch = aCat === 'all' || qCat === aCat
+    const difficultyMatch = aDiff === 'all' || qDiff === aDiff
+    
     return categoryMatch && difficultyMatch
   })
 
