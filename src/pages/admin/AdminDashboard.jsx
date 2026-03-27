@@ -230,6 +230,29 @@ const AdminDashboard = () => {
                                         onChange={e => setNewBroadcast({...newBroadcast, title: e.target.value})}
                                         className="w-full bg-[#0b0b1e]/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all"
                                     />
+                                    <textarea 
+                                        placeholder="Banner message..."
+                                        value={newBroadcast.message}
+                                        onChange={e => setNewBroadcast({...newBroadcast, message: e.target.value})}
+                                        rows={2}
+                                        className="w-full bg-[#0b0b1e]/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all resize-none"
+                                    />
+                                    <div className="flex gap-1">
+                                        {['info', 'success', 'warning', 'error'].map(t => (
+                                            <button 
+                                                key={t}
+                                                type="button"
+                                                onClick={() => setNewBroadcast({...newBroadcast, type: t})}
+                                                className={`flex-1 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter border transition-all ${
+                                                    newBroadcast.type === t 
+                                                    ? 'bg-blue-500/20 border-blue-500/40 text-blue-400' 
+                                                    : 'bg-white/5 border-white/5 text-slate-500'
+                                                }`}
+                                            >
+                                                {t}
+                                            </button>
+                                        ))}
+                                    </div>
                                     <button 
                                         type="submit"
                                         disabled={isSubmitting}
