@@ -1,18 +1,20 @@
 import https from 'https';
 
-const JDOODLE_LANGUAGES = {
-  'Java': { language: 'java', versionIndex: '4' },
-  'C++': { language: 'cpp17', versionIndex: '0' },
-  'C': { language: 'c', versionIndex: '5' },
-  'Go': { language: 'go', versionIndex: '4' },
-  'Rust': { language: 'rust', versionIndex: '4' },
-  'Ruby': { language: 'ruby', versionIndex: '4' },
-  'PHP': { language: 'php', versionIndex: '4' },
-  'Kotlin': { language: 'kotlin', versionIndex: '3' },
-  'Swift': { language: 'swift', versionIndex: '4' },
-  'TypeScript': { language: 'nodejs', versionIndex: '4' },
-  'Scala': { language: 'scala', versionIndex: '4' },
-  'C#': { language: 'csharp', versionIndex: '4' }
+const ONECOMPILER_LANGUAGES = {
+  'Java': { language: 'java', extension: 'java' },
+  'C++': { language: 'cpp', extension: 'cpp' },
+  'C': { language: 'c', extension: 'c' },
+  'Go': { language: 'go', extension: 'go' },
+  'Rust': { language: 'rust', extension: 'rs' },
+  'Ruby': { language: 'ruby', extension: 'rb' },
+  'PHP': { language: 'php', extension: 'php' },
+  'Kotlin': { language: 'kotlin', extension: 'kt' },
+  'Swift': { language: 'swift', extension: 'swift' },
+  'TypeScript': { language: 'nodejs', extension: 'js' },
+  'Scala': { language: 'scala', extension: 'scala' },
+  'C#': { language: 'csharp', extension: 'cs' },
+  'Python3': { language: 'python', extension: 'py' },
+  'Python': { language: 'python', extension: 'py' }
 };
 
 const postRequest = (url, body, options = {}) => {
@@ -74,56 +76,55 @@ export default async function handler(req, res) {
     
     if (!language || !code) return res.status(400).json({ error: 'Missing language or code' });
 
-    const langConfig = JDOODLE_LANGUAGES[language];
+    const langConfig = ONECOMPILER_LANGUAGES[language];
     if (!langConfig) {
       return res.status(400).json({ error: `Language ${language} not supported for server execution.` });
     }
 
-    const clientId = process.env.JDOODLE_CLIENT_ID || process.env.VITE_JDOODLE_CLIENT_ID;
-    const clientSecret = process.env.JDOODLE_CLIENT_SECRET || process.env.VITE_JDOODLE_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) {
-      return res.status(500).json({ 
-        error: 'Server Misconfiguration', 
-        message: 'JDoodle API keys are missing on the Vercel server instance.' 
-      });
-    }
-
-    const jdoodlePayload = {
-      clientId,
-      clientSecret,
-      script: code,
-      language: langConfig.language,
-      versionIndex: langConfig.versionIndex,
-      stdin: stdin || ''
+    const oneCompilerPayload = {
+      properties: {
+        language: langConfig.language,
+        stdin: stdin || '',
+        files: [
+          {
+            name: `main.${langConfig.extension}`,
+            content: code
+          }
+        ]
+      }
     };
 
-    // Execute via JDoodle
-    const response = await postRequest('https://api.jdoodle.com/v1/execute', jdoodlePayload, { timeout: 9000 });
+    const oneCompilerApiKey = process.env.ONECOMPILER_API_KEY || 'oc_44hn6k38h_44hn6k396_a5040ed33966a6a56c3bab58aa1d35f357db94c93865d0f7';
+
+    // Execute via OneCompiler
+    const response = await postRequest('https://onecompiler.com/api/code/exec', oneCompilerPayload, { 
+      timeout: 9500,
+      headers: {
+        'Authorization': oneCompilerApiKey
+      }
+    });
     
     if (!response.ok) {
       return res.status(502).json({
         error: 'Execution Engine Error',
-        message: response.data.error || 'Unknown JDoodle Error'
+        message: response.data?.message || 'Unknown OneCompiler Error'
       });
     }
 
-    // JDoodle returns { output, statusCode, memory, cpuTime }
-    // We seamlessly convert it to our standard frontend expected format:
-    // { stdout: '...', stderr: '...', code: 0 or 1 }
-    
-    const output = (response.data.output || '').trim();
-    // JDoodle compilation errors usually just appear in output. statusCode can be non-200.
-    const isError = response.data.statusCode !== 200;
+    // OneCompiler returns { stdout, stderr, exception, compilationTime, executionTime }
+    // We convert it to our standard frontend expected format
+    const data = response.data;
+    const isError = !!data.stderr || !!data.exception;
+    const output = [data.stdout, data.stderr, data.exception].filter(Boolean).join('\n').trim();
 
     return res.status(200).json({
-      stdout: isError ? null : output,
-      stderr: isError ? output : null,
-      error: isError ? output : null
+      stdout: isError ? null : output || null,
+      stderr: isError ? output || null : null,
+      error: isError ? output || null : null
     });
 
   } catch (err) {
-    console.error('JDoodle Orchestration Error:', err);
+    console.error('OneCompiler Orchestration Error:', err);
     return res.status(500).json({ error: 'Internal execution orchestration failure', message: err.message });
   }
 }

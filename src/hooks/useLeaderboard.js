@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
-import { db } from '../config/firebase'
+import { db, isDemoMode } from '../config/firebase'
 
 /**
  * Hook to fetch leaderboard data from Firestore in real-time with period filtering
@@ -14,6 +14,20 @@ export const useLeaderboard = (period = 'all', limitCount = 50, currentUserId = 
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (isDemoMode) {
+      // Return mock leaderboard for demo mode
+      const mockUsers = [
+        { id: '1', username: 'top_coder', xp: 5000, level: 15, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1', rank: 1 },
+        { id: '2', username: 'python_pro', xp: 4200, level: 12, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2', rank: 2 },
+        { id: '3', username: 'js_ninja', xp: 3800, level: 11, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=3', rank: 3 },
+        { id: '4', username: 'demo_user', xp: 2500, level: 10, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo', rank: 4, isCurrentUser: true },
+        { id: '5', username: 'newbie', xp: 100, level: 1, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=5', rank: 5 }
+      ]
+      setLeaderboard(mockUsers)
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     
     // Map period to field name
@@ -63,7 +77,7 @@ export const useLeaderboard = (period = 'all', limitCount = 50, currentUserId = 
       setLoading(false)
     })
 
-    return () => unsubscribe()
+    return () => (unsubscribe ? unsubscribe() : null)
   }, [period, limitCount, currentUserId])
 
   return { leaderboard, loading, error }

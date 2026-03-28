@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'
-import { db } from '../config/firebase'
+import { db, isDemoMode } from '../config/firebase'
 
 /**
  * Hook to fetch user submissions from Firestore
@@ -15,6 +15,34 @@ export const useSubmissions = (uid) => {
   useEffect(() => {
     if (!uid) {
       setSubmissions([])
+      setLoading(false)
+      return
+    }
+
+    if (isDemoMode) {
+      // Mock submissions for demo mode
+      setSubmissions([
+        {
+          id: 'mock-sub-1',
+          questId: 'q1',
+          questTitle: 'Two Sum',
+          language: 'javascript',
+          passedTests: 10,
+          totalTests: 10,
+          xpEarned: 100,
+          timestamp: new Date(Date.now() - 86400000 * 2) // 2 days ago
+        },
+        {
+          id: 'mock-sub-2',
+          questId: 'q2',
+          questTitle: 'Valid Anagram',
+          language: 'python',
+          passedTests: 8,
+          totalTests: 8,
+          xpEarned: 150,
+          timestamp: new Date(Date.now() - 3600000 * 5) // 5 hours ago
+        }
+      ])
       setLoading(false)
       return
     }
@@ -53,7 +81,7 @@ export const useSubmissions = (uid) => {
         }
       )
 
-      return () => unsubscribe()
+      return () => (unsubscribe ? unsubscribe() : null)
     } catch (err) {
       console.error('Query setup error:', err)
       setError(err.message)

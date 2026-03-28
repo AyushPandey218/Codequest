@@ -18,6 +18,7 @@ const Button = ({
   disabled = false,
   icon = null,
   iconPosition = 'right',
+  fullWidth = false,
   className = '',
   type = 'button',
   onClick,
@@ -49,6 +50,7 @@ const Button = ({
         baseStyles,
         variantStyle,
         sizeStyle,
+        fullWidth && 'w-full',
         className
       )}
       disabled={disabled || isLoading}

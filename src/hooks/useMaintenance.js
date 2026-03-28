@@ -9,24 +9,34 @@ export function useMaintenance() {
     useEffect(() => {
         const configRef = doc(db, 'system', 'config')
         
-        // Ensure the document exists
+        // Ensure the document exists (only if not in demo mode)
         const ensureConfig = async () => {
-            const snap = await getDoc(configRef)
-            if (!snap.exists()) {
-                await setDoc(configRef, { maintenanceMode: false })
+            try {
+                const snap = await getDoc(configRef)
+                if (!snap.exists()) {
+                    await setDoc(configRef, { maintenanceMode: false })
+                }
+            } catch (err) {
+                console.warn("Could not ensure system config, likely offline or demo mode.", err.message)
             }
         }
         ensureConfig()
 
-        const unsubscribe = onSnapshot(configRef, (doc) => {
-            if (doc.exists()) {
-                setMaintenanceMode(doc.data().maintenanceMode || false)
-            }
+        let unsubscribe = () => {}
+        try {
+            unsubscribe = onSnapshot(configRef, (doc) => {
+                if (doc.exists()) {
+                    setMaintenanceMode(doc.data().maintenanceMode || false)
+                }
+                setIsLoading(false)
+            }, (error) => {
+                console.warn("Error listening to maintenance mode (expected in demo):", error.message)
+                setIsLoading(false)
+            })
+        } catch (err) {
+            console.warn("Maintenance listener failed to attach.", err.message)
             setIsLoading(false)
-        }, (error) => {
-            console.error("Error listening to maintenance mode:", error)
-            setIsLoading(false)
-        })
+        }
 
         return () => unsubscribe()
     }, [])

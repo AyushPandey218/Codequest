@@ -9,7 +9,7 @@ function App() {
     <AuthProvider>
       <NotificationProvider>
         <UserProvider>
-          <RouterProvider router={router} />
+          <RouterProvider router={router} future={{ v7_startTransition: true }} />
         </UserProvider>
       </NotificationProvider>
     </AuthProvider>

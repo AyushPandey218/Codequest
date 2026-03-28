@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
-import { db } from '../config/firebase'
+import { db, isDemoMode } from '../config/firebase'
 
 /**
  * Hook to fetch user progress across all quests
@@ -14,6 +14,13 @@ export const useUserProgress = (uid) => {
 
   useEffect(() => {
     if (!uid) {
+      setProgress({})
+      setLoading(false)
+      return
+    }
+
+    if (isDemoMode) {
+      // Mock progress for demo mode
       setProgress({})
       setLoading(false)
       return
@@ -61,7 +68,7 @@ export const useUserProgress = (uid) => {
       }
     )
 
-    return () => unsubscribe()
+    return () => (unsubscribe ? unsubscribe() : null)
   }, [uid])
 
   return { progress, loading, error }

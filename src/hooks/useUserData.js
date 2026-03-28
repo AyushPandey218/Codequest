@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../config/firebase'
+import { db, isDemoMode } from '../config/firebase'
 
 /**
  * Hook to fetch user data from Firestore
@@ -15,6 +15,23 @@ export const useUserData = (uid) => {
   useEffect(() => {
     if (!uid) {
       setUserData(null)
+      setLoading(false)
+      return
+    }
+
+    if (isDemoMode) {
+      // Return mock data for demo mode
+      setUserData({
+        id: uid,
+        username: 'demo_user',
+        email: 'demo@codequest.com',
+        role: 'admin',
+        level: 10,
+        xp: 2500,
+        streak: 5,
+        rating: 1200,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Demo`
+      })
       setLoading(false)
       return
     }
@@ -40,7 +57,7 @@ export const useUserData = (uid) => {
     )
 
     // Cleanup subscription on unmount
-    return () => unsubscribe()
+    return () => (unsubscribe ? unsubscribe() : null)
   }, [uid])
 
   return { userData, loading, error }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
-import { db } from '../config/firebase'
+import { db, isDemoMode } from '../config/firebase'
 
 /**
  * Hook to fetch all module progress for a specific user
@@ -14,6 +14,13 @@ export const useModuleProgress = (uid) => {
 
     useEffect(() => {
         if (!uid) {
+            setModuleProgress({})
+            setLoading(false)
+            return
+        }
+
+        if (isDemoMode) {
+            // Mock module progress for demo mode
             setModuleProgress({})
             setLoading(false)
             return
@@ -47,7 +54,7 @@ export const useModuleProgress = (uid) => {
             }
         )
 
-        return () => unsubscribe()
+        return () => (unsubscribe ? unsubscribe() : null)
     }, [uid])
 
     return { moduleProgress, loading, error }

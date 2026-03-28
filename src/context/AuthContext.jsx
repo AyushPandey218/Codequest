@@ -11,7 +11,7 @@ import {
   confirmPasswordReset
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment, onSnapshot as firestoreSnapshot } from 'firebase/firestore'
-import { auth, db, googleProvider } from '../config/firebase'
+import { auth, db, googleProvider, isDemoMode } from '../config/firebase'
 import { STORAGE_KEYS } from '../utils/constants'
 import { checkAchievements } from '../utils/achievementChecker'
 import { getAuthErrorMessage } from '../utils/errorHandlers'
@@ -63,11 +63,23 @@ export const AuthProvider = ({ children }) => {
           }
         })
       } else {
-        if (unsubscribeUser) unsubscribeUser();
-        setUser(null)
-        setIsAuthenticated(false)
-        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
-        localStorage.removeItem(STORAGE_KEYS.USER_DATA)
+        // If in demo mode and no Firebase user, check for local mock user
+        if (isDemoMode) {
+          const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA)
+          if (storedUser) {
+            setUser(JSON.parse(storedUser))
+            setIsAuthenticated(true)
+          } else {
+            setUser(null)
+            setIsAuthenticated(false)
+          }
+        } else {
+          if (unsubscribeUser) unsubscribeUser();
+          setUser(null)
+          setIsAuthenticated(false)
+          localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+          localStorage.removeItem(STORAGE_KEYS.USER_DATA)
+        }
       }
       setIsLoading(false)
     })
@@ -79,6 +91,34 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const login = async (email, password) => {
+    // Demo Mode Mock Login
+    if (isDemoMode) {
+      const demoEmail = import.meta.env.VITE_DEMO_EMAIL || 'demo@codequest.com'
+      const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || 'demo123'
+
+      if (email === demoEmail && password === demoPassword) {
+        const mockUser = {
+          uid: 'demo-user-123',
+          email: demoEmail,
+          displayName: 'Demo Adventurer',
+          username: 'demo_user',
+          role: 'admin',
+          level: 10,
+          xp: 2500,
+          streak: 5,
+          rating: 1200,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Demo`
+        }
+        setUser(mockUser)
+        setIsAuthenticated(true)
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mockUser))
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'demo-token-123')
+        return { success: true, isAdmin: true }
+      } else {
+        return { success: false, error: 'Invalid demo credentials. Use demo@codequest.com / demo123' }
+      }
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const firebaseUser = userCredential.user
@@ -101,6 +141,9 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signup = async (username, email, password) => {
+    if (isDemoMode) {
+      return { success: false, error: 'Signup is disabled in Demo Mode. Please use the Demo Login.' }
+    }
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const firebaseUser = userCredential.user
@@ -157,6 +200,26 @@ export const AuthProvider = ({ children }) => {
   }
 
   const loginWithGoogle = async () => {
+    if (isDemoMode) {
+      // Mock Google Login
+      const mockUser = {
+        uid: 'demo-google-user',
+        email: 'google-demo@codequest.com',
+        displayName: 'Google Demo User',
+        username: 'google_demo',
+        role: 'user',
+        level: 5,
+        xp: 1200,
+        streak: 2,
+        rating: 1050,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Google`
+      }
+      setUser(mockUser)
+      setIsAuthenticated(true)
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mockUser))
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'demo-token-google')
+      return { success: true, isAdmin: false }
+    }
     try {
       const result = await signInWithPopup(auth, googleProvider)
       const firebaseUser = result.user
@@ -204,7 +267,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await signOut(auth)
+      if (!isDemoMode || auth.currentUser) {
+        await signOut(auth)
+      }
+      setUser(null)
+      setIsAuthenticated(false)
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+      localStorage.removeItem(STORAGE_KEYS.USER_DATA)
     } catch (error) {
       console.error('Logout error:', error)
     }

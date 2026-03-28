@@ -6,7 +6,7 @@ import { useSubmissions } from '../hooks/useSubmissions'
 import { useModuleProgress } from '../hooks/useModuleProgress'
 import { useNotification } from './NotificationContext'
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
-import { db } from '../config/firebase'
+import { db, isDemoMode } from '../config/firebase'
 import { checkAchievements } from '../utils/achievementChecker'
 import { achievements } from '../data/achievements'
 
@@ -111,7 +111,7 @@ export const UserProvider = ({ children }) => {
 
   // Auto-sync completedQuests to Firestore
   useEffect(() => {
-    if (user?.uid && userData && !isLoading && !submissionsLoading) {
+    if (!isDemoMode && user?.uid && userData && !isLoading && !submissionsLoading) {
       if (userData.completedQuests !== completedCount) {
         updateDoc(doc(db, 'users', user.uid), {
           completedQuests: completedCount
@@ -135,6 +135,12 @@ export const UserProvider = ({ children }) => {
     const newAchievements = checkAchievements(stats, currentAchievements)
 
     if (newAchievements.length > 0) {
+      if (isDemoMode) {
+        // Just show notifications in demo mode, don't write to Firestore
+        newAchievements.forEach(id => showAchievement(id))
+        return newAchievements
+      }
+
       try {
         const userRef = doc(db, 'users', user.uid)
         await updateDoc(userRef, {

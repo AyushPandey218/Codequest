@@ -13,23 +13,36 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 }
 
+// Helper to check if a value is a placeholder
+export const isPlaceholder = (val) => 
+  !val || 
+  val === 'your_api_key_here' || 
+  val.includes('your_project') || 
+  val.includes('your_') || 
+  val.includes('your-') || 
+  val === 'demo-api-key'
+
+export const isDemoMode = isPlaceholder(firebaseConfig.apiKey)
+
 // Validate config before initialization
 const missingKeys = Object.entries(firebaseConfig)
-  .filter(([_, value]) => !value)
+  .filter(([_, value]) => isPlaceholder(value))
   .map(([key]) => key)
 
-if (missingKeys.length > 0 && import.meta.env.PROD) {
-  console.warn(`Missing Firebase configuration keys: ${missingKeys.join(', ')}. Using demo fallbacks.`)
+if (missingKeys.length > 0) {
+  if (import.meta.env.PROD) {
+    console.warn(`Missing or placeholder Firebase configuration keys: ${missingKeys.join(', ')}. Using demo fallbacks.`)
+  }
 }
 
 // Apply demo fallbacks if needed
 const finalConfig = {
-  apiKey: firebaseConfig.apiKey || "demo-api-key",
-  authDomain: firebaseConfig.authDomain || "codequest-demo.firebaseapp.com",
-  projectId: firebaseConfig.projectId || "codequest-demo",
-  storageBucket: firebaseConfig.storageBucket || "codequest-demo.appspot.com",
-  messagingSenderId: firebaseConfig.messagingSenderId || "123456789",
-  appId: firebaseConfig.appId || "1:123456789:web:abcdef"
+  apiKey: isPlaceholder(firebaseConfig.apiKey) ? "demo-api-key" : firebaseConfig.apiKey,
+  authDomain: isPlaceholder(firebaseConfig.authDomain) ? "codequest-demo.firebaseapp.com" : firebaseConfig.authDomain,
+  projectId: isPlaceholder(firebaseConfig.projectId) ? "codequest-demo" : firebaseConfig.projectId,
+  storageBucket: isPlaceholder(firebaseConfig.storageBucket) ? "codequest-demo.appspot.com" : firebaseConfig.storageBucket,
+  messagingSenderId: isPlaceholder(firebaseConfig.messagingSenderId) ? "123456789" : firebaseConfig.messagingSenderId,
+  appId: isPlaceholder(firebaseConfig.appId) ? "1:123456789:web:abcdef" : firebaseConfig.appId
 }
 
 // Initialize Firebase
@@ -41,5 +54,9 @@ export const db = getFirestore(app)
 // Initialize Auth
 export const auth = getAuth(app)
 export const googleProvider = new GoogleAuthProvider()
+
+if (import.meta.env.DEV) {
+  console.info(`[Firebase] Running in ${isDemoMode ? '🚀 DEMO' : '🔥 REAL'} mode`)
+}
 
 export default app

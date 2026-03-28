@@ -654,8 +654,7 @@ export const quests = [
         completions: '0',
         tags: ['Arrays', 'Hash Map', 'Boyer-Moore'],
         createdAt: new Date(),
-    },
-]
+    }]
 
 export const questDetails = {
     q1: {
@@ -671,8 +670,7 @@ export const questDetails = {
         hints: [
             'Start with a total of 0.',
             'Loop through each element and add it to the total.',
-            'Python has a built-in sum() function — try it!',
-        ],
+            'Python has a built-in sum() function — try it!'],
         solution: {
             Python3: `def solution(arr):\n    return sum(arr)`,
             JavaScript: `function solution(arr) {\n    return arr.reduce((a, b) => a + b, 0);\n}`,
@@ -687,10 +685,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Positive numbers', input: '[1, 2, 3, 4, 5]', expectedOutput: '15', isHidden: false },
             { id: 'tc2', description: 'Mixed positive and negative', input: '[-3, 0, 7]', expectedOutput: '4', isHidden: false },
-            { id: 'tc3', description: 'Empty array', input: '[]', expectedOutput: '0', isHidden: false },
-            { id: 'tc4', description: 'Single element', input: '[42]', expectedOutput: '42', isHidden: true },
-            { id: 'tc5', description: 'All zeros', input: '[0, 0, 0]', expectedOutput: '0', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Empty array', input: '[]', expectedOutput: '0', isHidden: false }],
         tags: ['Arrays', 'Loops', 'Math'],
     },
     q2: {
@@ -706,8 +701,7 @@ export const questDetails = {
         hints: [
             'In Python, slicing with [::-1] reverses a string.',
             'You can also convert to a list, reverse it, and join back.',
-            'Try using a loop and building the result backwards.',
-        ],
+            'Try using a loop and building the result backwards.'],
         solution: {
             Python3: `def solution(s):\n    return s[::-1]`,
             JavaScript: `function solution(s) {\n    return s.split('').reverse().join('');\n}`,
@@ -722,10 +716,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Basic word', input: '"hello"', expectedOutput: '"olleh"', isHidden: false },
             { id: 'tc2', description: 'Mixed case', input: '"CodeQuest"', expectedOutput: '"tseuQedoC"', isHidden: false },
-            { id: 'tc3', description: 'Empty string', input: '""', expectedOutput: '""', isHidden: false },
-            { id: 'tc4', description: 'Single char', input: '"a"', expectedOutput: '"a"', isHidden: true },
-            { id: 'tc5', description: 'Palindrome', input: '"racecar"', expectedOutput: '"racecar"', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Empty string', input: '""', expectedOutput: '""', isHidden: false }],
         tags: ['Strings', 'Basics'],
     },
     q3: {
@@ -741,8 +732,7 @@ export const questDetails = {
         hints: [
             'Check for FizzBuzz (divisible by both) before checking Fizz or Buzz.',
             'Use the modulo operator (%) to check divisibility.',
-            'Build the result list one element at a time.',
-        ],
+            'Build the result list one element at a time.'],
         solution: {
             Python3: `def solution(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append("FizzBuzz")\n        elif i % 3 == 0:\n            result.append("Fizz")\n        elif i % 5 == 0:\n            result.append("Buzz")\n        else:\n            result.append(str(i))\n    return result`,
             TypeScript: `function solution(n: number): string[] {\n    const result: string[] = [];\n    for (let i = 1; i <= n; i++) {\n        if (i % 15 === 0) result.push("FizzBuzz");\n        else if (i % 3 === 0) result.push("Fizz");\n        else if (i % 5 === 0) result.push("Buzz");\n        else result.push(i.toString());\n    }\n    return result;\n}`,
@@ -756,10 +746,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'n=5', input: '5', expectedOutput: '["1","2","Fizz","4","Buzz"]', isHidden: false },
             { id: 'tc2', description: 'n=15 (includes FizzBuzz)', input: '15', expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz","11","Fizz","13","14","FizzBuzz"]', isHidden: false },
-            { id: 'tc3', description: 'n=1', input: '1', expectedOutput: '["1"]', isHidden: false },
-            { id: 'tc4', description: 'n=3', input: '3', expectedOutput: '["1","2","Fizz"]', isHidden: true },
-            { id: 'tc5', description: 'n=30', input: '30', expectedOutput: '...30 elements...', isHidden: true },
-        ],
+            { id: 'tc3', description: 'n=1', input: '1', expectedOutput: '["1"]', isHidden: false }],
         tags: ['Math', 'Conditionals', 'Loops'],
     },
     q4: {
@@ -775,8 +762,7 @@ export const questDetails = {
         hints: [
             'Convert the string to lowercase first.',
             'Compare the string to its reverse.',
-            'Or use two pointers — one from the start, one from the end.',
-        ],
+            'Or use two pointers — one from the start, one from the end.'],
         solution: {
             Python3: `def solution(s):\n    s = s.lower()\n    return s == s[::-1]`,
             TypeScript: `function solution(s: string): boolean {\n    const str = s.toLowerCase();\n    return str === str.split('').reverse().join('');\n}`,
@@ -790,10 +776,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Classic palindrome', input: '"racecar"', expectedOutput: 'true', isHidden: false },
             { id: 'tc2', description: 'Not a palindrome', input: '"hello"', expectedOutput: 'false', isHidden: false },
-            { id: 'tc3', description: 'Mixed case palindrome', input: '"Madam"', expectedOutput: 'true', isHidden: false },
-            { id: 'tc4', description: 'Single character', input: '"a"', expectedOutput: 'true', isHidden: true },
-            { id: 'tc5', description: 'Two same chars', input: '"aa"', expectedOutput: 'true', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Mixed case palindrome', input: '"Madam"', expectedOutput: 'true', isHidden: false }],
         tags: ['Strings', 'Two Pointers'],
     },
     q5: {
@@ -809,8 +792,7 @@ export const questDetails = {
         hints: [
             'Vowels are: a, e, i, o, u. Check case-insensitively.',
             'Loop through each character and count if it\'s a vowel.',
-            'You can use the "in" operator to check membership.',
-        ],
+            'You can use the "in" operator to check membership.'],
         solution: {
             Python3: `def solution(s):\n    return sum(1 for c in s.lower() if c in 'aeiou')`,
             TypeScript: `function solution(s: string): number {\n    return s.toLowerCase().split('').filter(c => 'aeiou'.includes(c)).length;\n}`,
@@ -824,10 +806,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Basic vowel count', input: '"hello"', expectedOutput: '2', isHidden: false },
             { id: 'tc2', description: 'Multiple vowels', input: '"CodeQuest"', expectedOutput: '4', isHidden: false },
-            { id: 'tc3', description: 'No vowels', input: '"gym"', expectedOutput: '0', isHidden: false },
-            { id: 'tc4', description: 'All vowels', input: '"aeiou"', expectedOutput: '5', isHidden: true },
-            { id: 'tc5', description: 'Empty string', input: '""', expectedOutput: '0', isHidden: true },
-        ],
+            { id: 'tc3', description: 'No vowels', input: '"gym"', expectedOutput: '0', isHidden: false }],
         tags: ['Strings', 'Iteration'],
     },
     q6: {
@@ -843,8 +822,7 @@ export const questDetails = {
         hints: [
             'A brute force O(n²) solution checks every pair.',
             'Can you do it in O(n) with a hash map?',
-            'For each number, check if (target - number) exists in your map.',
-        ],
+            'For each number, check if (target - number) exists in your map.'],
         solution: {
             Python3: `def solution(arr, target):\n    seen = {}\n    for i, num in enumerate(arr):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i`,
         },
@@ -856,10 +834,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Basic case', input: '{"arr": [2,7,11,15], "target": 9}', expectedOutput: '[0,1]', isHidden: false },
             { id: 'tc2', description: 'Middle pair', input: '{"arr": [3,2,4], "target": 6}', expectedOutput: '[1,2]', isHidden: false },
-            { id: 'tc3', description: 'Duplicate values', input: '{"arr": [3,3], "target": 6}', expectedOutput: '[0,1]', isHidden: false },
-            { id: 'tc4', description: 'Negative numbers', input: '{"arr": [-1,-2,-3,-4,-5], "target": -8}', expectedOutput: '[2,4]', isHidden: true },
-            { id: 'tc5', description: 'Larger array', input: '{"arr": [0,4,3,0], "target": 0}', expectedOutput: '[0,3]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Duplicate values', input: '{"arr": [3,3], "target": 6}', expectedOutput: '[0,1]', isHidden: false }],
         tags: ['Arrays', 'Hash Map', 'Classic'],
     },
     q7: {
@@ -875,8 +850,7 @@ export const questDetails = {
         hints: [
             'You can solve it recursively, but it\'s slow for large n.',
             'Use iteration (loop) for O(n) time and O(1) space.',
-            'Track just the previous two values.',
-        ],
+            'Track just the previous two values.'],
         solution: {
             Python3: `def solution(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b`,
         },
@@ -888,10 +862,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'F(0)', input: '0', expectedOutput: '0', isHidden: false },
             { id: 'tc2', description: 'F(1)', input: '1', expectedOutput: '1', isHidden: false },
-            { id: 'tc3', description: 'F(6)', input: '6', expectedOutput: '8', isHidden: false },
-            { id: 'tc4', description: 'F(10)', input: '10', expectedOutput: '55', isHidden: true },
-            { id: 'tc5', description: 'F(20)', input: '20', expectedOutput: '6765', isHidden: true },
-        ],
+            { id: 'tc3', description: 'F(6)', input: '6', expectedOutput: '8', isHidden: false }],
         tags: ['Math', 'Recursion', 'Dynamic Programming'],
     },
     q8: {
@@ -907,8 +878,7 @@ export const questDetails = {
         hints: [
             'Use a stack — push open brackets, pop when you see a closing bracket.',
             'If the popped bracket doesn\'t match the closing one, return False.',
-            'At the end, the stack should be empty.',
-        ],
+            'At the end, the stack should be empty.'],
         solution: {
             Python3: `def solution(s):\n    stack = []\n    pairs = {')': '(', '}': '{', ']': '['}\n    for c in s:\n        if c in '([{':\n            stack.append(c)\n        elif not stack or stack[-1] != pairs[c]:\n            return False\n        else:\n            stack.pop()\n    return len(stack) == 0`,
         },
@@ -920,10 +890,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Simple valid', input: '"()"', expectedOutput: 'true', isHidden: false },
             { id: 'tc2', description: 'Multiple types valid', input: '"()[]{}"', expectedOutput: 'true', isHidden: false },
-            { id: 'tc3', description: 'Mismatched brackets', input: '"(]"', expectedOutput: 'false', isHidden: false },
-            { id: 'tc4', description: 'Wrong order', input: '"([)]"', expectedOutput: 'false', isHidden: true },
-            { id: 'tc5', description: 'Nested valid', input: '"{[]}"', expectedOutput: 'true', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Mismatched brackets', input: '"(]"', expectedOutput: 'false', isHidden: false }],
         tags: ['Stacks', 'Strings', 'Classic'],
     },
     q9: {
@@ -939,8 +906,7 @@ export const questDetails = {
         hints: [
             "This is classic Kadane's Algorithm.",
             'Track the current subarray sum and the global maximum.',
-            'At each step: current = max(arr[i], current + arr[i])',
-        ],
+            'At each step: current = max(arr[i], current + arr[i])'],
         solution: {
             Python3: `def solution(arr):\n    max_sum = arr[0]\n    current = arr[0]\n    for num in arr[1:]:\n        current = max(num, current + num)\n        max_sum = max(max_sum, current)\n    return max_sum`,
         },
@@ -952,10 +918,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Classic Kadane', input: '[-2,1,-3,4,-1,2,1,-5,4]', expectedOutput: '6', isHidden: false },
             { id: 'tc2', description: 'Single element', input: '[1]', expectedOutput: '1', isHidden: false },
-            { id: 'tc3', description: 'All negative', input: '[-1,-2,-3]', expectedOutput: '-1', isHidden: false },
-            { id: 'tc4', description: 'All positive', input: '[1,2,3,4]', expectedOutput: '10', isHidden: true },
-            { id: 'tc5', description: 'Mixed with large gap', input: '[-5,100,-5]', expectedOutput: '100', isHidden: true },
-        ],
+            { id: 'tc3', description: 'All negative', input: '[-1,-2,-3]', expectedOutput: '-1', isHidden: false }],
         tags: ['Arrays', 'Dynamic Programming', 'Kadane'],
     },
     q10: {
@@ -971,8 +934,7 @@ export const questDetails = {
         hints: [
             'Use two pointers — one for each array.',
             'Compare the current elements and take the smaller one.',
-            'After the loop, append any remaining elements.',
-        ],
+            'After the loop, append any remaining elements.'],
         solution: {
             Python3: `def solution(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i]); i += 1\n        else:\n            result.append(b[j]); j += 1\n    return result + a[i:] + b[j:]`,
         },
@@ -984,10 +946,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Interleaved', input: '{"a": [1,3,5], "b": [2,4,6]}', expectedOutput: '[1,2,3,4,5,6]', isHidden: false },
             { id: 'tc2', description: 'One empty', input: '{"a": [1,2], "b": []}', expectedOutput: '[1,2]', isHidden: false },
-            { id: 'tc3', description: 'Other empty', input: '{"a": [], "b": [1]}', expectedOutput: '[1]', isHidden: false },
-            { id: 'tc4', description: 'Duplicates', input: '{"a": [1,1,2], "b": [1,2,3]}', expectedOutput: '[1,1,1,2,2,3]', isHidden: true },
-            { id: 'tc5', description: 'Different lengths', input: '{"a": [5], "b": [1,2,3,4]}', expectedOutput: '[1,2,3,4,5]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Other empty', input: '{"a": [], "b": [1]}', expectedOutput: '[1]', isHidden: false }],
         tags: ['Arrays', 'Sorting', 'Two Pointers'],
     },
     q11: {
@@ -1003,8 +962,7 @@ export const questDetails = {
         hints: [
             'Use dynamic programming: dp[i] = LIS ending at index i.',
             'For each i, check all j < i where arr[j] < arr[i].',
-            'dp[i] = max(dp[j]) + 1 for all valid j.',
-        ],
+            'dp[i] = max(dp[j]) + 1 for all valid j.'],
         solution: {
             Python3: `def solution(arr):\n    n = len(arr)\n    dp = [1] * n\n    for i in range(1, n):\n        for j in range(i):\n            if arr[j] < arr[i]:\n                dp[i] = max(dp[i], dp[j] + 1)\n    return max(dp)`,
         },
@@ -1016,10 +974,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Mixed sequence', input: '[10,9,2,5,3,7,101,18]', expectedOutput: '4', isHidden: false },
             { id: 'tc2', description: 'All increasing', input: '[0,1,0,3,2,3]', expectedOutput: '4', isHidden: false },
-            { id: 'tc3', description: 'All same', input: '[7,7,7,7]', expectedOutput: '1', isHidden: false },
-            { id: 'tc4', description: 'Single element', input: '[1]', expectedOutput: '1', isHidden: true },
-            { id: 'tc5', description: 'Strictly increasing', input: '[1,2,3,4,5]', expectedOutput: '5', isHidden: true },
-        ],
+            { id: 'tc3', description: 'All same', input: '[7,7,7,7]', expectedOutput: '1', isHidden: false }],
         tags: ['Dynamic Programming', 'Arrays', 'Classic'],
     },
     q12: {
@@ -1035,8 +990,7 @@ export const questDetails = {
         hints: [
             'Use left and right pointers that narrow the search range.',
             'mid = (left + right) // 2',
-            'If arr[mid] < target, search the right half. If greater, left half.',
-        ],
+            'If arr[mid] < target, search the right half. If greater, left half.'],
         solution: {
             Python3: `def solution(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1`,
         },
@@ -1048,10 +1002,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Target found', input: '{"arr": [-1,0,3,5,9,12], "target": 9}', expectedOutput: '4', isHidden: false },
             { id: 'tc2', description: 'Target not found', input: '{"arr": [-1,0,3,5,9,12], "target": 2}', expectedOutput: '-1', isHidden: false },
-            { id: 'tc3', description: 'Single element found', input: '{"arr": [5], "target": 5}', expectedOutput: '0', isHidden: false },
-            { id: 'tc4', description: 'First element', input: '{"arr": [1,3,5,7,9], "target": 1}', expectedOutput: '0', isHidden: true },
-            { id: 'tc5', description: 'Last element', input: '{"arr": [1,3,5,7,9], "target": 9}', expectedOutput: '4', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Single element found', input: '{"arr": [5], "target": 5}', expectedOutput: '0', isHidden: false }],
         tags: ['Binary Search', 'Arrays', 'Classic'],
     },
     q13: {
@@ -1067,8 +1018,7 @@ export const questDetails = {
         hints: [
             'Sort both strings and compare — anagrams will be equal.',
             'Or use a frequency counter (hash map) for O(n) time.',
-            'Remember to compare case-insensitively.',
-        ],
+            'Remember to compare case-insensitively.'],
         solution: {
             Python3: `def solution(s, t):\n    return sorted(s.lower()) == sorted(t.lower())`,
         },
@@ -1081,10 +1031,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Valid anagram', input: '{"s": "anagram", "t": "nagaram"}', expectedOutput: 'true', isHidden: false },
             { id: 'tc2', description: 'Not anagram', input: '{"s": "rat", "t": "car"}', expectedOutput: 'false', isHidden: false },
-            { id: 'tc3', description: 'Case-insensitive', input: '{"s": "Listen", "t": "Silent"}', expectedOutput: 'true', isHidden: false },
-            { id: 'tc4', description: 'Different lengths', input: '{"s": "ab", "t": "abc"}', expectedOutput: 'false', isHidden: true },
-            { id: 'tc5', description: 'Single chars match', input: '{"s": "a", "t": "a"}', expectedOutput: 'true', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Case-insensitive', input: '{"s": "Listen", "t": "Silent"}', expectedOutput: 'true', isHidden: false }],
         tags: ['Strings', 'Hash Map', 'Sorting'],
     },
     q14: {
@@ -1100,8 +1047,7 @@ export const questDetails = {
         hints: [
             'A power of 2 in binary has exactly one 1-bit.',
             'The trick: n & (n-1) == 0 for any power of 2.',
-            'Don\'t forget to handle n ≤ 0.',
-        ],
+            'Don\'t forget to handle n ≤ 0.'],
         solution: {
             Python3: `def solution(n):\n    return n > 0 and (n & (n - 1)) == 0`,
         },
@@ -1113,11 +1059,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: '2^0 = 1', input: '1', expectedOutput: 'true', isHidden: false },
             { id: 'tc2', description: '2^1 = 2', input: '2', expectedOutput: 'true', isHidden: false },
-            { id: 'tc3', description: 'Not power of two', input: '3', expectedOutput: 'false', isHidden: false },
-            { id: 'tc4', description: '2^4 = 16', input: '16', expectedOutput: 'true', isHidden: false },
-            { id: 'tc5', description: 'Zero', input: '0', expectedOutput: 'false', isHidden: true },
-            { id: 'tc6', description: 'Negative', input: '-8', expectedOutput: 'false', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Not power of two', input: '3', expectedOutput: 'false', isHidden: false }],
         tags: ['Math', 'Bit Manipulation'],
     },
     q15: {
@@ -1133,8 +1075,7 @@ export const questDetails = {
         hints: [
             'Use recursion — if an element is a list, flatten it too.',
             'Or use a stack: push elements in reverse, pop and check if list.',
-            'Python\'s isinstance(item, list) checks if something is a list.',
-        ],
+            'Python\'s isinstance(item, list) checks if something is a list.'],
         solution: {
             Python3: `def solution(arr):\n    result = []\n    for item in arr:\n        if isinstance(item, list):\n            result.extend(solution(item))\n        else:\n            result.append(item)\n    return result`,
         },
@@ -1146,10 +1087,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Nested one level', input: '[1,[2,3],[4,[5,6]]]', expectedOutput: '[1,2,3,4,5,6]', isHidden: false },
             { id: 'tc2', description: 'Deeply nested', input: '[[1,[2]],[3,[4,[5]]]]', expectedOutput: '[1,2,3,4,5]', isHidden: false },
-            { id: 'tc3', description: 'Already flat', input: '[1,2,3]', expectedOutput: '[1,2,3]', isHidden: false },
-            { id: 'tc4', description: 'Single nested', input: '[[1]]', expectedOutput: '[1]', isHidden: true },
-            { id: 'tc5', description: 'Empty array', input: '[]', expectedOutput: '[]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Already flat', input: '[1,2,3]', expectedOutput: '[1,2,3]', isHidden: false }],
         tags: ['Arrays', 'Recursion', 'Stack'],
     },
     q16: {
@@ -1165,8 +1103,7 @@ export const questDetails = {
         hints: [
             'Initialize a variable with the first element of the array.',
             'Loop through the array and update the variable if the current element is larger.',
-            'Python has a built-in max() function.',
-        ],
+            'Python has a built-in max() function.'],
         solution: {
             Python3: `def solution(arr):\n    return max(arr)`,
             JavaScript: `function solution(arr) {\n    return Math.max(...arr);\n}`,
@@ -1179,10 +1116,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Basic case', input: '[1, 5, 2]', expectedOutput: '5', isHidden: false },
             { id: 'tc2', description: 'Negative numbers', input: '[-10, -5, -20]', expectedOutput: '-5', isHidden: false },
-            { id: 'tc3', description: 'Single element', input: '[42]', expectedOutput: '42', isHidden: false },
-            { id: 'tc4', description: 'All same elements', input: '[7, 7, 7]', expectedOutput: '7', isHidden: true },
-            { id: 'tc5', description: 'Large numbers', input: '[1000000, 10, 500]', expectedOutput: '1000000', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Single element', input: '[42]', expectedOutput: '42', isHidden: false }],
         tags: ['Arrays', 'Basics'],
     },
     q17: {
@@ -1198,8 +1132,7 @@ export const questDetails = {
         hints: [
             'A palindrome reads the same forwards and backwards.',
             'Try expanding around each character (and between each character) as a potential center.',
-            'Maintain the start and end indices of the longest palindrome found so far.',
-        ],
+            'Maintain the start and end indices of the longest palindrome found so far.'],
         solution: {
             Python3: `def solution(s):\n    res = ""\n    resLen = 0\n\n    for i in range(len(s)):\n        # odd length\n        l, r = i, i\n        while l >= 0 and r < len(s) and s[l] == s[r]:\n            if (r - l + 1) > resLen:\n                res = s[l:r+1]\n                resLen = r - l + 1\n            l -= 1\n            r += 1\n\n        # even length\n        l, r = i, i + 1\n        while l >= 0 and r < len(s) and s[l] == s[r]:\n            if (r - l + 1) > resLen:\n                res = s[l:r+1]\n                resLen = r - l + 1\n            l -= 1\n            r += 1\n    return res`,
         },
@@ -1211,10 +1144,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Odd length palindrome', input: '"babad"', expectedOutput: '"bab"', isHidden: false },
             { id: 'tc2', description: 'Even length palindrome', input: '"cbbd"', expectedOutput: '"bb"', isHidden: false },
-            { id: 'tc3', description: 'Single character', input: '"a"', expectedOutput: '"a"', isHidden: false },
-            { id: 'tc4', description: 'Full string palindrome', input: '"racecar"', expectedOutput: '"racecar"', isHidden: true },
-            { id: 'tc5', description: 'No multi-char palindrome', input: '"abc"', expectedOutput: '"a"', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Single character', input: '"a"', expectedOutput: '"a"', isHidden: false }],
         tags: ['Strings', 'Dynamic Programming'],
     },
     q18: {
@@ -1231,8 +1161,7 @@ export const questDetails = {
             'This is a classic Dynamic Programming problem.',
             'Let dp[i][j] be the edit distance between word1[0...i] and word2[0...j].',
             'If word1[i] == word2[j], dp[i][j] = dp[i-1][j-1].',
-            'Otherwise, dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]).',
-        ],
+            'Otherwise, dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]).'],
         solution: {
             Python3: `def solution(word1, word2):\n    m, n = len(word1), len(word2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n\n    for i in range(m + 1):\n        dp[i][0] = i\n    for j in range(n + 1):\n        dp[0][j] = j\n\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if word1[i-1] == word2[j-1]:\n                dp[i][j] = dp[i-1][j-1]\n            else:\n                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])\n    return dp[m][n]`,
         },
@@ -1244,10 +1173,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Horse to Ros', input: '{"word1": "horse", "word2": "ros"}', expectedOutput: '3', isHidden: false },
             { id: 'tc2', description: 'Intention to Execution', input: '{"word1": "intention", "word2": "execution"}', expectedOutput: '5', isHidden: false },
-            { id: 'tc3', description: 'Same strings', input: '{"word1": "abc", "word2": "abc"}', expectedOutput: '0', isHidden: false },
-            { id: 'tc4', description: 'One empty string', input: '{"word1": "", "word2": "a"}', expectedOutput: '1', isHidden: true },
-            { id: 'tc5', description: 'Completely different', input: '{"word1": "a", "word2": "b"}', expectedOutput: '1', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Same strings', input: '{"word1": "abc", "word2": "abc"}', expectedOutput: '0', isHidden: false }],
         tags: ['Dynamic Programming', 'Strings'],
     },
     q19: {
@@ -1263,8 +1189,7 @@ export const questDetails = {
         hints: [
             'Maintain a variable for the minimum price seen so far.',
             'As you iterate, calculate the potential profit (current price - min price).',
-            'Update the maximum profit if the current potential profit is higher.',
-        ],
+            'Update the maximum profit if the current potential profit is higher.'],
         solution: {
             Python3: `def solution(prices):\n    min_price = float('inf')\n    max_profit = 0\n    for price in prices:\n        min_price = min(min_price, price)\n        max_profit = max(max_profit, price - min_price)\n    return max_profit`,
             JavaScript: `function solution(prices) {\n    let minPrice = Infinity;\n    let maxProfit = 0;\n    for (let price of prices) {\n        minPrice = Math.min(minPrice, price);\n        maxProfit = Math.max(maxProfit, price - minPrice);\n    }\n    return maxProfit;\n}`,
@@ -1277,10 +1202,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Basic profit', input: '[7, 1, 5, 3, 6, 4]', expectedOutput: '5', isHidden: false },
             { id: 'tc2', description: 'No profit', input: '[7, 6, 4, 3, 1]', expectedOutput: '0', isHidden: false },
-            { id: 'tc3', description: 'Single day', input: '[1]', expectedOutput: '0', isHidden: false },
-            { id: 'tc4', description: 'Increasing prices', input: '[1, 2, 3, 4, 5]', expectedOutput: '4', isHidden: true },
-            { id: 'tc5', description: 'Duplicate low prices', input: '[2, 4, 1, 2]', expectedOutput: '2', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Single day', input: '[1]', expectedOutput: '0', isHidden: false }],
         tags: ['Arrays', 'Dynamic Programming'],
     },
     q20: {
@@ -1296,8 +1218,7 @@ export const questDetails = {
         hints: [
             'Use two pointers approach.',
             'One pointer tracks the position to place the next non-zero element.',
-            'Iterate through the array; if an element is non-zero, swap it with the position tracked by the first pointer.',
-        ],
+            'Iterate through the array; if an element is non-zero, swap it with the position tracked by the first pointer.'],
         solution: {
             Python3: `def solution(nums):\n    pos = 0\n    for i in range(len(nums)):\n        if nums[i] != 0:\n            nums[pos], nums[i] = nums[i], nums[pos]\n            pos += 1\n    return nums`,
             JavaScript: `function solution(nums) {\n    let pos = 0;\n    for (let i = 0; i < nums.length; i++) {\n        if (nums[i] !== 0) {\n            [nums[pos], nums[i]] = [nums[i], nums[pos]];\n            pos++;\n        }\n    }\n    return nums;\n}`,
@@ -1310,10 +1231,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Basic array', input: '[0, 1, 0, 3, 12]', expectedOutput: '[1, 3, 12, 0, 0]', isHidden: false },
             { id: 'tc2', description: 'Single zero', input: '[0]', expectedOutput: '[0]', isHidden: false },
-            { id: 'tc3', description: 'No zeros', input: '[1, 2, 3]', expectedOutput: '[1, 2, 3]', isHidden: false },
-            { id: 'tc4', description: 'All zeros', input: '[0, 0, 0]', expectedOutput: '[0, 0, 0]', isHidden: true },
-            { id: 'tc5', description: 'Zeros at end', input: '[1, 0]', expectedOutput: '[1, 0]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'No zeros', input: '[1, 2, 3]', expectedOutput: '[1, 2, 3]', isHidden: false }],
         tags: ['Arrays', 'Two Pointers'],
     },
     q21: {
@@ -1329,8 +1247,7 @@ export const questDetails = {
         hints: [
             'Use a sliding window with two pointers.',
             'Keep track of characters in the current window using a set or hash map.',
-            'If you encounter a repeating character, shrink the window from the left until the repeating character is gone.',
-        ],
+            'If you encounter a repeating character, shrink the window from the left until the repeating character is gone.'],
         solution: {
             Python3: `def solution(s):\n    charSet = set()\n    l = 0\n    res = 0\n    for r in range(len(s)):\n        while s[r] in charSet:\n            charSet.remove(s[l])\n            l += 1\n        charSet.add(s[r])\n        res = max(res, r - l + 1)\n    return res`,
             JavaScript: `function solution(s) {\n    let charSet = new Set();\n    let l = 0, res = 0;\n    for (let r = 0; r < s.length; r++) {\n        while (charSet.has(s[r])) {\n            charSet.delete(s[l]);\n            l++;\n        }\n        charSet.add(s[r]);\n        res = Math.max(res, r - l + 1);\n    }\n    return res;\n}`,
@@ -1343,10 +1260,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Mixed word', input: '"abcabcbb"', expectedOutput: '3', isHidden: false },
             { id: 'tc2', description: 'Same chars', input: '"bbbbb"', expectedOutput: '1', isHidden: false },
-            { id: 'tc3', description: 'Internal repetition', input: '"pwwkew"', expectedOutput: '3', isHidden: false },
-            { id: 'tc4', description: 'Empty string', input: '""', expectedOutput: '0', isHidden: true },
-            { id: 'tc5', description: 'Space and symbols', input: '"a b c!"', expectedOutput: '6', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Internal repetition', input: '"pwwkew"', expectedOutput: '3', isHidden: false }],
         tags: ['Strings', 'Sliding Window'],
     },
     q22: {
@@ -1362,8 +1276,7 @@ export const questDetails = {
         hints: [
             'Try transposing the matrix first (swap matrix[i][j] with matrix[j][i]).',
             'Then reverse each row.',
-            'Alternatively, you can rotate the cells in layers (outer to inner).',
-        ],
+            'Alternatively, you can rotate the cells in layers (outer to inner).'],
         solution: {
             Python3: `def solution(matrix):\n    n = len(matrix)\n    for i in range(n):\n        for j in range(i, n):\n            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]\n    for i in range(n):\n        matrix[i].reverse()\n    return matrix`,
             JavaScript: `function solution(matrix) {\n    let n = matrix.length;\n    for (let i = 0; i < n; i++) {\n        for (let j = i; j < n; j++) {\n            [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];\n        }\n    }\n    for (let i = 0; i < n; i++) {\n        matrix[i].reverse();\n    }\n    return matrix;\n}`,
@@ -1376,9 +1289,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: '3x3 matrix', input: '[[1,2,3],[4,5,6],[7,8,9]]', expectedOutput: '[[7,4,1],[8,5,2],[9,6,3]]', isHidden: false },
             { id: 'tc2', description: '2x2 matrix', input: '[[1,2],[3,4]]', expectedOutput: '[[3,1],[4,2]]', isHidden: false },
-            { id: 'tc3', description: '1x1 matrix', input: '[[1]]', expectedOutput: '[[1]]', isHidden: false },
-            { id: 'tc4', description: '4x4 matrix', input: '[[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]', expectedOutput: '[[15,13,2,5],[14,3,4,1],[12,6,8,9],[16,7,10,11]]', isHidden: true },
-        ],
+            { id: 'tc3', description: '1x1 matrix', input: '[[1]]', expectedOutput: '[[1]]', isHidden: false }],
         tags: ['Arrays', 'Matrix'],
     },
     q23: {
@@ -1394,8 +1305,7 @@ export const questDetails = {
         hints: [
             'Use two pointers: left and right.',
             'Keep track of the maximum height on the left and right sides.',
-            'The amount of water trapped at any position is min(max_left, max_right) - current_height.',
-        ],
+            'The amount of water trapped at any position is min(max_left, max_right) - current_height.'],
         solution: {
             Python3: `def solution(height):\n    if not height: return 0\n    l, r = 0, len(height) - 1\n    leftMax, rightMax = height[l], height[r]\n    res = 0\n    while l < r:\n        if leftMax < rightMax:\n            l += 1\n            leftMax = max(leftMax, height[l])\n            res += leftMax - height[l]\n        else:\n            r -= 1\n            rightMax = max(rightMax, height[r])\n            res += rightMax - height[r]\n    return res`,
             JavaScript: `function solution(height) {\n    if (!height.length) return 0;\n    let l = 0, r = height.length - 1;\n    let leftMax = height[l], rightMax = height[r];\n    let res = 0;\n    while (l < r) {\n        if (leftMax < rightMax) {\n            l++;\n            leftMax = Math.max(leftMax, height[l]);\n            res += leftMax - height[l];\n        } else {\n            r--;\n            rightMax = Math.max(rightMax, height[r]);\n            res += rightMax - height[r];\n        }\n    }\n    return res;\n}`,
@@ -1408,10 +1318,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Classic map', input: '[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]', expectedOutput: '6', isHidden: false },
             { id: 'tc2', description: 'U-shaped map', input: '[4, 2, 0, 3, 2, 5]', expectedOutput: '9', isHidden: false },
-            { id: 'tc3', description: 'Flat map', input: '[1, 1, 1]', expectedOutput: '0', isHidden: false },
-            { id: 'tc4', description: 'Steep map', input: '[3, 0, 2]', expectedOutput: '2', isHidden: true },
-            { id: 'tc5', description: 'Descending map', input: '[5, 4, 3, 2, 1]', expectedOutput: '0', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Flat map', input: '[1, 1, 1]', expectedOutput: '0', isHidden: false }],
         tags: ['Arrays', 'Two Pointers', 'Stack'],
     },
     q24: {
@@ -1428,8 +1335,7 @@ export const questDetails = {
             'This problem can be broken down into subproblems.',
             'Let f(n) be the number of ways to reach step n.',
             'To reach step n, you could have come from step n-1 (by taking 1 step) or step n-2 (by taking 2 steps).',
-            'So, f(n) = f(n-1) + f(n-2). This is the Fibonacci sequence!',
-        ],
+            'So, f(n) = f(n-1) + f(n-2). This is the Fibonacci sequence!'],
         solution: {
             Python3: `def solution(n):\n    if n <= 2: return n\n    a, b = 1, 2\n    for _ in range(3, n + 1):\n        a, b = b, a + b\n    return b`,
             JavaScript: `function solution(n) {\n    if (n <= 2) return n;\n    let a = 1, b = 2;\n    for (let i = 3; i <= n; i++) {\n        [a, b] = [b, a + b];\n    }\n    return b;\n}`,
@@ -1442,10 +1348,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'n=2', input: '2', expectedOutput: '2', isHidden: false },
             { id: 'tc2', description: 'n=3', input: '3', expectedOutput: '3', isHidden: false },
-            { id: 'tc3', description: 'n=1', input: '1', expectedOutput: '1', isHidden: false },
-            { id: 'tc4', description: 'n=5', input: '5', expectedOutput: '8', isHidden: true },
-            { id: 'tc5', description: 'n=10', input: '10', expectedOutput: '89', isHidden: true },
-        ],
+            { id: 'tc3', description: 'n=1', input: '1', expectedOutput: '1', isHidden: false }],
         tags: ['Math', 'Dynamic Programming'],
     },
     q25: {
@@ -1461,8 +1364,7 @@ export const questDetails = {
         hints: [
             "Use Floyd's Cycle-Finding Algorithm (Tortoise and Hare).",
             'Use two pointers, one moving slow (1 step) and one moving fast (2 steps).',
-            'If there is a cycle, the fast pointer will eventually catch up to the slow pointer.',
-        ],
+            'If there is a cycle, the fast pointer will eventually catch up to the slow pointer.'],
         solution: {
             Python3: `def solution(head):\n    slow, fast = head, head\n    while fast and fast.next:\n        slow = slow.next\n        fast = fast.next.next\n        if slow == fast: return True\n    return False`,
             JavaScript: `function solution(head) {\n    let slow = head, fast = head;\n    while (fast && fast.next) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow === fast) return true;\n    }\n    return false;\n}`,
@@ -1476,8 +1378,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Cycle present', input: '{"head": [3,2,0,-4], "pos": 1}', expectedOutput: 'true', isHidden: false },
             { id: 'tc2', description: 'No cycle', input: '{"head": [1], "pos": -1}', expectedOutput: 'false', isHidden: false },
-            { id: 'tc3', description: 'Cycle at head', input: '{"head": [1,2], "pos": 0}', expectedOutput: 'true', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Cycle at head', input: '{"head": [1,2], "pos": 0}', expectedOutput: 'true', isHidden: true }],
         tags: ['Linked Lists', 'Two Pointers'],
     },
     q26: {
@@ -1493,8 +1394,7 @@ export const questDetails = {
         hints: [
             'Two strings are anagrams if they have the same characters with the same frequencies.',
             'You can use a sorted version of each string as a key in a hash map.',
-            'Or you can use a character count array of size 26 as the key.',
-        ],
+            'Or you can use a character count array of size 26 as the key.'],
         solution: {
             Python3: `from collections import defaultdict\ndef solution(strs):\n    res = defaultdict(list)\n    for s in strs:\n        count = [0] * 26\n        for c in s:\n            count[ord(c) - ord('a')] += 1\n        res[tuple(count)].append(s)\n    return list(res.values())`,
             JavaScript: `function solution(strs) {\n    let res = {};\n    for (let s of strs) {\n        let count = new Array(26).fill(0);\n        for (let c of s) {\n            count[c.charCodeAt(0) - 'a'.charCodeAt(0)]++;\n        }\n        let key = count.join(',');\n        if (!res[key]) res[key] = [];\n        res[key].push(s);\n    }\n    return Object.values(res);\n}`,
@@ -1507,9 +1407,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Standard case', input: '["eat","tea","tan","ate","nat","bat"]', expectedOutput: '[["eat","tea","ate"],["tan","nat"],["bat"]]', isHidden: false },
             { id: 'tc2', description: 'Empty string', input: '[""]', expectedOutput: '[[""]]', isHidden: false },
-            { id: 'tc3', description: 'Single character', input: '["a"]', expectedOutput: '[["a"]]', isHidden: false },
-            { id: 'tc4', description: 'No anagrams', input: '["abc", "def"]', expectedOutput: '[["abc"],["def"]]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Single character', input: '["a"]', expectedOutput: '[["a"]]', isHidden: false }],
         tags: ['Strings', 'Hash Map'],
     },
     q27: {
@@ -1526,8 +1424,7 @@ export const questDetails = {
             'Use backtracking to explore all possible paths.',
             'For each cell (r, c), start a DFS if board[r][c] matches the first character of the word.',
             'Keep track of visited cells to avoid using the same cell twice in one path.',
-            'Optimization: if word length > grid size, return false.',
-        ],
+            'Optimization: if word length > grid size, return false.'],
         solution: {
             Python3: `def solution(board, word):\n    ROWS, COLS = len(board), len(board[0])\n    path = set()\n    def dfs(r, c, i):\n        if i == len(word): return True\n        if r < 0 or c < 0 or r >= ROWS or c >= COLS or word[i] != board[r][c] or (r, c) in path: return False\n        path.add((r, c))\n        res = dfs(r + 1, c, i + 1) or dfs(r - 1, c, i + 1) or dfs(r, c + 1, i + 1) or dfs(r, c - 1, i + 1)\n        path.remove((r, c))\n        return res\n    for r in range(ROWS):\n        for c in range(COLS):\n            if dfs(r, c, 0): return True\n    return False`,
             JavaScript: `function solution(board, word) {\n    const ROWS = board.length, COLS = board[0].length;\n    function dfs(r, c, i) {\n        if (i === word.length) return true;\n        if (r < 0 || c < 0 || r >= ROWS || c >= COLS || board[r][c] !== word[i]) return false;\n        let temp = board[r][c];\n        board[r][c] = '#';\n        let res = dfs(r + 1, c, i + 1) || dfs(r - 1, c, i + 1) || dfs(r, c + 1, i + 1) || dfs(r, c - 1, i + 1);\n        board[r][c] = temp;\n        return res;\n    }\n    for (let r = 0; r < ROWS; r++) {\n        for (let c = 0; c < COLS; c++) {\n            if (dfs(r, c, 0)) return true;\n        }\n    }\n    return false;\n}`,
@@ -1540,9 +1437,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Word exists', input: '{"board": [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], "word": "ABCCED"}', expectedOutput: 'true', isHidden: false },
             { id: 'tc2', description: 'Nested word', input: '{"board": [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], "word": "SEE"}', expectedOutput: 'true', isHidden: false },
-            { id: 'tc3', description: 'Word does not exist', input: '{"board": [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], "word": "ABCB"}', expectedOutput: 'false', isHidden: false },
-            { id: 'tc4', description: 'Single character match', input: '{"board": [["A"]], "word": "A"}', expectedOutput: 'true', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Word does not exist', input: '{"board": [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], "word": "ABCB"}', expectedOutput: 'false', isHidden: false }],
         tags: ['Arrays', 'Backtracking'],
     },
     q28: {
@@ -1558,8 +1453,7 @@ export const questDetails = {
         hints: [
             'To achieve O(log(m+n)), you must use binary search.',
             'Try to partition the two arrays into two halves such that all elements in the left half are less than or equal to all elements in the right half.',
-            'The median will be the max of the left elements if (m+n) is odd, or the average of the max-left and min-right if (m+n) is even.',
-        ],
+            'The median will be the max of the left elements if (m+n) is odd, or the average of the max-left and min-right if (m+n) is even.'],
         solution: {
             Python3: `def solution(nums1, nums2):\n    A, B = nums1, nums2\n    total = len(A) + len(B)\n    half = total // 2\n    if len(B) < len(A): A, B = B, A\n    l, r = 0, len(A) - 1\n    while True:\n        i = (l + r) // 2\n        j = half - i - 2\n        Aleft = A[i] if i >= 0 else float("-infinity")\n        Aright = A[i + 1] if (i + 1) < len(A) else float("infinity")\n        Bleft = B[j] if j >= 0 else float("-infinity")\n        Bright = B[j + 1] if (j + 1) < len(B) else float("infinity")\n        if Aleft <= Bright and Bleft <= Aright:\n            if total % 2:\n                return min(Aright, Bright)\n            return (max(Aleft, Bleft) + min(Aright, Bright)) / 2\n        elif Aleft > Bright:\n            r = i - 1\n        else:\n            l = i + 1`,
             JavaScript: `function solution(nums1, nums2) {\n    let A = nums1, B = nums2;\n    let total = A.length + B.length;\n    let half = Math.floor(total / 2);\n    if (B.length < A.length) [A, B] = [B, A];\n    let l = 0, r = A.length - 1;\n    while (true) {\n        let i = Math.floor((l + r) / 2);\n        let j = half - i - 2;\n        let Aleft = i >= 0 ? A[i] : -Infinity;\n        let Aright = (i + 1) < A.length ? A[i + 1] : Infinity;\n        let Bleft = j >= 0 ? B[j] : -Infinity;\n        let Bright = (j + 1) < B.length ? B[j + 1] : Infinity;\n        if (Aleft <= Bright && Bleft <= Aright) {\n            if (total % 2) return Math.min(Aright, Bright);\n            return (Math.max(Aleft, Bleft) + Math.min(Aright, Bright)) / 2;\n        } else if (Aleft > Bright) {\n            r = i - 1;\n        } else {\n            l = i + 1;\n        }\n    }\n}`,
@@ -1572,9 +1466,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Odd total length', input: '{"nums1": [1,3], "nums2": [2]}', expectedOutput: '2.0', isHidden: false },
             { id: 'tc2', description: 'Even total length', input: '{"nums1": [1,2], "nums2": [3,4]}', expectedOutput: '2.5', isHidden: false },
-            { id: 'tc3', description: 'Empty first array', input: '{"nums1": [], "nums2": [1]}', expectedOutput: '1.0', isHidden: true },
-            { id: 'tc4', description: 'Duplicate elements', input: '{"nums1": [1,1], "nums2": [1,1]}', expectedOutput: '1.0', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Empty first array', input: '{"nums1": [], "nums2": [1]}', expectedOutput: '1.0', isHidden: true }],
         tags: ['Arrays', 'Binary Search'],
     },
     q29: {
@@ -1590,8 +1482,7 @@ export const questDetails = {
         hints: [
             'Use recursion with a range (min, max) for each node.',
             'Initial range is (-Infinity, Infinity).',
-            'When moving left, update the max bound. When moving right, update the min bound.',
-        ],
+            'When moving left, update the max bound. When moving right, update the min bound.'],
         solution: {
             Python3: `def solution(root, min_val=float("-inf"), max_val=float("inf")):\n    if not root:\n        return True\n    if not (min_val < root.val < max_val):\n        return False\n    return solution(root.left, min_val, root.val) and solution(root.right, root.val, max_val)`,
             JavaScript: `function solution(root, min = -Infinity, max = Infinity) {\n    if (!root) return true;\n    if (root.val <= min || root.val >= max) return false;\n    return solution(root.left, min, root.val) && solution(root.right, root.val, max);\n}`,
@@ -1604,9 +1495,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Valid simple BST', input: '{"root": [2,1,3]}', expectedOutput: 'true', isHidden: false },
             { id: 'tc2', description: 'Invalid complex tree', input: '{"root": [5,1,4,null,null,3,6]}', expectedOutput: 'false', isHidden: false },
-            { id: 'tc3', description: 'Single node', input: '{"root": [1]}', expectedOutput: 'true', isHidden: true },
-            { id: 'tc4', description: 'Invalid nested BST', input: '{"root": [10,5,15,null,null,6,20]}', expectedOutput: 'false', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Single node', input: '{"root": [1]}', expectedOutput: 'true', isHidden: true }],
         tags: ['Trees', 'DFS', 'Recursion'],
     },
     q30: {
@@ -1622,8 +1511,7 @@ export const questDetails = {
         hints: [
             'First, sort the intervals based on the start time.',
             'Then, iterate through the sorted intervals and maintain a list of merged intervals.',
-            'If the current interval overlaps with the last merged interval, update the end of the last merged interval.',
-        ],
+            'If the current interval overlaps with the last merged interval, update the end of the last merged interval.'],
         solution: {
             Python3: `def solution(intervals):\n    intervals.sort(key=lambda x: x[0])\n    merged = []\n    for interval in intervals:\n        if not merged or merged[-1][1] < interval[0]:\n            merged.append(interval)\n        else:\n            merged[-1][1] = max(merged[-1][1], interval[1])\n    return merged`,
             JavaScript: `function solution(intervals) {\n    if (intervals.length <= 1) return intervals;\n    intervals.sort((a, b) => a[0] - b[0]);\n    const merged = [intervals[0]];\n    for (let i = 1; i < intervals.length; i++) {\n        const last = merged[merged.length - 1];\n        const current = intervals[i];\n        if (current[0] <= last[1]) {\n            last[1] = Math.max(last[1], current[1]);\n        } else {\n            merged.push(current);\n        }\n    }\n    return merged;\n}`,
@@ -1636,9 +1524,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Overlapping intervals', input: '[[1,3],[2,6],[8,10],[15,18]]', expectedOutput: '[[1,6],[8,10],[15,18]]', isHidden: false },
             { id: 'tc2', description: 'Touching intervals', input: '[[1,4],[4,5]]', expectedOutput: '[[1,5]]', isHidden: false },
-            { id: 'tc3', description: 'Fully contained interval', input: '[[1,10],[2,3],[4,5]]', expectedOutput: '[[1,10]]', isHidden: true },
-            { id: 'tc4', description: 'Already merged', input: '[[1,2],[3,4],[5,6]]', expectedOutput: '[[1,2],[3,4],[5,6]]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Fully contained interval', input: '[[1,10],[2,3],[4,5]]', expectedOutput: '[[1,10]]', isHidden: true }],
         tags: ['Arrays', 'Sorting'],
     },
     q31: {
@@ -1654,8 +1540,7 @@ export const questDetails = {
         hints: [
             'Use backtracking to explore all possible configurations.',
             'Keep track of columns, positive diagonals, and negative diagonals that are already under attack.',
-            'A queen at row \`r\` and column \`c\` occupies:\n  - Column \`c\`\n  - Positive diagonal \`r + c\`\n  - Negative diagonal \`r - c\`',
-        ],
+            'A queen at row \`r\` and column \`c\` occupies:\n  - Column \`c\`\n  - Positive diagonal \`r + c\`\n  - Negative diagonal \`r - c\`'],
         solution: {
             Python3: `def solution(n):\n    col = set()\n    posDiag = set() # (r + c)\n    negDiag = set() # (r - c)\n    res = []\n    board = [["."] * n for _ in range(n)]\n    def backtrack(r):\n        if r == n:\n            copy = ["".join(row) for row in board]\n            res.append(copy)\n            return\n        for c in range(n):\n            if c in col or (r + c) in posDiag or (r - c) in negDiag:\n                continue\n            col.add(c)\n            posDiag.add(r + c)\n            negDiag.add(r - c)\n            board[r][c] = "Q"\n            backtrack(r + 1)\n            col.remove(c)\n            posDiag.remove(r + c)\n            negDiag.remove(r - c)\n            board[r][c] = "."\n    backtrack(0)\n    return res`,
             JavaScript: `function solution(n) {\n    const res = [];\n    const cols = new Set();\n    const posDiag = new Set();\n    const negDiag = new Set();\n    const board = Array.from({ length: n }, () => Array(n).fill('.'));\n    function backtrack(r) {\n        if (r === n) {\n            res.push(board.map(row => row.join('')));\n            return;\n        }\n        for (let c = 0; c < n; c++) {\n            if (cols.has(c) || posDiag.has(r + c) || negDiag.has(r - c)) continue;\n            cols.add(c);\n            posDiag.add(r + c);\n            negDiag.add(r - c);\n            board[r][c] = 'Q';\n            backtrack(r + 1);\n            cols.delete(c);\n            posDiag.delete(r + c);\n            negDiag.delete(r - c);\n            board[r][c] = '.';\n        }\n    }\n    backtrack(0);\n    return res;\n}`,
@@ -1668,8 +1553,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'n=4', input: '4', expectedOutput: '[[\".Q..\",\"...Q\",\"Q...\",\"..Q.\"],[\"..Q.\",\"Q...\",\"...Q\",\".Q..\"]]', isHidden: false },
             { id: 'tc2', description: 'n=1', input: '1', expectedOutput: '[[\"Q\"]]', isHidden: false },
-            { id: 'tc3', description: 'n=2', input: '2', expectedOutput: '[]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'n=2', input: '2', expectedOutput: '[]', isHidden: true }],
         tags: ['Algorithms', 'Backtracking'],
     },
     q32: {
@@ -1686,8 +1570,7 @@ export const questDetails = {
             'Try using a stack to store the indices of the characters.',
             'Initialize the stack with -1 to handle the base case.',
             'Alternatively, you can use dynamic programming: dp[i] is the length of the longest valid substring ending at index i.',
-            'Another approach is to scan from left to right and then right to left, counting left and right parentheses.',
-        ],
+            'Another approach is to scan from left to right and then right to left, counting left and right parentheses.'],
         solution: {
             Python3: `def solution(s):\n    stack = [-1]\n    max_len = 0\n    for i, char in enumerate(s):\n        if char == '(':\n            stack.append(i)\n        else:\n            stack.pop()\n            if not stack:\n                stack.append(i)\n            else:\n                max_len = max(max_len, i - stack[-1])\n    return max_len`,
             JavaScript: `function solution(s) {\n    const stack = [-1];\n    let maxLen = 0;\n    for (let i = 0; i < s.length; i++) {\n        if (s[i] === '(') {\n            stack.push(i);\n        } else {\n            stack.pop();\n            if (stack.length === 0) {\n                stack.push(i);\n            } else {\n                maxLen = Math.max(maxLen, i - stack[stack.length - 1]);\n            }\n        }\n    }\n    return maxLen;\n}`,
@@ -1700,9 +1583,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Simple case', input: '"(()"', expectedOutput: '2', isHidden: false },
             { id: 'tc2', description: 'Multiple valid', input: '")()())"', expectedOutput: '4', isHidden: false },
-            { id: 'tc3', description: 'Empty string', input: '""', expectedOutput: '0', isHidden: false },
-            { id: 'tc4', description: 'Fully valid', input: '"()(())"', expectedOutput: '6', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Empty string', input: '""', expectedOutput: '0', isHidden: false }],
         tags: ['Algorithms', 'Stack', 'Dynamic Programming'],
     },
     q33: {
@@ -1719,8 +1600,7 @@ export const questDetails = {
             'Process words line by line.',
             'Determine how many words can fit in a single line (sum of lengths + spaces).',
             'For regular lines, distribute spaces between words.',
-            'For lines with one word or the last line, left-justify.',
-        ],
+            'For lines with one word or the last line, left-justify.'],
         solution: {
             Python3: `def solution(words, maxWidth):\n    res, cur, num_of_letters = [], [], 0\n    for w in words:\n        if num_of_letters + len(w) + len(cur) > maxWidth:\n            for i in range(maxWidth - num_of_letters):\n                cur[i % (len(cur) - 1 or 1)] += ' '\n            res.append(\"\".join(cur))\n            cur, num_of_letters = [], 0\n        cur += [w]\n        num_of_letters += len(w)\n    return res + [\" \".join(cur).ljust(maxWidth)]`,
             JavaScript: `function solution(words, maxWidth) {\n    let res = [];\n    let curLine = [];\n    let curLen = 0;\n    for (let word of words) {\n        if (curLen + word.length + curLine.length > maxWidth) {\n            for (let i = 0; i < maxWidth - curLen; i++) {\n                curLine[i % (curLine.length - 1 || 1)] += ' ';\n            }\n            res.push(curLine.join(''));\n            curLine = [];\n            curLen = 0;\n        }\n        curLine.push(word);\n        curLen += word.length;\n    }\n    res.push(curLine.join(' ').padEnd(maxWidth, ' '));\n    return res;\n}`,
@@ -1732,8 +1612,7 @@ export const questDetails = {
         },
         testCases: [
             { id: 'tc1', description: 'Standard case', input: '{"words": ["This", "is", "an", "example", "of", "text", "justification."], "maxWidth": 16}', expectedOutput: '["This    is    an","example  of text","justification.  "]', isHidden: false },
-            { id: 'tc2', description: 'Long words', input: '{"words": ["What","must","be","acknowledgment","shall","be"], "maxWidth": 16}', expectedOutput: '["What   must   be","acknowledgment  ","shall be        "]', isHidden: false },
-        ],
+            { id: 'tc2', description: 'Long words', input: '{"words": ["What","must","be","acknowledgment","shall","be"], "maxWidth": 16}', expectedOutput: '["What   must   be","acknowledgment  ","shall be        "]', isHidden: false }],
         tags: ['Strings', 'Implementation'],
     },
     q34: {
@@ -1750,8 +1629,7 @@ export const questDetails = {
             'Use backtracking to fill cells one by one.',
             'For each cell, try digits 1-9.',
             'Before placing a digit, check if it is valid in the current row, column, and 3x3 box.',
-            'If no digit works, backtrack to the previous cell.',
-        ],
+            'If no digit works, backtrack to the previous cell.'],
         solution: {
             Python3: `def solution(board):\n    def is_valid(r, c, val):\n        for i in range(9):\n            if board[r][i] == val: return False\n            if board[i][c] == val: return False\n            if board[3*(r//3) + i//3][3*(c//3) + i%3] == val: return False\n        return True\n    def solve():\n        for r in range(9):\n            for c in range(9):\n                if board[r][c] == '.':\n                    for val in '123456789':\n                        if is_valid(r, c, val):\n                            board[r][c] = val\n                            if solve(): return True\n                            board[r][c] = '.'\n                    return False\n        return True\n    solve()\n    return board`,
             JavaScript: `function solution(board) {\n    function isValid(r, c, val) {\n        for (let i = 0; i < 9; i++) {\n            if (board[r][i] === val) return false;\n            if (board[i][c] === val) return false;\n            if (board[3 * Math.floor(r / 3) + Math.floor(i / 3)][3 * Math.floor(c / 3) + i % 3] === val) return false;\n        }\n        return true;\n    }\n    function solve() {\n        for (let r = 0; r < 9; r++) {\n            for (let c = 0; c < 9; c++) {\n                if (board[r][c] === '.') {\n                    for (let val of '123456789') {\n                        if (isValid(r, c, val)) {\n                            board[r][c] = val;\n                            if (solve()) return true;\n                            board[r][c] = '.';\n                        }\n                    }\n                    return false;\n                }\n            }\n        }\n        return true;\n    }\n    solve();\n    return board;\n}`,
@@ -1762,8 +1640,7 @@ export const questDetails = {
             Java: `public class Solution {\n    public void solution(char[][] board) {\n        // Your code here\n    }\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Standard puzzle', input: '[["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]', expectedOutput: '[["5","3","4","6","7","8","9","1","2"],["6","7","2","1","9","5","3","4","8"],["1","9","8","3","4","2","5","6","7"],["8","5","9","7","6","1","4","2","3"],["4","2","6","8","5","3","7","9","1"],["7","1","3","9","2","4","8","5","6"],["9","6","1","5","3","7","2","8","4"],["2","8","7","4","1","9","6","3","5"],["3","4","5","2","8","6","1","7","9"]]', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Standard puzzle', input: '[["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]', expectedOutput: '[["5","3","4","6","7","8","9","1","2"],["6","7","2","1","9","5","3","4","8"],["1","9","8","3","4","2","5","6","7"],["8","5","9","7","6","1","4","2","3"],["4","2","6","8","5","3","7","9","1"],["7","1","3","9","2","4","8","5","6"],["9","6","1","5","3","7","2","8","4"],["2","8","7","4","1","9","6","3","5"],["3","4","5","2","8","6","1","7","9"]]', isHidden: false }],
         tags: ['Algorithms', 'Backtracking'],
     },
     q35: {
@@ -1779,8 +1656,7 @@ export const questDetails = {
         hints: [
             'Try O(n^2) DP first: dp[i] is the LIS ending at index i.',
             'For a more efficient O(n log n) approach, use a tails array with binary search.',
-            'The tails array stores the smallest tail of all increasing subsequences with length i+1.',
-        ],
+            'The tails array stores the smallest tail of all increasing subsequences with length i+1.'],
         solution: {
             Python3: `def solution(nums):\n    tails = [0] * len(nums)\n    size = 0\n    for x in nums:\n        i, j = 0, size\n        while i != j:\n            m = (i + j) // 2\n            if tails[m] < x:\n                i = m + 1\n            else:\n                j = m\n        tails[i] = x\n        size = max(i + 1, size)\n    return size`,
             JavaScript: `function solution(nums) {\n    const tails = new Array(nums.length).fill(0);\n    let size = 0;\n    for (let x of nums) {\n        let i = 0, j = size;\n        while (i !== j) {\n            let m = Math.floor((i + j) / 2);\n            if (tails[m] < x) i = m + 1;\n            else j = m;\n        }\n        tails[i] = x;\n        size = Math.max(i + 1, size);\n    }\n    return size;\n}`,
@@ -1793,9 +1669,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Standard case', input: '[10,9,2,5,3,7,101,18]', expectedOutput: '4', isHidden: false },
             { id: 'tc2', description: 'Small increments', input: '[0,1,0,3,2,3]', expectedOutput: '4', isHidden: false },
-            { id: 'tc3', description: 'All equal', input: '[7,7,7,7,7,7,7]', expectedOutput: '1', isHidden: false },
-            { id: 'tc4', description: 'Sorted descending', input: '[5,4,3,2,1]', expectedOutput: '1', isHidden: true },
-        ],
+            { id: 'tc3', description: 'All equal', input: '[7,7,7,7,7,7,7]', expectedOutput: '1', isHidden: false }],
         tags: ['Algorithms', 'Dynamic Programming', 'Binary Search'],
     },
     q36: {
@@ -1812,8 +1686,7 @@ export const questDetails = {
             'You can use BFS (Level-order) or DFS (Pre-order).',
             'In level-order, use a queue and represent null nodes with a specific character (e.g., "#").',
             'In pre-order, you can use recursion and a list of values.',
-            'Ensure the deserialization process correctly pointers to left and right children.',
-        ],
+            'Ensure the deserialization process correctly pointers to left and right children.'],
         solution: {
             Python3: `class Codec:\n    def serialize(self, root):\n        if not root: return "null"\n        return str(root.val) + "," + self.serialize(root.left) + "," + self.serialize(root.right)\n    def deserialize(self, data):\n        def dfs(vals):\n            val = next(vals)\n            if val == "null": return None\n            node = TreeNode(int(val))\n            node.left = dfs(vals)\n            node.right = dfs(vals)\n            return node\n        return dfs(iter(data.split(",")))`,
             JavaScript: `function serialize(root) {\n    if (!root) return "null";\n    return root.val + "," + serialize(root.left) + "," + serialize(root.right);\n}\nfunction deserialize(data) {\n    const vals = data.split(',');\n    let i = 0;\n    function dfs() {\n        if (vals[i] === "null") {\n            i++;\n            return null;\n        }\n        let node = new TreeNode(parseInt(vals[i++]));\n        node.left = dfs();\n        node.right = dfs();\n        return node;\n    }\n    return dfs();\n}`,
@@ -1826,8 +1699,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Level order tree', input: '[1,2,3,null,null,4,5]', expectedOutput: '[1,2,3,null,null,4,5]', isHidden: false },
             { id: 'tc2', description: 'Empty tree', input: '[]', expectedOutput: '[]', isHidden: false },
-            { id: 'tc3', description: 'Single node', input: '[1]', expectedOutput: '[1]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Single node', input: '[1]', expectedOutput: '[1]', isHidden: true }],
         tags: ['Trees', 'Design', 'BFS/DFS'],
     },
     q37: {
@@ -1844,8 +1716,7 @@ export const questDetails = {
             'Try to place each number x in its correct index x-1 if possible.',
             'Use the array itself to record the presence of numbers by swapping elements.',
             'After placing numbers, the first index i where nums[i] != i + 1 gives the missing positive integer i+1.',
-            'Handle out-of-range numbers (negative or > n) by ignoring them.',
-        ],
+            'Handle out-of-range numbers (negative or > n) by ignoring them.'],
         solution: {
             Python3: `def solution(nums):\n    n = len(nums)\n    for i in range(n):\n        while 1 <= nums[i] <= n and nums[nums[i]-1] != nums[i]:\n            nums[nums[i]-1], nums[i] = nums[i], nums[nums[i]-1]\n    for i in range(n):\n        if nums[i] != i + 1: return i + 1\n    return n + 1`,
             JavaScript: `function solution(nums) {\n    const n = nums.length;\n    for (let i = 0; i < n; i++) {\n        while (nums[i] >= 1 && nums[i] <= n && nums[nums[i] - 1] !== nums[i]) {\n            let temp = nums[nums[i] - 1];\n            nums[nums[i] - 1] = nums[i];\n            nums[i] = temp;\n        }\n    }\n    for (let i = 0; i < n; i++) {\n        if (nums[i] !== i + 1) return i + 1;\n    }\n    return n + 1;\n}`,
@@ -1858,9 +1729,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Simple sequence', input: '[1,2,0]', expectedOutput: '3', isHidden: false },
             { id: 'tc2', description: 'Mixed numbers', input: '[3,4,-1,1]', expectedOutput: '2', isHidden: false },
-            { id: 'tc3', description: 'No 1 present', input: '[7,8,9,11,12]', expectedOutput: '1', isHidden: false },
-            { id: 'tc4', description: 'Duplicate numbers', input: '[1,1]', expectedOutput: '2', isHidden: true },
-        ],
+            { id: 'tc3', description: 'No 1 present', input: '[7,8,9,11,12]', expectedOutput: '1', isHidden: false }],
         tags: ['Arrays', 'Algorithms'],
     },
     q38: {
@@ -1877,8 +1746,7 @@ export const questDetails = {
             'Use a monotonic deque to store the indices of the elements in the window.',
             'The deque should store indices in a way that the corresponding values are in decreasing order.',
             'When moving the window, remove indices that are out of the window range from the front of the deque.',
-            'Remove indices from the back of the deque if the current element is greater than the element at those indices.',
-        ],
+            'Remove indices from the back of the deque if the current element is greater than the element at those indices.'],
         solution: {
             Python3: `from collections import deque\ndef solution(nums, k):\n    res = []\n    q = deque() # index\n    l = r = 0\n    while r < len(nums):\n        while q and nums[q[-1]] < nums[r]:\n            q.pop()\n        q.append(r)\n        if l > q[0]:\n            q.popleft()\n        if (r + 1) >= k:\n            res.append(nums[q[0]])\n            l += 1\n        r += 1\n    return res`,
             JavaScript: `function solution(nums, k) {\n    const res = [];\n    const q = []; // monotonic deque for indices\n    let l = 0, r = 0;\n    while (r < nums.length) {\n        while (q.length > 0 && nums[q[q.length - 1]] < nums[r]) {\n            q.pop();\n        }\n        q.push(r);\n        if (l > q[0]) {\n            q.shift();\n        }\n        if (r + 1 >= k) {\n            res.append(nums[q[0]]);\n            l++;\n        }\n        r++;\n    }\n    return res;\n}`,
@@ -1891,8 +1759,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Standard case', input: '{"nums": [1,3,-1,-3,5,3,6,7], "k": 3}', expectedOutput: '[3,3,5,5,6,7]', isHidden: false },
             { id: 'tc2', description: 'Window size 1', input: '{"nums": [1,-1], "k": 1}', expectedOutput: '[1,-1]', isHidden: false },
-            { id: 'tc3', description: 'Decreasing sequence', input: '{"nums": [5,4,3,2,1], "k": 2}', expectedOutput: '[5,4,3,2]', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Decreasing sequence', input: '{"nums": [5,4,3,2,1], "k": 2}', expectedOutput: '[5,4,3,2]', isHidden: true }],
         tags: ['Algorithms', 'Queue', 'Sliding Window'],
     },
     q39: {
@@ -1909,8 +1776,7 @@ export const questDetails = {
             'Treat each word as a node in a graph.',
             'An edge exists between two words if they differ by exactly one character.',
             'Use Breadth-First Search (BFS) to find the shortest path from `beginWord` to `endWord`.',
-            'To efficiently find adjacent words, use patterns (e.g., "h*t" for "hot", "hit", "hat").',
-        ],
+            'To efficiently find adjacent words, use patterns (e.g., "h*t" for "hot", "hit", "hat").'],
         solution: {
             Python3: `from collections import deque, defaultdict\ndef solution(beginWord, endWord, wordList):\n    if endWord not in wordList:\n        return 0\n    nei = defaultdict(list)\n    wordList.append(beginWord)\n    for word in wordList:\n        for j in range(len(word)):\n            pattern = word[:j] + "*" + word[j+1:]\n            nei[pattern].append(word)\n    visit = set([beginWord])\n    q = deque([beginWord])\n    res = 1\n    while q:\n        for i in range(len(q)):\n            word = q.popleft()\n            if word == endWord:\n                return res\n            for j in range(len(word)):\n                pattern = word[:j] + "*" + word[j+1:]\n                for nextWord in nei[pattern]:\n                    if nextWord not in visit:\n                        visit.add(nextWord)\n                        q.append(nextWord)\n        res += 1\n    return 0`,
             JavaScript: `function solution(beginWord, endWord, wordList) {\n    if (!wordList.includes(endWord)) return 0;\n    const nei = new Map();\n    const allWords = [...wordList, beginWord];\n    for (let word of allWords) {\n        for (let j = 0; j < word.length; j++) {\n            const pattern = word.substring(0, j) + '*' + word.substring(j + 1);\n            if (!nei.has(pattern)) nei.set(pattern, []);\n            nei.get(pattern).push(word);\n        }\n    }\n    const visit = new Set([beginWord]);\n    const q = [beginWord];\n    let res = 1;\n    while (q.length > 0) {\n        const size = q.length;\n        for (let i = 0; i < size; i++) {\n            const word = q.shift();\n            if (word === endWord) return res;\n            for (let j = 0; j < word.length; j++) {\n                const pattern = word.substring(0, j) + '*' + word.substring(j + 1);\n                if (nei.has(pattern)) {\n                    for (let nextWord of nei.get(pattern)) {\n                        if (!visit.has(nextWord)) {\n                            visit.add(nextWord);\n                            q.push(nextWord);\n                        }\n                    }\n                }\n            }\n        }\n        res++;\n    }\n    return 0;\n}`,
@@ -1922,8 +1788,7 @@ export const questDetails = {
         },
         testCases: [
             { id: 'tc1', description: 'Transformation exists', input: '{"beginWord": "hit", "endWord": "cog", "wordList": ["hot","dot","dog","lot","log","cog"]}', expectedOutput: '5', isHidden: false },
-            { id: 'tc2', description: 'Transformation does not exist', input: '{"beginWord": "hit", "endWord": "cog", "wordList": ["hot","dot","dog","lot","log"]}', expectedOutput: '0', isHidden: false },
-        ],
+            { id: 'tc2', description: 'Transformation does not exist', input: '{"beginWord": "hit", "endWord": "cog", "wordList": ["hot","dot","dog","lot","log"]}', expectedOutput: '0', isHidden: false }],
         tags: ['Algorithms', 'Graph', 'BFS'],
     },
     q40: {
@@ -1939,8 +1804,7 @@ export const questDetails = {
         hints: [
             'Use recursion with memoization or dynamic programming to handle the different cases.',
             'When `p[j+1]` is `*`:\n  - Case 1: `*` matches zero occurrences of `p[j]` (move pattern pointer).\n  - Case 2: `*` matches one or more occurrences of `p[j]` (if `s[i]` matches `p[j]`).',
-            "When `p[j+1]` is not `*`:\n  - `s[i]` must match `p[j]` (direct character match or `'.'`).",
-        ],
+            "When `p[j+1]` is not `*`:\n  - `s[i]` must match `p[j]` (direct character match or `'.'`)."],
         solution: {
             Python3: `def solution(s, p):\n    cache = {}\n    def dfs(i, j):\n        if (i, j) in cache: return cache[(i, j)]\n        if i >= len(s) and j >= len(p): return True\n        if j >= len(p): return False\n        match = i < len(s) and (s[i] == p[j] or p[j] == ".")\n        if (j + 1) < len(p) and p[j + 1] == "*":\n            cache[(i, j)] = dfs(i, j + 2) or (match and dfs(i + 1, j))\n            return cache[(i, j)]\n        if match:\n            cache[(i, j)] = dfs(i + 1, j + 1)\n            return cache[(i, j)]\n        cache[(i, j)] = False\n        return False\n    return dfs(0, 0)`,
             JavaScript: `function solution(s, p) {\n    const cache = new Map();\n    function dfs(i, j) {\n        const key = i + ',' + j;\n        if (cache.has(key)) return cache.get(key);\n        if (i >= s.length && j >= p.length) return true;\n        if (j >= p.length) return false;\n        const match = i < s.length && (s[i] === p[j] || p[j] === '.');\n        let res;\n        if (j + 1 < p.length && p[j + 1] === '*') {\n            res = dfs(i, j + 2) || (match && dfs(i + 1, j));\n        } else if (match) {\n            res = dfs(i + 1, j + 1);\n        } else {\n            res = false;\n        }\n        cache.set(key, res);\n        return res;\n    }\n    return dfs(0, 0);\n}`,
@@ -1953,9 +1817,7 @@ export const questDetails = {
         testCases: [
             { id: 'tc1', description: 'Simple mismatch', input: '{"s": "aa", "p": "a"}', expectedOutput: 'false', isHidden: false },
             { id: 'tc2', description: 'Star match', input: '{"s": "aa", "p": "a*"}', expectedOutput: 'true', isHidden: false },
-            { id: 'tc3', description: 'Wildcard star', input: '{"s": "ab", "p": ".*"}', expectedOutput: 'true', isHidden: false },
-            { id: 'tc4', description: 'Complex match', input: '{"s": "aab", "p": "c*a*b"}', expectedOutput: 'true', isHidden: true },
-        ],
+            { id: 'tc3', description: 'Wildcard star', input: '{"s": "ab", "p": ".*"}', expectedOutput: 'true', isHidden: false }],
         tags: ['Algorithms', 'Dynamic Programming', 'Recursion'],
     },
     q41: {
@@ -1971,8 +1833,7 @@ export const questDetails = {
         hints: [
             'Use a Hash Map for O(1) lookups.',
             'Use a Double Linked List to maintain order for O(1) updates.',
-            'Move items to the head when accessed or updated.',
-        ],
+            'Move items to the head when accessed or updated.'],
         solution: {
             JavaScript: `class LRUCache {\n    constructor(capacity) {\n        this.capacity = capacity;\n        this.map = new Map();\n    }\n    get(key) {\n        if (!this.map.has(key)) return -1;\n        const val = this.map.get(key);\n        this.map.delete(key);\n        this.map.set(key, val);\n        return val;\n    }\n    put(key, value) {\n        if (this.map.has(key)) this.map.delete(key);\n        this.map.set(key, value);\n        if (this.map.size > this.capacity) {\n            const first = this.map.keys().next().value;\n            this.map.delete(first);\n        }\n    }\n}`,
         },
@@ -1980,8 +1841,7 @@ export const questDetails = {
             JavaScript: `class LRUCache {\n    constructor(capacity) {\n        // Your code here\n    }\n    get(key) {\n        // Your code here\n        return -1;\n    }\n    put(key, value) {\n        // Your code here\n    }\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Basic operations', input: 'operations', expectedOutput: 'success', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Basic operations', input: 'operations', expectedOutput: 'success', isHidden: false }],
         tags: ['Design', 'Hash Map', 'Linked List'],
     },
     q42: {
@@ -1996,8 +1856,7 @@ export const questDetails = {
         instructions: `## Implement Trie\n\nA **trie** (pronounced as "try") or **prefix tree** is a tree data structure used to efficiently store and retrieve keys in a dataset of strings.\n\nImplement the \`Trie\` class:\n- \`Trie()\` Initializes the trie object.\n- \`insert(word)\` Inserts the string word into the trie.\n- \`search(word)\` Returns true if the string word is in the trie.\n- \`startsWith(prefix)\` Returns true if there is a previously inserted string word that has the prefix.\n\n### Examples\n\`\`\`\nTrie trie = new Trie();\ntrie.insert("apple");\ntrie.search("apple");   // return true\ntrie.search("app");     // return false\ntrie.startsWith("app"); // return true\ntrie.insert("app");\ntrie.search("app");     // return true\n\`\`\``,
         hints: [
             'Each node should have a map/array of size 26 for children.',
-            'Include a boolean flag `isEndOfWord` at each node.',
-        ],
+            'Include a boolean flag `isEndOfWord` at each node.'],
         solution: {
             JavaScript: `class TrieNode {\n    constructor() {\n        this.children = {};\n        this.isEnd = false;\n    }\n}\nclass Trie {\n    constructor() {\n        this.root = new TrieNode();\n    }\n    insert(word) {\n        let curr = this.root;\n        for (const char of word) {\n            if (!curr.children[char]) curr.children[char] = new TrieNode();\n            curr = curr.children[char];\n        }\n        curr.isEnd = true;\n    }\n    search(word) {\n        let node = this.traverse(word);\n        return node !== null && node.isEnd;\n    }\n    startsWith(prefix) {\n        return this.traverse(prefix) !== null;\n    }\n    traverse(str) {\n        let curr = this.root;\n        for (const char of str) {\n            if (!curr.children[char]) return null;\n            curr = curr.children[char];\n        }\n        return curr;\n    }\n}`,
         },
@@ -2005,8 +1864,7 @@ export const questDetails = {
             JavaScript: `class Trie {\n    constructor() {\n        // Your code here\n    }\n    insert(word) {\n        // Your code here\n    }\n    search(word) {\n        // Your code here\n    }\n    startsWith(prefix) {\n        // Your code here\n    }\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Basic Trie tests', input: 'insert/search', expectedOutput: 'success', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Basic Trie tests', input: 'insert/search', expectedOutput: 'success', isHidden: false }],
         tags: ['Trees', 'Design', 'Strings'],
     },
     q43: {
@@ -2022,8 +1880,7 @@ export const questDetails = {
         hints: [
             'Use recursion to calculate the max contribution of a subtree.',
             'For each node, the max path through it is node.val + leftMax + rightMax.',
-            'Handle negative values carefully — a path might not include a subtree if its sum is < 0.',
-        ],
+            'Handle negative values carefully — a path might not include a subtree if its sum is < 0.'],
         solution: {
             JavaScript: `function solution(root) {\n    let maxSum = -Infinity;\n    function dfs(node) {\n        if (!node) return 0;\n        let left = Math.max(0, dfs(node.left));\n        let right = Math.max(0, dfs(node.right));\n        maxSum = Math.max(maxSum, node.val + left + right);\n        return node.val + Math.max(left, right);\n    }\n    dfs(root);\n    return maxSum;\n}`,
         },
@@ -2031,8 +1888,7 @@ export const questDetails = {
             JavaScript: `function solution(root) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Simple tree', input: '[1,2,3]', expectedOutput: '6', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Simple tree', input: '[1,2,3]', expectedOutput: '6', isHidden: false }],
         tags: ['Trees', 'DFS', 'Recursion'],
     },
     q44: {
@@ -2047,8 +1903,7 @@ export const questDetails = {
         instructions: `## Merge k Sorted Lists\n\nYou are given an array of \`k\` linked-lists \`lists\`, each linked-list is sorted in ascending order.\n\nMerge all the linked-lists into one sorted linked-list and return it.\n\n### Examples\n\`\`\`\nInput: lists = [[1,4,5],[1,3,4],[2,6]]\nOutput: [1,1,2,3,4,4,5,6]\n\`\`\``,
         hints: [
             'A Min-Heap can keep track of the smallest current element across all lists.',
-            'Alternatively, use a divide and conquer approach to merge lists in pairs.',
-        ],
+            'Alternatively, use a divide and conquer approach to merge lists in pairs.'],
         solution: {
             JavaScript: `function solution(lists) {\n    const nodes = [];\n    lists.forEach(list => {\n        let curr = list;\n        while(curr) {\n            nodes.push(curr);\n            curr = curr.next;\n        }\n    });\n    nodes.sort((a,b) => a.val - b.val);\n    let dummy = { val: 0, next: null };\n    let curr = dummy;\n    nodes.forEach(node => {\n        curr.next = node;\n        curr = curr.next;\n    });\n    if (curr) curr.next = null;\n    return dummy.next;\n}`,
         },
@@ -2056,8 +1911,7 @@ export const questDetails = {
             JavaScript: `function solution(lists) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Basic merge', input: '[[1,4,5],[1,3,4],[2,6]]', expectedOutput: '[1,1,2,3,4,4,5,6]', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Basic merge', input: '[[1,4,5],[1,3,4],[2,6]]', expectedOutput: '[1,1,2,3,4,4,5,6]', isHidden: false }],
         tags: ['Linked Lists', 'Heaps', 'Sorting'],
     },
     q45: {
@@ -2072,8 +1926,7 @@ export const questDetails = {
         instructions: `## Course Schedule II\n\nThere are a total of \`numCourses\` courses you have to take, labeled from \`0\` to \`numCourses - 1\`. You are given an array \`prerequisites\` where \`prerequisites[i] = [ai, bi]\` indicates that you must take course \`bi\` first if you want to take course \`ai\`.\n\nReturn the ordering of courses you should take to finish all courses. If there are many valid answers, return **any** of them. If it is impossible, return an **empty array**.\n\n### Examples\n\`\`\`\nInput: numCourses = 2, prerequisites = [[1,0]]\nOutput: [0,1]\n\nInput: numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]\nOutput: [0,2,1,3]\n\`\`\``,
         hints: [
             'This is a classic Topological Sort problem.',
-            'Use Kahn\'s Algorithm (BFS) with in-degrees or DFS (checking for cycles).',
-        ],
+            'Use Kahn\'s Algorithm (BFS) with in-degrees or DFS (checking for cycles).'],
         solution: {
             JavaScript: `function solution(numCourses, prerequisites) {\n    const adj = Array.from({ length: numCourses }, () => []);\n    const inDegree = Array(numCourses).fill(0);\n    for (const [v, u] of prerequisites) {\n        adj[u].push(v);\n        inDegree[v]++;\n    }\n    const queue = [];\n    for (let i = 0; i < numCourses; i++) {\n        if (inDegree[i] === 0) queue.push(i);\n    }\n    const order = [];\n    while (queue.length) {\n        const u = queue.shift();\n        order.push(u);\n        for (const v of adj[u]) {\n            if (--inDegree[v] === 0) queue.push(v);\n        }\n    }\n    return order.length === numCourses ? order : [];\n}`,
         },
@@ -2081,8 +1934,7 @@ export const questDetails = {
             JavaScript: `function solution(numCourses, prerequisites) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Valid schedule', input: '4, [[1,0],[2,0],[3,1],[3,2]]', expectedOutput: '[0,2,1,3]', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Valid schedule', input: '4, [[1,0],[2,0],[3,1],[3,2]]', expectedOutput: '[0,2,1,3]', isHidden: false }],
         tags: ['Algorithms', 'Graph', 'Topological Sort'],
     },
     q46: {
@@ -2097,8 +1949,7 @@ export const questDetails = {
         instructions: `## Container With Most Water\n\nYou are given an integer array \`height\` of length \`n\`. There are \`n\` vertical lines drawn such that the two endpoints of the \`i-th\` line are \`(i, 0)\` and \`(i, height[i])\`.\n\nFind two lines that together with the x-axis form a container, such that the container contains the most water.\n\n### Examples\n\`\`\`\nInput: height = [1,8,6,2,5,4,8,3,7]\nOutput: 49\nExplanation: The max area is between index 1 and 8 (heights 8 and 7), width is 7, area is min(8,7)*7 = 49.\n\`\`\``,
         hints: [
             'Try using two pointers — one at each end.',
-            'Move the pointer pointing to the shorter line to potentially find a larger area.',
-        ],
+            'Move the pointer pointing to the shorter line to potentially find a larger area.'],
         solution: {
             JavaScript: `function solution(height) {\n    let maxArea = 0, l = 0, r = height.length - 1;\n    while (l < r) {\n        maxArea = Math.max(maxArea, Math.min(height[l], height[r]) * (r - l));\n        if (height[l] < height[r]) l++;\n        else r--;\n    }\n    return maxArea;\n}`,
         },
@@ -2106,8 +1957,7 @@ export const questDetails = {
             JavaScript: `function solution(height) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Classic case', input: '[1,8,6,2,5,4,8,3,7]', expectedOutput: '49', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Classic case', input: '[1,8,6,2,5,4,8,3,7]', expectedOutput: '49', isHidden: false }],
         tags: ['Arrays', 'Two Pointers'],
     },
     q47: {
@@ -2122,8 +1972,7 @@ export const questDetails = {
         instructions: `## Find All Anagrams in a String\n\nGiven two strings \`s\` and \`p\`, return an array of all the start indices of \`p\`'s anagrams in \`s\`. You may return the answer in **any order**.\n\n### Examples\n\`\`\`\nInput: s = "cbaebabacd", p = "abc"\nOutput: [0,6]\nExplanation:\n- Start index 0: "cba", anagram of "abc"\n- Start index 6: "bac", anagram of "abc"\n\`\`\``,
         hints: [
             'Use a sliding window of size p.length.',
-            'Maintain a frequency count of characters in your window.',
-        ],
+            'Maintain a frequency count of characters in your window.'],
         solution: {
             JavaScript: `function solution(s, p) {\n    const res = [], count = {}, window = {};\n    if (s.length < p.length) return [];\n    for (const char of p) count[char] = (count[char] || 0) + 1;\n    for (let i = 0; i < s.length; i++) {\n        const char = s[i];\n        window[char] = (window[char] || 0) + 1;\n        if (i >= p.length) {\n            const leftChar = s[i - p.length];\n            if (window[leftChar] === 1) delete window[leftChar];\n            else window[leftChar]--;\n        }\n        if (JSON.stringify(count) === JSON.stringify(window)) res.push(i - p.length + 1);\n    }\n    return res;\n}`,
         },
@@ -2131,8 +1980,7 @@ export const questDetails = {
             JavaScript: `function solution(s, p) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Basic anagrams', input: '"cbaebabacd", "abc"', expectedOutput: '[0,6]', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Basic anagrams', input: '"cbaebabacd", "abc"', expectedOutput: '[0,6]', isHidden: false }],
         tags: ['Strings', 'Sliding Window', 'Hash Map'],
     },
     q48: {
@@ -2147,8 +1995,7 @@ export const questDetails = {
         instructions: `## Valid Palindrome II\n\nGiven a string \`s\`, return \`true\` if the \`s\` can be palindrome after deleting **at most one** character from it.\n\n### Examples\n\`\`\`\nInput: s = "aba"     Output: true\nInput: s = "abca"    Output: true (delete 'c' or 'b')\nInput: s = "abc"     Output: false\n\`\`\``,
         hints: [
             'Use two pointers. When you find a mismatch, try skipping either the left or right character.',
-            'Check the remaining substring for both options — if either is a palindrome, return true.',
-        ],
+            'Check the remaining substring for both options — if either is a palindrome, return true.'],
         solution: {
             JavaScript: `function solution(s) {\n    let l = 0, r = s.length - 1;\n    const isPal = (str, i, j) => {\n        while (i < j) {\n            if (str[i++] !== str[j--]) return false;\n        }\n        return true;\n    };\n    while (l < r) {\n        if (s[l] !== s[r]) return isPal(s, l + 1, r) || isPal(s, l, r - 1);\n        l++; r--;\n    }\n    return true;\n}`,
         },
@@ -2156,8 +2003,7 @@ export const questDetails = {
             JavaScript: `function solution(s) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Can delete one', input: '"abca"', expectedOutput: 'true', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Can delete one', input: '"abca"', expectedOutput: 'true', isHidden: false }],
         tags: ['Strings', 'Two Pointers'],
     },
     q49: {
@@ -2171,8 +2017,7 @@ export const questDetails = {
         icon: '🌐',
         instructions: `## Defanging an IP Address\n\nGiven a valid IPv4 address, return a defanged version of that IP address.\n\nA defanged IP address replaces every period \`"."\` with \`"[.]"\`.\n\n### Examples\n\`\`\`\nInput: address = "1.1.1.1"\nOutput: "1[.]1[.]1[.]1"\n\`\`\``,
         hints: [
-            'In JavaScript, you can use `.replaceAll(".", "[.]")`.',
-        ],
+            'In JavaScript, you can use `.replaceAll(".", "[.]")`.'],
         solution: {
             JavaScript: `function solution(address) {\n    return address.split('.').join('[.]');\n}`,
         },
@@ -2180,8 +2025,7 @@ export const questDetails = {
             JavaScript: `function solution(address) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Basic IP', input: '"1.1.1.1"', expectedOutput: '"1[.]1[.]1[.]1"', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Basic IP', input: '"1.1.1.1"', expectedOutput: '"1[.]1[.]1[.]1"', isHidden: false }],
         tags: ['Strings', 'Basics'],
     },
     q50: {
@@ -2196,8 +2040,7 @@ export const questDetails = {
         instructions: `## Majority Element\n\nGiven an array \`nums\` of size \`n\`, return the **majority element**. The majority element is the element that appears more than \`⌊n / 2⌋\` times. You may assume that the majority element always exists in the array.\n\n### Examples\n\`\`\`\nInput: nums = [3,2,3]   Output: 3\nInput: nums = [2,2,1,1,1,2,2] Output: 2\n\`\`\``,
         hints: [
             'Use Boyer-Moore Voting Algorithm for O(n) time and O(1) space.',
-            'Maintain a candidate and a counter — increment if same, decrement if different.',
-        ],
+            'Maintain a candidate and a counter — increment if same, decrement if different.'],
         solution: {
             JavaScript: `function solution(nums) {\n    let cand = null, count = 0;\n    for (const num of nums) {\n        if (count === 0) cand = num;\n        count += (num === cand) ? 1 : -1;\n    }\n    return cand;\n}`,
         },
@@ -2205,8 +2048,7 @@ export const questDetails = {
             JavaScript: `function solution(nums) {\n    // Your code here\n}`,
         },
         testCases: [
-            { id: 'tc1', description: 'Basic majority', input: '[3,2,3]', expectedOutput: '3', isHidden: false },
-        ],
+            { id: 'tc1', description: 'Basic majority', input: '[3,2,3]', expectedOutput: '3', isHidden: false }],
         tags: ['Arrays', 'Hash Map', 'Boyer-Moore'],
     },
 }

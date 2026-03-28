@@ -165,45 +165,8 @@ const runJavaScript = (code, input) => {
   })
 }
 
-// ─── JDoodle — compiled language execution ───────────────────────────────
-// Requires VITE_JDOODLE_CLIENT_ID + VITE_JDOODLE_CLIENT_SECRET in .env.local
-
-const JDOODLE_LANGUAGES = {
-  Java: { language: 'java', versionIndex: '4' },
-  'C++': { language: 'cpp17', versionIndex: '0' },
-  C: { language: 'c', versionIndex: '5' },
-  Go: { language: 'go', versionIndex: '4' },
-  Rust: { language: 'rust', versionIndex: '4' },
-  Ruby: { language: 'ruby', versionIndex: '4' },
-  PHP: { language: 'php', versionIndex: '4' },
-  Kotlin: { language: 'kotlin', versionIndex: '3' },
-  Swift: { language: 'swift', versionIndex: '4' },
-  TypeScript: { language: 'nodejs', versionIndex: '4' },
-  Scala: { language: 'scala', versionIndex: '4' },
-}
-
-// ─── Piston — Free, reliable compiled language execution ────────────────────
-// No API keys required. Proxied via Vite /piston.
-// Docs: https://github.com/engineer-man/piston
-
-const PISTON_LANGUAGES = {
-  'C++': { language: 'cpp', version: '10.2.0' },
-  'Java': { language: 'java', version: '15.0.2' },
-  'C': { language: 'c', version: '10.2.0' },
-  'C#': { language: 'mono', version: '6.12.0' },
-  'Go': { language: 'go', version: '1.16.2' },
-  'Rust': { language: 'rust', version: '1.50.0' },
-  'Ruby': { language: 'ruby', version: '3.0.0' },
-  'PHP': { language: 'php', version: '8.0.2' },
-  'TypeScript': { language: 'typescript', version: '4.2.3' },
-  'Kotlin': { language: 'kotlin', version: '1.4.31' },
-  'Swift': { language: 'swift', version: '5.3.3' },
-  'Scala': { language: 'scala', version: '3.0.0' },
-  'Python3': { language: 'python', version: '3.10.0' },
-}
-
-// Build a complete runnable program that reads stdin → calls solution() → prints result
-const buildJDoodleProgram = (userCode, language) => {
+// ─── Build a complete runnable program that reads stdin → calls solution() → prints result
+const buildServerlessProgram = (userCode, language) => {
   switch (language) {
     case 'Java': return `
 import java.util.*;
@@ -416,7 +379,7 @@ const runServerless = async (code, language, input) => {
     (['C++', 'C', 'Go', 'Rust'].includes(language) && !code.includes('main'))
 
   if (needsWrap) {
-    program = buildJDoodleProgram(code, language)
+    program = buildServerlessProgram(code, language)
   }
 
   try {

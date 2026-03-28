@@ -541,64 +541,108 @@ const QuestCoding = () => {
               </Card>
             </div>
 
-            {/* Results Panel (Always visible on desktop bottom, tab-dependent on mobile) */}
-            <div className={`${activeTab === 'results' ? 'flex' : 'hidden lg:flex'} flex-col h-full lg:h-auto lg:max-h-64 min-h-0`}>
-               {executionError && (
-                <Card variant="elevated" className="p-4 bg-red-900/10 border-red-500/30 mb-2">
-                  <div className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-red-500 shrink-0">error</span>
-                    <div>
-                      <h4 className="font-bold text-red-200 text-sm">Execution Error</h4>
-                      <p className="text-xs text-red-400 font-mono mt-1 break-all">{executionError}</p>
-                    </div>
-                  </div>
-                </Card>
-               )}
+            {/* Test Cases Panel — always visible */}
+            <div className={`${activeTab === 'results' ? 'flex' : 'hidden lg:flex'} flex-col lg:max-h-64 min-h-0`}>
+              {/* Execution Error Banner */}
+              {executionError && (
+                <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/30 mb-2 flex items-start gap-2">
+                  <span className="material-symbols-outlined text-red-500 text-base shrink-0 mt-0.5">error</span>
+                  <p className="text-xs text-red-400 font-mono break-all">{executionError}</p>
+                </div>
+              )}
 
-               {testResults ? (
-                 <Card variant="elevated" className="flex-1 flex flex-col overflow-hidden">
-                    <div className="p-3 border-b border-border-dark flex items-center justify-between shrink-0">
-                       <h3 className="font-bold text-white text-xs uppercase tracking-wider">Test Results</h3>
-                       <Badge variant={testResults.passed === testResults.total ? 'success' : 'danger'} size="sm">
-                          {testResults.passed}/{testResults.total} PASSED
-                       </Badge>
+              <Card variant="elevated" className="flex-1 flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="px-3 py-2.5 border-b border-border-dark flex items-center justify-between shrink-0">
+                  <h3 className="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-base text-slate-400">science</span>
+                    Test Cases
+                  </h3>
+                  {testResults && (
+                    <Badge variant={testResults.passed === testResults.total ? 'success' : 'danger'} size="sm">
+                      {testResults.passed}/{testResults.total} PASSED
+                    </Badge>
+                  )}
+                  {isRunning && (
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest animate-pulse">Running…</span>
+                  )}
+                </div>
+
+                {/* Cases List */}
+                <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                  {testCases.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 opacity-40">
+                      <span className="material-symbols-outlined text-3xl mb-1">science</span>
+                      <p className="text-xs font-bold uppercase tracking-widest text-slate-500">No test cases</p>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
-                       {testResults.tests.map((test, i) => (
-                          <div key={i} className={`p-3 rounded-lg border ${test.passed ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
-                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs font-bold text-white">{test.name}</p>
-                                <span className={`material-symbols-outlined text-lg ${test.passed ? 'text-green-500' : 'text-red-500'}`}>
-                                   {test.passed ? 'check_circle' : 'cancel'}
-                                </span>
-                             </div>
-                             <div className="grid grid-cols-1 gap-1.5">
-                                <div className="flex items-center gap-2">
-                                   <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Input:</span>
-                                   <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-slate-300 truncate">{test.input}</code>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                   <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Expect:</span>
-                                   <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-green-400 truncate">{test.expectedOutput}</code>
-                                 </div>
-                                 {!test.passed && (
-                                   <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-slate-500 uppercase font-black min-w-[50px]">Got:</span>
-                                    <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-red-400 truncate">{test.actualOutput}</code>
-                                   </div>
-                                 )}
-                             </div>
+                  ) : (
+                    testCases.map((tc, i) => {
+                      const result = testResults?.tests?.[i]
+                      const hasResult = !!result
+                      const passed = result?.passed
+
+                      return (
+                        <div
+                          key={tc.id || i}
+                          className={`p-3 rounded-lg border transition-colors ${
+                            hasResult
+                              ? passed
+                                ? 'bg-green-500/5 border-green-500/30'
+                                : 'bg-red-500/5 border-red-500/30'
+                              : 'bg-white/[0.02] border-white/10'
+                          }`}
+                        >
+                          {/* Case header */}
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-white/80">
+                              Test Case {i + 1}
+                              {tc.description ? ` — ${tc.description}` : ''}
+                            </span>
+                            {hasResult && (
+                              <span className={`material-symbols-outlined text-base ${passed ? 'text-green-400' : 'text-red-400'}`}>
+                                {passed ? 'check_circle' : 'cancel'}
+                              </span>
+                            )}
+                            {isRunning && (
+                              <span className="material-symbols-outlined text-base text-slate-500 animate-spin">sync</span>
+                            )}
                           </div>
-                       ))}
-                    </div>
-                 </Card>
-               ) : (
-                 <Card variant="elevated" className="flex-1 flex flex-col items-center justify-center p-8 opacity-50 border-dashed border-2 border-white/5">
-                    <span className="material-symbols-outlined text-4xl mb-2">terminal</span>
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Run code to see results</p>
-                 </Card>
-               )}
+
+                          {/* Input / Expected / Got */}
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-slate-500 uppercase font-black w-[52px] shrink-0">Input:</span>
+                              <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-slate-300 truncate flex-1">{tc.input}</code>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-slate-500 uppercase font-black w-[52px] shrink-0">Expect:</span>
+                              <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-emerald-400 truncate flex-1">{tc.expectedOutput}</code>
+                            </div>
+                            {hasResult && !passed && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-slate-500 uppercase font-black w-[52px] shrink-0">Got:</span>
+                                <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-red-400 truncate flex-1">
+                                  {result.actualOutput ?? '—'}
+                                </code>
+                              </div>
+                            )}
+                            {hasResult && passed && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-slate-500 uppercase font-black w-[52px] shrink-0">Got:</span>
+                                <code className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-emerald-400 truncate flex-1">
+                                  {result.actualOutput ?? '—'}
+                                </code>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </Card>
             </div>
+
           </div>
         </div>
       </div>
