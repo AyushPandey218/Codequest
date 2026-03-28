@@ -155,16 +155,6 @@ Vercel automatically detects Vite and handles the `api/execute.js` serverless fu
 
 ---
 
-## Code Execution Model
-
-| Language | Runs In | Requires API? |
-|---|---|---|
-| Python 3 | Browser (Pyodide WASM) | ❌ No |
-| JavaScript | Browser (Web Worker) | ❌ No |
-| Java, C++, Go, Rust, C, C#, Ruby, TypeScript | Vercel Serverless → OneCompiler | ✅ Free key |
-
----
-
 ## Author
 
 **Ayush Pandey**
