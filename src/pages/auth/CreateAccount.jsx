@@ -3,6 +3,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
+import FloatingCodeBackground from '../../components/auth/FloatingCodeBackground'
+import MouseTrail from '../../components/auth/MouseTrail'
+import MouseReactiveGlow from '../../components/auth/MouseReactiveGlow'
+import WarpGrid from '../../components/auth/WarpGrid'
 
 const CreateAccount = () => {
   const navigate = useNavigate()
@@ -71,8 +75,54 @@ const CreateAccount = () => {
   }
 
   return (
-    <div className="layout-content-container flex flex-col w-full max-w-[500px]">
-      <div className="glass-card border border-[#3b3b54] rounded-xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="flex min-h-screen w-full flex-row overflow-hidden">
+      {/* Left Panel */}
+      <div className="relative hidden w-1/2 flex-col justify-between bg-gradient-to-r from-[#0d0d11] to-[#0a0a0c] lg:flex overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ maskImage: 'linear-gradient(to left, transparent, black 25%)', WebkitMaskImage: 'linear-gradient(to left, transparent, black 25%)' }}>
+          <FloatingCodeBackground />
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px] opacity-40 animate-pulse"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[100px] opacity-30"></div>
+          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0a0a0c] to-transparent z-10"></div>
+        </div>
+        <div className="relative z-10 p-12">
+          <Link to="/" className="flex items-center gap-3 text-white group">
+            <div className="flex size-10 items-center justify-center group-hover:scale-110 transition-transform">
+              <img src="/logo.png" alt="CodeQuest Logo" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+            </div>
+            <h2 className="text-2xl font-black tracking-tight">Code<span className="text-primary tracking-tighter">Quest</span></h2>
+          </Link>
+        </div>
+        <div className="relative z-10 p-12 mb-12">
+          <h1 className="mb-4 text-5xl font-black leading-[1.1] tracking-tighter text-white xl:text-6xl">
+            Begin your <br />
+            <span className="text-gradient">Journey</span>.
+          </h1>
+          <p className="max-w-md text-lg text-text-secondary">
+            Create your account and start solving challenges, earning XP, and climbing the global leaderboard.
+          </p>
+        </div>
+        <div className="relative z-10 p-12 text-xs text-text-secondary font-medium">
+          © 2026 CodeQuest Labs. Built for Champions.
+        </div>
+      </div>
+
+      {/* Right Panel */}
+      <div className="flex w-full flex-col justify-center items-center px-4 py-12 lg:w-1/2 lg:px-20 xl:px-32 relative bg-[#0a0a0c]">
+        <div className="absolute inset-0 z-0" style={{ maskImage: 'linear-gradient(to right, transparent, black 25%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 25%)' }}>
+          <WarpGrid />
+        </div>
+        <MouseReactiveGlow />
+        <MouseTrail />
+        <div className="flex lg:hidden justify-center mb-8 relative z-10">
+          <Link to="/" className="flex items-center gap-3 text-white">
+            <div className="flex size-10 items-center justify-center">
+              <img src="/logo.png" alt="CodeQuest" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight">CodeQuest</h2>
+          </Link>
+        </div>
+        <div className="relative z-10 w-full max-w-[500px]">
+        <div className="glass-card border border-[#3b3b54] rounded-xl shadow-2xl overflow-hidden flex flex-col">
         {/* Progress Header */}
         <div className="bg-[#282839]/50 p-6 border-b border-[#3b3b54]">
           <div className="flex flex-col gap-3">
@@ -248,6 +298,8 @@ const CreateAccount = () => {
             </Link>
             .
           </p>
+        </div>
+      </div>
         </div>
       </div>
     </div>

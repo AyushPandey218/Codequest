@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
+import FloatingCodeBackground from '../../components/auth/FloatingCodeBackground'
+import MouseTrail from '../../components/auth/MouseTrail'
+import MouseReactiveGlow from '../../components/auth/MouseReactiveGlow'
+import WarpGrid from '../../components/auth/WarpGrid'
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -17,10 +21,12 @@ const Signup = () => {
   return (
     <div className="flex min-h-screen w-full flex-row overflow-hidden">
       {/* Left Panel: Hero/Visual (Desktop only) */}
-      <div className="relative hidden w-1/2 flex-col justify-between bg-background-dark lg:flex border-r border-white/5">
-        <div className="absolute inset-0 z-0 opacity-40">
-          <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/80 to-primary/20 mix-blend-multiply"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-background-dark/40 to-background-dark"></div>
+      <div className="relative hidden w-1/2 flex-col justify-between bg-gradient-to-r from-[#0d0d11] to-[#0a0a0c] lg:flex overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ maskImage: 'linear-gradient(to left, transparent, black 25%)', WebkitMaskImage: 'linear-gradient(to left, transparent, black 25%)' }}>
+          <FloatingCodeBackground />
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px] opacity-40 animate-pulse"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[100px] opacity-30"></div>
+          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0a0a0c] to-transparent z-10"></div>
         </div>
 
         <div className="relative z-10 p-12">
@@ -56,7 +62,12 @@ const Signup = () => {
       </div>
 
       {/* Right Panel: Signup Form */}
-      <div className="flex w-full flex-col justify-center px-4 py-12 lg:w-1/2 lg:px-20 xl:px-32 relative bg-background-light dark:bg-background-dark">
+      <div className="flex w-full flex-col justify-center px-4 py-12 lg:w-1/2 lg:px-20 xl:px-32 relative bg-[#0a0a0c]">
+        <div className="absolute inset-0 z-0" style={{ maskImage: 'linear-gradient(to right, transparent, black 25%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 25%)' }}>
+          <WarpGrid />
+        </div>
+        <MouseReactiveGlow />
+        <MouseTrail />
         <div className="flex lg:hidden justify-center mb-8">
           <Link to="/" className="flex items-center gap-3 text-slate-900 dark:text-white">
             <div className="flex size-10 items-center justify-center">
