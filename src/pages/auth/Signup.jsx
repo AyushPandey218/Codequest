@@ -120,24 +120,14 @@ const Signup = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              variant="secondary"
-              className="w-full bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
-              onClick={() => { }}
-            >
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2" />
-              Google
-            </Button>
-            <Button
-              variant="secondary"
-              className="w-full bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
-              onClick={() => { }}
-            >
-              <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub" className="h-5 w-5 mr-2 dark:invert" />
-              GitHub
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            className="w-full bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+            onClick={() => { }}
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2" />
+            Continue with Google
+          </Button>
 
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
             Already have an account?{' '}
