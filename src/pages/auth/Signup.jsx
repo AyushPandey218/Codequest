@@ -63,7 +63,7 @@ const Signup = () => {
 
       {/* Right Panel: Signup Form */}
       <div className="flex w-full flex-col justify-center px-4 py-12 lg:w-1/2 lg:px-20 xl:px-32 relative bg-[#0a0a0c]">
-        <div className="absolute inset-0 z-0" style={{ maskImage: 'linear-gradient(to right, transparent, black 25%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 25%)' }}>
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ maskImage: 'linear-gradient(to right, transparent, black 25%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 25%)' }}>
           <WarpGrid />
         </div>
         <MouseReactiveGlow />
@@ -77,7 +77,7 @@ const Signup = () => {
           </Link>
         </div>
 
-        <div className="mx-auto w-full max-w-[480px]">
+        <div className="relative z-10 mx-auto w-full max-w-[480px]">
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Welcome back</h2>
             <p className="mt-2 text-slate-500 dark:text-slate-400">Please enter your details to sign in.</p>
