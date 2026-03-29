@@ -136,7 +136,10 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error)
-      return { success: false, error: getAuthErrorMessage(error.code) }
+      return { 
+        success: false, 
+        error: error.code ? getAuthErrorMessage(error.code) : error.message 
+      }
     }
   }
 
@@ -249,9 +252,16 @@ export const AuthProvider = ({ children }) => {
         }
         await setDoc(doc(db, 'users', firebaseUser.uid), initialUserData)
       } else {
-        isAdmin = userDoc.data()?.role === 'admin'
+        const userData = userDoc.data()
+        
+        if (userData?.status === 'suspended') {
+          throw new Error("Your account has been suspended. Please contact support.")
+        }
+        
+        isAdmin = userData?.role === 'admin'
+        
         // Sync Google photoURL to avatar if it changed or is missing
-        if (firebaseUser.photoURL && userDoc.data()?.avatar !== firebaseUser.photoURL) {
+        if (firebaseUser.photoURL && userData?.avatar !== firebaseUser.photoURL) {
           await updateDoc(doc(db, 'users', firebaseUser.uid), {
             avatar: firebaseUser.photoURL
           })
@@ -261,7 +271,10 @@ export const AuthProvider = ({ children }) => {
       return { success: true, isAdmin }
     } catch (error) {
       console.error('Google login error:', error)
-      return { success: false, error: getAuthErrorMessage(error.code) }
+      return { 
+        success: false, 
+        error: error.code ? getAuthErrorMessage(error.code) : error.message 
+      }
     }
   }
 
