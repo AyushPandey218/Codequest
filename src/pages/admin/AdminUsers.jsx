@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { doc, updateDoc, arrayUnion, increment, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import { useAdminUsers } from '../../hooks/useAdminUsers'
-import { getLevelProgress } from '../../utils/progressStorage'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
 import { useNotification } from '../../context/NotificationContext'
 import { achievements } from '../../data/achievements'
 import ConfirmationModal from '../../components/common/ConfirmationModal'
+import { getLevelProgress, getLevelFromXP } from '../../utils/progressStorage'
+import useUserData from '../../hooks/useUserData'
 
 const Badge = ({ status }) => {
     const map = {
@@ -225,16 +226,125 @@ const PushModal = ({ isOpen, onClose, onPush, username }) => {
     )
 }
 
+const UserPreviewModal = ({ user, onClose }) => {
+    const { userData, loading } = useUserData(user.id)
+
+    if (loading) return (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-[#161632] border border-white/10 w-full max-w-xl rounded-[2.5rem] p-12 text-center">
+                <div className="size-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Retrieving Dossier...</p>
+            </div>
+        </div>
+    )
+
+    const profile = userData || user
+    const level = getLevelFromXP(profile.xp || 0)
+
+    return (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in overflow-y-auto">
+            <div className="bg-[#12122a] border border-white/10 w-full max-w-2xl rounded-[3rem] p-10 shadow-3xl relative overflow-hidden my-auto">
+                <div className="absolute top-0 right-0 size-64 bg-blue-600/10 blur-[100px] -mr-32 -mt-32" />
+                <div className="absolute bottom-0 left-0 size-64 bg-purple-600/10 blur-[100px] -ml-32 -mb-32" />
+
+                <button onClick={onClose} className="absolute top-8 right-8 size-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all z-20 active:scale-95">
+                    <span className="material-symbols-outlined text-base">close</span>
+                </button>
+
+                <div className="relative z-10 space-y-10">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+                        <div className="relative group">
+                            <div className="size-32 rounded-[2.5rem] overflow-hidden border-2 border-white/10 shadow-2xl relative">
+                                <img src={profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`} alt={profile.username} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-blue-600/20 mix-blend-overlay group-hover:opacity-0 transition-opacity" />
+                            </div>
+                            <div className="absolute -bottom-3 -right-3 size-12 rounded-2xl bg-blue-600 border border-white/20 flex items-center justify-center shadow-xl">
+                                <span className="text-white font-black text-xs">LVL</span>
+                            </div>
+                        </div>
+                        <div className="text-center md:text-left pt-2">
+                            <h2 className="text-4xl font-black text-white tracking-tight uppercase mb-2">{profile.username}</h2>
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                                <span className="px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest">
+                                    {profile.role || 'Player'}
+                                </span>
+                                <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-xs">mail</span>
+                                    {profile.email}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                            { label: 'Total XP', value: (profile.xp || 0).toLocaleString(), icon: 'stars', color: 'text-yellow-500' },
+                            { label: 'Current Level', value: level, icon: 'military_tech', color: 'text-blue-400' },
+                            { label: 'Elo Rating', value: profile.rating || 1000, icon: 'trending_up', color: 'text-purple-400' },
+                            { label: 'Day Streak', value: profile.streak || 0, icon: 'local_fire_department', color: 'text-orange-500' },
+                        ].map((stat, i) => (
+                            <div key={i} className="bg-white/5 border border-white/5 rounded-3xl p-6 text-center group hover:bg-white/[0.08] transition-all">
+                                <span className={`material-symbols-outlined text-2xl mb-3 ${stat.color} group-hover:scale-110 transition-transform`}>{stat.icon}</span>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                                <p className="text-xl font-black text-white">{stat.value}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 text-slate-400">
+                                <span className="material-symbols-outlined text-lg">description</span>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">System Dossier</h3>
+                            </div>
+                            <p className="text-sm text-slate-300 leading-relaxed italic bg-white/5 p-4 rounded-2xl border border-white/5 min-h-[100px]">
+                                {profile.bio || "No administrative dossier recorded for this user."}
+                            </p>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 text-slate-400">
+                                    <span className="material-symbols-outlined text-lg">school</span>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Institutional Sync</h3>
+                                </div>
+                                <p className="text-sm font-bold text-white pl-8">
+                                    {profile.university || "No institutional data linked."}
+                                </p>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 text-slate-400">
+                                    <span className="material-symbols-outlined text-lg">link</span>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">External Node</h3>
+                                </div>
+                                <a href={profile.website} target="_blank" rel="noreferrer" className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors pl-8 block truncate">
+                                    {profile.website || "No external links registered."}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-8 flex justify-end">
+                        <button onClick={onClose} className="px-10 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-xs font-black uppercase tracking-[0.2em] text-white active:scale-95">
+                            Deactivate View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 const AdminUsers = () => {
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
-    const { users, isLoading, updateUserStatus, deleteUser, resetEasterEgg } = useAdminUsers()
+    const { users, isLoading, updateUserStatus, deleteUser, resetEasterEgg, refetch } = useAdminUsers()
     const { pushDirectNotification } = useAdminNotifications()
     const { showToast } = useNotification()
     
     const [awardModal, setAwardModal] = useState({ isOpen: false, user: null })
     const [pushModal, setPushModal] = useState({ isOpen: false, user: null })
+    const [previewModal, setPreviewModal] = useState({ isOpen: false, user: null })
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', user: null })
 
     const handleActionClick = (type, user) => {
@@ -303,19 +413,32 @@ const AdminUsers = () => {
                     <h1 className="text-3xl font-bold text-white tracking-tight uppercase">User Management</h1>
                     <p className="text-slate-400 mt-1">Manage user access, rewards, and platform communication.</p>
                 </div>
-                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
-                    {['all', 'active', 'suspended'].map(f => (
-                        <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === f
-                                ? 'bg-blue-600 text-white shadow-lg'
-                                : 'text-slate-500 hover:text-slate-300'
-                            }`}
-                        >
-                            {f}
-                        </button>
-                    ))}
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={refetch}
+                        disabled={isLoading}
+                        className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-slate-400 hover:text-white transition-all group relative overflow-hidden active:scale-95 disabled:opacity-50"
+                        title="Refresh User Data"
+                    >
+                        <span className={`material-symbols-outlined text-xl ${isLoading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`}>
+                            refresh
+                        </span>
+                        {isLoading && <div className="absolute inset-0 bg-white/5 animate-pulse" />}
+                    </button>
+                    <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
+                        {['all', 'active', 'suspended'].map(f => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === f
+                                    ? 'bg-blue-600 text-white shadow-lg'
+                                    : 'text-slate-500 hover:text-slate-300'
+                                }`}
+                            >
+                                {f}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -407,8 +530,8 @@ const AdminUsers = () => {
                                                 <span className="material-symbols-outlined text-lg">military_tech</span>
                                             </button>
                                             <button
-                                                onClick={() => navigate(`/app/profile/${user.username}`)}
-                                                title="View Profile"
+                                                onClick={() => setPreviewModal({ isOpen: true, user })}
+                                                title="Visual Preview"
                                                 className="p-2 rounded-xl text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                                             >
                                                 <span className="material-symbols-outlined text-lg">visibility</span>
@@ -455,6 +578,13 @@ const AdminUsers = () => {
                 onPush={handlePushNotify}
                 username={pushModal.user?.username}
             />
+
+            {previewModal.isOpen && (
+                <UserPreviewModal 
+                    user={previewModal.user}
+                    onClose={() => setPreviewModal({ isOpen: false, user: null })}
+                />
+            )}
 
             <ConfirmationModal 
                 isOpen={confirmModal.isOpen}
