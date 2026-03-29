@@ -163,6 +163,15 @@ export const achievements = [
         color: 'text-orange-600',
         bgColor: 'bg-orange-600/10',
         criteria: (stats) => stats.streak >= 7
+    },
+    {
+        id: 'wait_that_worked',
+        name: 'Wait... That Worked?',
+        description: 'You successfully manually overrode the interface by clicking the logo 10 times.',
+        icon: 'auto_fix',
+        color: 'text-amber-500',
+        bgColor: 'bg-amber-500/10',
+        criteria: (stats) => stats.foundEasterEgg === true
     }
 ]
 

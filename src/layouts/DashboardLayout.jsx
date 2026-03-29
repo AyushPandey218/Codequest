@@ -2,25 +2,56 @@ import { Outlet, Link, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import GlobalBroadcast from '../components/common/GlobalBroadcast'
 import { useUser } from '../context/UserContext'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Avatar from '../components/common/Avatar'
 import LoadingScreen from '../components/common/LoadingScreen'
 import NotificationCenter from '../components/common/NotificationCenter'
 import { useNotification } from '../context/NotificationContext'
+import confetti from 'canvas-confetti'
+import { motion, useAnimation } from 'framer-motion'
 
-/**
- * Dashboard Layout - Main app layout with sidebar navigation
- * Used for: Dashboard, Quests, Leaderboard, Profile, Settings, etc.
- */
 const DashboardLayout = () => {
-  const { user, isAuthenticated, isLoading, logout, isAdmin } = useAuth()
+  const { user, isAuthenticated, isLoading, logout, isAdmin, updateXP, updateProfile } = useAuth()
   const { userStats } = useUser()
-  const { unreadCount } = useNotification()
+  const { unreadCount, showToast } = useNotification()
   const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const [logoClicks, setLogoClicks] = useState(0)
+  const logoControls = useAnimation()
 
-  // Show loading screen while auth initializes
+  const handleLogoClick = useCallback(async (e) => {
+    // Prevent default navigation if we're still clicking for the egg
+    if (logoClicks < 10 && !userStats.foundEasterEgg) {
+      e.preventDefault()
+      const newClicks = logoClicks + 1
+      setLogoClicks(newClicks)
+
+      // Visual feedback
+      logoControls.start({
+        scale: [1, 1.2, 1],
+        rotate: [0, 5, -5, 0],
+        transition: { duration: 0.2 }
+      })
+
+      if (newClicks === 10) {
+        // Trigger celebration!
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#3b82f6', '#8b5cf6', '#ffffff']
+        })
+
+        // Award reward
+        await updateXP(1000)
+        await updateProfile({ foundEasterEgg: true })
+        showToast('Wait... That Worked? Secret Found! +1000 XP', 'success')
+      }
+    }
+  }, [logoClicks, userStats.foundEasterEgg, updateXP, updateProfile, showToast, logoControls])
+
+  // ... (rest of the component remains the same, but update Logo Click)
   if (isLoading) {
     return <LoadingScreen />
   }
@@ -62,9 +93,18 @@ const DashboardLayout = () => {
         }`}>
         {/* Logo & Toggle */}
         <div className={`p-6 border-b border-border-dark flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
-          <Link to="/app/dashboard" className="flex items-center gap-3 text-white hover:opacity-80 transition-opacity min-w-0">
-            <img src="/logo.png" alt="CodeQuest Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] flex-shrink-0" />
-            {isSidebarOpen && <h2 className="text-xl font-bold truncate">CodeQuest</h2>}
+          <Link 
+            to="/app/dashboard" 
+            onClick={handleLogoClick}
+            className="flex items-center gap-3 text-white hover:opacity-80 transition-opacity min-w-0"
+          >
+            <motion.div 
+              animate={logoControls}
+              className="flex items-center gap-3"
+            >
+              <img src="/logo.png" alt="CodeQuest Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] flex-shrink-0" />
+              {isSidebarOpen && <h2 className="text-xl font-bold truncate">CodeQuest</h2>}
+            </motion.div>
           </Link>
 
           {isSidebarOpen && (

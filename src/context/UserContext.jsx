@@ -84,6 +84,7 @@ export const UserProvider = ({ children }) => {
     rank: (userData.rank && !Number.isNaN(Number(userData.rank))) ? Number(userData.rank) : null,
     streak: Number(userData.streak) || 0,
     achievements: userData.achievements || [],
+    foundEasterEgg: !!userData.foundEasterEgg,
     profileCompleted: !!(userData.bio && userData.university && userData.website),
     recentActivity: submissions.map(sub => ({
       id: sub.id,
@@ -122,10 +123,10 @@ export const UserProvider = ({ children }) => {
 
   // Check achievements on load/update (useful for profile completion sync)
   useEffect(() => {
-    if (user?.uid && !isLoading && userStats.profileCompleted) {
+    if (user?.uid && !isLoading && (userStats.profileCompleted || userStats.foundEasterEgg)) {
       checkAndAwardAchievements(userStats);
     }
-  }, [userStats.profileCompleted, isLoading]);
+  }, [userStats.profileCompleted, userStats.foundEasterEgg, isLoading]);
 
   const checkAndAwardAchievements = async (stats) => {
     if (!user?.uid) return []
