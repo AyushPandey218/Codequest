@@ -66,7 +66,7 @@ const ProgressScreen = () => {
   ]
 
   // ─── Learning Paths (from real module progress) ─────────────────────────────
-  const learningPaths = modules.map(mod => {
+  const learningPaths = modules.filter(m => !!m.category).map(mod => {
     const prog = moduleProgress?.[mod.id]
     const totalLessons = mod.lessons || 0
     const completedCount = prog?.completedLessons?.length || 0
