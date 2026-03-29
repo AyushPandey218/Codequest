@@ -285,7 +285,7 @@ const LessonPage = () => {
       
       // TRIGGER REWARDS
       if (!alreadyDone && !xpAwarded) {
-        completeLesson(lesson.id)
+        completeLesson(moduleId, lesson.id)
         setXpAwarded(true)
 
         // 🎊 Celebration logic
@@ -317,36 +317,6 @@ const LessonPage = () => {
             origin: { y: 0.6 },
             colors: ['#3b82f6', '#10b981', '#f59e0b']
           })
-        }
-
-        if (user?.uid) {
-          try { 
-            const now = new Date()
-            const todayStr = now.toISOString().split('T')[0]
-            const currentWeek = `${now.getFullYear()}-W${Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)}`
-            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`
-
-            const userRef = doc(db, 'users', user.uid)
-            const updates = { 
-              xp: increment(lesson.xp),
-              last_xp_update: todayStr,
-              last_week_update: currentWeek,
-              last_month_update: currentMonth
-            }
-
-            // Time-based XP increments with lazy reset
-            if (userData?.last_xp_update !== todayStr) updates.xp_today = lesson.xp
-            else updates.xp_today = increment(lesson.xp)
-
-            if (userData?.last_week_update !== currentWeek) updates.xp_weekly = lesson.xp
-            else updates.xp_weekly = increment(lesson.xp)
-
-            if (userData?.last_month_update !== currentMonth) updates.xp_monthly = lesson.xp
-            else updates.xp_monthly = increment(lesson.xp)
-
-            await updateDoc(userRef, updates) 
-          }
-          catch (e) { console.error('XP award failed:', e) }
         }
       }
     }

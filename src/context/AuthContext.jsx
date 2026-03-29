@@ -293,9 +293,29 @@ export const AuthProvider = ({ children }) => {
   const updateXP = async (xpAmount) => {
     if (!user?.uid) return
     try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        xp: increment(xpAmount)
-      })
+      const now = new Date()
+      const todayStr = now.toISOString().split('T')[0]
+      const currentWeek = `${now.getFullYear()}-W${Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)}`
+      const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`
+
+      const updates = { 
+        xp: increment(xpAmount),
+        last_xp_update: todayStr,
+        last_week_update: currentWeek,
+        last_month_update: currentMonth
+      }
+
+      // Time-based XP increments with lazy reset
+      if (user.last_xp_update !== todayStr) updates.xp_today = xpAmount
+      else updates.xp_today = increment(xpAmount)
+
+      if (user.last_week_update !== currentWeek) updates.xp_weekly = xpAmount
+      else updates.xp_weekly = increment(xpAmount)
+
+      if (user.last_month_update !== currentMonth) updates.xp_monthly = xpAmount
+      else updates.xp_monthly = increment(xpAmount)
+
+      await updateDoc(doc(db, 'users', user.uid), updates)
     } catch (error) {
       console.error('Update XP error:', error)
     }

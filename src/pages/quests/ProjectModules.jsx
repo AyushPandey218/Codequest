@@ -29,7 +29,10 @@ const ProjectModules = () => {
     return colors[difficulty] || 'default'
   }
 
-  const filteredModules = modules.filter(module =>
+  // Only include real projects (those with a category defined)
+  const projectModules = modules.filter(m => !!m.category)
+
+  const filteredModules = projectModules.filter(module =>
     activeFilter === 'all' || module.category === activeFilter
   )
 
@@ -64,7 +67,7 @@ const ProjectModules = () => {
             <span className="material-symbols-outlined text-blue-500">school</span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {modules.length}
+            {projectModules.length}
           </p>
         </Card>
 
@@ -76,7 +79,7 @@ const ProjectModules = () => {
             <span className="material-symbols-outlined text-orange-500">pending</span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {modules.filter(m => {
+            {projectModules.filter(m => {
               const compCount = moduleProgress[m.id]?.completedLessons?.length || 0
               return compCount > 0 && compCount < m.lessons
             }).length}
@@ -91,7 +94,7 @@ const ProjectModules = () => {
             <span className="material-symbols-outlined text-green-500">check_circle</span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {modules.filter(m => (moduleProgress[m.id]?.completedLessons?.length || 0) === m.lessons).length}
+            {projectModules.filter(m => (moduleProgress[m.id]?.completedLessons?.length || 0) === m.lessons).length}
           </p>
         </Card>
 
@@ -103,7 +106,7 @@ const ProjectModules = () => {
             <span className="material-symbols-outlined text-yellow-500">stars</span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {modules.reduce((sum, m) => sum + m.xp, 0).toLocaleString()}
+            {projectModules.reduce((sum, m) => sum + m.xp, 0).toLocaleString()}
           </p>
         </Card>
       </div>

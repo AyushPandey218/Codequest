@@ -1,29 +1,12 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { pythonModules } from '../data/pythonLessons'
 import { jsModules } from '../data/jsLessons'
 import { cppModules } from '../data/cppLessons'
 import { javaModules } from '../data/javaLessons'
 import { tsModules } from '../data/tsLessons'
 import { sqlModules } from '../data/sqlLessons'
-
-const STORAGE_KEY = (trackId) => `cq_lesson_progress_${trackId}`
-
-const loadProgress = (trackId) => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(trackId))
-    return raw ? JSON.parse(raw) : {}
-  } catch {
-    return {}
-  }
-}
-
-const saveProgress = (trackId, progress) => {
-  try {
-    localStorage.setItem(STORAGE_KEY(trackId), JSON.stringify(progress))
-  } catch {
-    // ignore
-  }
-}
+import { useAuth } from '../context/AuthContext'
+import { useUser } from '../context/UserContext'
 
 const getModulesForTrack = (trackId) => {
   const map = {
@@ -38,37 +21,65 @@ const getModulesForTrack = (trackId) => {
 }
 
 export const useLessonProgress = (trackId = 'python') => {
-  const [completedLessons, setCompletedLessons] = useState(() => loadProgress(trackId))
+  const { completeLesson: authCompleteLesson } = useAuth()
+  const { moduleProgress } = useUser()
 
-  const completeLesson = useCallback((lessonId) => {
-    setCompletedLessons(prev => {
-      const updated = { ...prev, [lessonId]: true }
-      saveProgress(trackId, updated)
-      return updated
+  // Modules belonging to this specific track
+  const trackModules = useMemo(() => getModulesForTrack(trackId), [trackId])
+
+  // Derive a flat map of lessonId -> boolean for easier consumption in components
+  const completedLessons = useMemo(() => {
+    const map = {}
+    trackModules.forEach(mod => {
+      const prog = moduleProgress?.[mod.id]
+      if (prog?.completedLessons) {
+        prog.completedLessons.forEach(lessonId => {
+          map[lessonId] = true
+        })
+      }
     })
-  }, [trackId])
+    return map
+  }, [trackModules, moduleProgress])
+
+  /**
+   * Completes a lesson.
+   * Signature updated to (moduleId, lessonId) to match Firestore structure.
+   */
+  const completeLesson = useCallback((moduleId, lessonId) => {
+    // Basic backward compatibility and error handling
+    if (typeof moduleId === 'string' && !lessonId) {
+      // Find moduleId if it wasn't provided (old signature)
+      const foundMod = trackModules.find(m => m.lessons.some(l => l.id === moduleId))
+      if (foundMod) {
+        authCompleteLesson(foundMod.id, moduleId)
+      } else {
+        console.error('Failed to find moduleId for lesson:', moduleId)
+      }
+    } else {
+      authCompleteLesson(moduleId, lessonId)
+    }
+  }, [trackModules, authCompleteLesson])
 
   const isCompleted = useCallback((lessonId) => {
     return !!completedLessons[lessonId]
   }, [completedLessons])
 
   const getTotalXP = useCallback(() => {
-    const modules = getModulesForTrack(trackId)
     let total = 0
-    for (const module of modules) {
-      for (const lesson of module.lessons) {
+    trackModules.forEach(mod => {
+      mod.lessons.forEach(lesson => {
         if (completedLessons[lesson.id]) {
-          total += lesson.xp
+          total += (lesson.xp || 50)
         }
-      }
-    }
+      })
+    })
     return total
-  }, [completedLessons, trackId])
+  }, [completedLessons, trackModules])
 
   const resetProgress = useCallback(() => {
-    setCompletedLessons({})
-    saveProgress(trackId, {})
-  }, [trackId])
+    // Progress reset is not natively supported for cloud storage without specific logic
+    console.warn('Progress reset is disabled for cloud storage.')
+  }, [])
 
-  return { completedLessons, completeLesson, isCompleted, getTotalXP, resetProgress }
+  return { completedLessons, completeLesson, isCompleted, getTotalXP, resetProgress, isLoading: !moduleProgress }
 }
