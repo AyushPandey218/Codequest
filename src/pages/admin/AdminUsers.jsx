@@ -258,8 +258,8 @@ const UserPreviewModal = ({ user, onClose }) => {
                                 <img src={profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`} alt={profile.username} className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-blue-600/20 mix-blend-overlay group-hover:opacity-0 transition-opacity" />
                             </div>
-                            <div className="absolute -bottom-3 -right-3 size-12 rounded-2xl bg-blue-600 border border-white/20 flex items-center justify-center shadow-xl">
-                                <span className="text-white font-black text-xs">LVL</span>
+                            <div className="absolute -bottom-3 -right-3 px-2 py-1.5 rounded-xl bg-blue-600 border border-white/20 flex items-center justify-center shadow-xl">
+                                <span className="text-white font-black text-[10px] uppercase tracking-tighter">Lvl {level}</span>
                             </div>
                         </div>
                         <div className="text-center md:text-left pt-2">
@@ -267,6 +267,13 @@ const UserPreviewModal = ({ user, onClose }) => {
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                                 <span className="px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest">
                                     {profile.role || 'Player'}
+                                </span>
+                                <span className={`px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${
+                                    profile.status === 'suspended' 
+                                    ? 'bg-red-500/10 border-red-500/20 text-red-400' 
+                                    : 'bg-green-500/10 border-green-500/20 text-green-400'
+                                }`}>
+                                    {profile.status || 'Active'}
                                 </span>
                                 <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                                     <span className="material-symbols-outlined text-xs">mail</span>
@@ -307,7 +314,7 @@ const UserPreviewModal = ({ user, onClose }) => {
                                     <span className="material-symbols-outlined text-lg">school</span>
                                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Institutional Sync</h3>
                                 </div>
-                                <p className="text-sm font-bold text-white pl-8">
+                                <p className="text-sm font-bold text-slate-400 pl-8">
                                     {profile.university || "No institutional data linked."}
                                 </p>
                             </div>
@@ -316,16 +323,20 @@ const UserPreviewModal = ({ user, onClose }) => {
                                     <span className="material-symbols-outlined text-lg">link</span>
                                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">External Node</h3>
                                 </div>
-                                <a href={profile.website} target="_blank" rel="noreferrer" className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors pl-8 block truncate">
-                                    {profile.website || "No external links registered."}
-                                </a>
+                                {profile.website ? (
+                                    <a href={profile.website} target="_blank" rel="noreferrer" className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors pl-8 block truncate">
+                                        {profile.website}
+                                    </a>
+                                ) : (
+                                    <p className="text-sm font-bold text-slate-500 pl-8">No external links registered.</p>
+                                )}
                             </div>
                         </div>
                     </div>
 
                     <div className="pt-8 flex justify-end">
                         <button onClick={onClose} className="px-10 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-xs font-black uppercase tracking-[0.2em] text-white active:scale-95">
-                            Deactivate View
+                            Close Preview
                         </button>
                     </div>
                 </div>
