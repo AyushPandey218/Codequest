@@ -50,7 +50,11 @@ export const NotificationProvider = ({ children }) => {
         let globalNotifs = []
 
         const updateMergedNotifs = () => {
-            const merged = [...privateNotifs, ...globalNotifs]
+            // Filter global notifications based on user's lastClearedGlobal timestamp
+            const lastCleared = user.lastClearedGlobal?.seconds || 0
+            const filteredGlobal = globalNotifs.filter(n => (n.createdAt?.seconds || 0) > lastCleared)
+
+            const merged = [...privateNotifs, ...filteredGlobal]
                 .sort((a, b) => {
                     const aTime = a.createdAt?.seconds || 0
                     const bTime = b.createdAt?.seconds || 0
@@ -85,7 +89,7 @@ export const NotificationProvider = ({ children }) => {
             unsubPrivate()
             unsubGlobal()
         }
-    }, [user?.uid, user?.lastReadGlobal])
+    }, [user?.uid, user?.lastReadGlobal, user?.lastClearedGlobal])
 
     const showAchievement = useCallback((achievementId) => {
         setToasts(prev => [...prev, { id: Date.now(), achievementId, type: 'achievement' }])
@@ -147,6 +151,7 @@ export const NotificationProvider = ({ children }) => {
     const clearAll = useCallback(async () => {
         if (!user?.uid) return
         try {
+            // 1. Delete private notifications from DB
             const privateNotifs = notifications.filter(n => !n.isGlobal)
             if (privateNotifs.length > 0) {
                 const batch = writeBatch(db)
@@ -155,10 +160,13 @@ export const NotificationProvider = ({ children }) => {
                 })
                 await batch.commit()
             }
+
+            // 2. Hide global notifications for this user
+            await updateProfile({ lastClearedGlobal: serverTimestamp() })
         } catch (error) {
             console.error('Error clearing notifications:', error)
         }
-    }, [user?.uid, notifications])
+    }, [user?.uid, notifications, updateProfile])
 
     const dismissToast = useCallback((id) => {
         setToasts(prev => prev.filter(t => t.id !== id))

@@ -153,7 +153,7 @@ const LearnLanding = () => {
           </span>
         </h1>
         <p className="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed animate-fade-in animate-delay-200">
-          Not sure which to pick? Start with <strong className="text-blue-400">Python</strong> — it's the easiest for beginners. You can always learn both!
+          Not sure which to pick? Start with <strong className="text-blue-400">Python</strong> — it's the easiest for beginners. Master one, then conquer the rest!
         </p>
       </div>
 
