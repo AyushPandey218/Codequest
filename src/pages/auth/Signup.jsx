@@ -133,11 +133,11 @@ const Signup = () => {
 
           <Button
             variant="secondary"
-            className="w-full bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+            className="w-full flex items-center justify-center gap-3 h-14 bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-lg"
             onClick={() => { }}
           >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2" />
-            Continue with Google
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 flex-shrink-0" />
+            <span className="leading-none mt-[1px]">Continue with Google</span>
           </Button>
 
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
