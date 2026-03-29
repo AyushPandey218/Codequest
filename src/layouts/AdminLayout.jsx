@@ -2,6 +2,7 @@ import { Outlet, Link, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
 import LoadingScreen from '../components/common/LoadingScreen'
+import AdminCommandPalette from '../components/admin/AdminCommandPalette'
 
 const AdminLayout = () => {
     const { user, isAdmin, isAuthenticated, isLoading, logout } = useAuth()
@@ -27,6 +28,7 @@ const AdminLayout = () => {
 
     return (
         <div className="min-h-screen bg-[#0d0d1a] flex">
+            <AdminCommandPalette />
             {/* Sidebar */}
             <aside
                 className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-[#12122a] border-r border-red-900/30 flex flex-col z-50 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'

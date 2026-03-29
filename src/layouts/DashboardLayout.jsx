@@ -10,7 +10,6 @@ import NotificationCenter from '../components/common/NotificationCenter'
 import { useNotification } from '../context/NotificationContext'
 import confetti from 'canvas-confetti'
 import { motion, useAnimation } from 'framer-motion'
-import AdminCommandPalette from '../components/admin/AdminCommandPalette'
 
 const DashboardLayout = () => {
   const { user, isAuthenticated, isLoading, logout, isAdmin, updateXP, updateProfile } = useAuth()
@@ -103,7 +102,6 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-background-dark flex">
-      {isAdmin && <AdminCommandPalette />}
       {/* Sidebar */}
       <aside className={`fixed lg:sticky top-0 left-0 h-screen bg-panel-dark border-r border-border-dark flex flex-col z-50 transition-all duration-300 ${isSidebarOpen
         ? 'w-64 translate-x-0'
