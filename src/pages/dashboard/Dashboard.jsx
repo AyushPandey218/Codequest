@@ -347,31 +347,34 @@ const Dashboard = () => {
             {/* XP bar with smooth CSS transition */}
             <div
               style={{
-                height: '10px',
+                height: '12px',
                 borderRadius: '999px',
-                background: '#1c1c27',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '2px',
                 overflow: 'hidden',
-                marginBottom: '8px',
+                marginBottom: '10px',
+                position: 'relative'
               }}
             >
               <div
                 style={{
                   height: '100%',
                   width: `${barValue}%`,
-                  background: 'linear-gradient(90deg, #2b2bee, #7c3aed)',
+                  background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
                   borderRadius: '999px',
                   transition: 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: barValue > 0 ? '0 0 8px rgba(43,43,238,0.6)' : 'none',
+                  boxShadow: barValue > 0 ? '0 0 12px rgba(59, 130, 246, 0.5)' : 'none',
                 }}
               />
             </div>
 
             <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {Math.round(barValue)}% to Level {(userStats?.level || 1) + 1}
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">
+                {Math.round(barValue)}% <span className="text-slate-500">to Level {(userStats?.level || 1) + 1}</span>
               </p>
-              <p className="text-xs font-semibold text-primary">
-                {getXPToNextLevel(userStats?.totalXP || 0)} XP needed
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                {getXPToNextLevel(userStats?.totalXP || 0)} <span className="text-slate-500">XP needed</span>
               </p>
             </div>
           </Card>

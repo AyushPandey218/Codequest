@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { doc, updateDoc, arrayUnion, increment, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import { useAdminUsers } from '../../hooks/useAdminUsers'
+import { getLevelProgress } from '../../utils/progressStorage'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
 import { useNotification } from '../../context/NotificationContext'
 import { achievements } from '../../data/achievements'
@@ -363,11 +364,17 @@ const AdminUsers = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-1.5 w-12 bg-white/5 rounded-full overflow-hidden">
-                                                <div className="h-full bg-yellow-500" style={{ width: `${(user.level / 50) * 100}%` }}></div>
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-white font-black text-sm">LVL {user.level}</span>
+                                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{user.xp?.toLocaleString() || 0} XP</span>
                                             </div>
-                                            <span className="text-yellow-500 font-black text-xs">LV.{user.level}</span>
+                                            <div className="h-1.5 w-full max-w-[100px] bg-white/5 border border-white/5 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-blue-600 to-purple-500 shadow-[0_0_8px_rgba(37,99,235,0.4)]" 
+                                                    style={{ width: `${Math.round(getLevelProgress(user.xp || 0) * 100)}%` }}
+                                                ></div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-center">

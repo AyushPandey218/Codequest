@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, query, getDocs, orderBy, doc, updateDoc, deleteDoc, arrayRemove } from 'firebase/firestore'
 import { db } from '../config/firebase'
+import { getLevelFromXP } from '../utils/progressStorage'
 
 export function useAdminUsers() {
     const [users, setUsers] = useState([])
@@ -19,7 +20,8 @@ export function useAdminUsers() {
                     id: doc.id,
                     username: data.username || 'Anonymous',
                     email: data.email || 'No email',
-                    level: data.level || 1,
+                    xp: data.xp || 0,
+                    level: getLevelFromXP(data.xp || 0),
                     role: data.role || 'user',
                     status: data.status || 'active',
                     foundEasterEgg: data.foundEasterEgg || false,

@@ -8,7 +8,7 @@ import { useNotification } from './NotificationContext'
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { db, isDemoMode } from '../config/firebase'
 import { checkAchievements } from '../utils/achievementChecker'
-import { achievements } from '../data/achievements'
+import { getLevelFromXP } from '../utils/progressStorage'
 
 import { modules } from '../data/modules'
 import { quests } from '../data/quests'
@@ -80,7 +80,7 @@ export const UserProvider = ({ children }) => {
     algoQuests,
     languagesUsed: languagesUsedCount,
     totalXP: totalXP,
-    level: Math.max(1, Math.floor(totalXP / 200) + 1), // Derived from XP
+    level: getLevelFromXP(totalXP), // Derived from XP using tiered formula
     rank: (userData.rank && !Number.isNaN(Number(userData.rank))) ? Number(userData.rank) : null,
     streak: Number(userData.streak) || 0,
     achievements: userData.achievements || [],
