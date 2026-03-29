@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore'
+import { collection, query, getDocs, orderBy, limit, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
 export function useAdminStats() {
@@ -48,11 +48,23 @@ export function useAdminStats() {
                     }
                 })
 
+                // Fetch the First Hunter
+                const huntersSnapshot = await getDocs(query(collection(db, 'users'), where('foundEasterEgg', '==', true)))
+                const sortedHunters = huntersSnapshot.docs.map(doc => {
+                    const data = doc.data()
+                    return {
+                        username: data.username,
+                        avatar: data.avatar,
+                        foundAt: data.foundEasterEggAt?.toDate() || data.createdAt?.toDate() || new Date()
+                    }
+                }).sort((a, b) => a.foundAt - b.foundAt)
+
                 setStats({
                     totalUsers: userCount,
                     activeQuests: questCount,
                     completionsToday,
                     recentActivity: activityData,
+                    firstEasterEggUser: sortedHunters[0] || null,
                     isLoading: false
                 })
             } catch (error) {

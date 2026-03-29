@@ -1,3 +1,4 @@
+import { serverTimestamp } from 'firebase/firestore'
 import { Outlet, Link, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import GlobalBroadcast from '../components/common/GlobalBroadcast'
@@ -52,7 +53,7 @@ const DashboardLayout = () => {
       })
 
       await updateXP(1000)
-      await updateProfile({ foundEasterEgg: true })
+      await updateProfile({ foundEasterEgg: true, foundEasterEggAt: serverTimestamp() })
       showToast('Wait... That Worked? Secret Found! +1000 XP', 'success')
       
       // After finding it, navigate to dashboard

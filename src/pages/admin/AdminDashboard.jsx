@@ -68,13 +68,66 @@ const QuickLink = ({ to, icon, label, desc, color }) => (
     </Link>
 )
 
+const SecretHunterSpotlight = ({ user, isLoading }) => {
+    if (isLoading) return (
+        <div className="bg-[#12122a]/60 backdrop-blur-2xl border border-yellow-500/10 rounded-3xl p-6 h-full animate-pulse flex items-center gap-4">
+            <div className="size-16 rounded-2xl bg-white/5" />
+            <div className="space-y-2">
+                <div className="w-24 h-4 bg-white/5 rounded" />
+                <div className="w-16 h-3 bg-white/5 rounded" />
+            </div>
+        </div>
+    )
+
+    if (!user) return (
+        <div className="bg-[#12122a]/60 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 h-full flex flex-col justify-center items-center text-center group translate-z-0">
+             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+             <span className="material-symbols-outlined text-slate-700 text-3xl mb-2">lock_open</span>
+             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Secret Unknown</p>
+             <p className="text-[9px] text-slate-600 mt-1 uppercase">Pioneer waiting to be found</p>
+        </div>
+    )
+
+    return (
+        <div className="bg-[#1a1b3a] border border-yellow-500/20 rounded-3xl p-6 flex items-center gap-6 shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-all">
+            <div className="absolute -right-4 -top-4 size-32 bg-yellow-500/10 blur-[60px] group-hover:bg-yellow-400/20 transition-all duration-1000"></div>
+            
+            <div className="relative">
+                <div className="size-16 rounded-2xl overflow-hidden border-2 border-yellow-500/30 shadow-xl relative z-10">
+                    <img src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} alt={user.username} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-yellow-500/10 mix-blend-overlay"></div>
+                </div>
+                <div className="absolute -bottom-2 -right-2 size-6 rounded-lg bg-yellow-500 flex items-center justify-center shadow-lg border border-white/20 z-20">
+                    <span className="material-symbols-outlined text-white text-[10px] font-black">star</span>
+                </div>
+            </div>
+
+            <div className="flex-1 relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[9px] font-black text-yellow-500 uppercase tracking-[0.3em]">First Discovery</span>
+                    <span className="size-1 bg-yellow-500/30 rounded-full"></span>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{user.foundAt?.toLocaleDateString()}</span>
+                </div>
+                <h3 className="text-xl font-black text-white tracking-tight uppercase leading-none mb-1">{user.username}</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">CodeQuest Pioneer</p>
+            </div>
+            
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                 <div className="px-3 py-1 rounded-full bg-yellow-500 text-black text-[9px] font-black uppercase tracking-widest shadow-lg shadow-yellow-500/20">
+                     Hall of Fame
+                 </div>
+            </div>
+        </div>
+    )
+}
+
 const AdminDashboard = () => {
     const [newBroadcast, setNewBroadcast] = useState({ title: '', message: '', type: 'info' })
     const [newPush, setNewPush] = useState({ title: '', message: '', type: 'system', link: '' })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isPushing, setIsPushing] = useState(false)
 
-    const { totalUsers, activeQuests, completionsToday, recentActivity, isLoading } = useAdminStats()
+    const { totalUsers, activeQuests, completionsToday, recentActivity, firstEasterEggUser, isLoading } = useAdminStats()
     const { broadcasts, createBroadcast, deleteBroadcast, toggleBroadcast, isLoading: broadcastsLoading } = useAdminBroadcasts()
     const { pushGlobalNotification } = useAdminNotifications()
     const { showToast } = useNotification()
@@ -149,7 +202,23 @@ const AdminDashboard = () => {
                     isLoading={isLoading}
                     color={{ border: 'border-purple-500/20', bg: 'bg-purple-500/15', text: 'text-purple-400' }}
                 />
-                <SystemHealth />
+                <StatCard
+                    icon="auto_fix"
+                    label="Secrets Found"
+                    value={firstEasterEggUser ? "Discovery" : "0"}
+                    sub={firstEasterEggUser ? "Secret Cracked" : "Inactive"}
+                    isLoading={isLoading}
+                    color={{ border: 'border-orange-500/20', bg: 'bg-orange-500/15', text: 'text-orange-400' }}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                <div className="lg:col-span-8">
+                    <SecretHunterSpotlight user={firstEasterEggUser} isLoading={isLoading} />
+                </div>
+                <div className="lg:col-span-4">
+                    <SystemHealth />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
