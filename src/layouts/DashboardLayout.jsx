@@ -2,7 +2,7 @@ import { Outlet, Link, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import GlobalBroadcast from '../components/common/GlobalBroadcast'
 import { useUser } from '../context/UserContext'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import Avatar from '../components/common/Avatar'
 import LoadingScreen from '../components/common/LoadingScreen'
 import NotificationCenter from '../components/common/NotificationCenter'
@@ -19,37 +19,52 @@ const DashboardLayout = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [logoClicks, setLogoClicks] = useState(0)
   const logoControls = useAnimation()
+  const clickTimeoutRef = useRef(null)
 
   const handleLogoClick = useCallback(async (e) => {
-    // Prevent default navigation if we're still clicking for the egg
-    if (logoClicks < 10 && !userStats.foundEasterEgg) {
-      e.preventDefault()
-      const newClicks = logoClicks + 1
-      setLogoClicks(newClicks)
+    // If user has already found it, don't trigger anything special (let normal click work)
+    if (userStats.foundEasterEgg) return;
 
-      // Visual feedback
-      logoControls.start({
-        scale: [1, 1.2, 1],
-        rotate: [0, 5, -5, 0],
-        transition: { duration: 0.2 }
+    // Prevent default navigation during the discovery clicks
+    e.preventDefault()
+
+    // Clear existing reset timeout
+    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current)
+
+    const newClicks = logoClicks + 1
+    
+    // Animate the logo on every click
+    logoControls.start({
+      scale: [1, 1.2, 1],
+      rotate: [0, 5, -5, 0],
+      transition: { duration: 0.15 }
+    })
+
+    if (newClicks >= 10) {
+      // Victory!
+      setLogoClicks(0) // Reset for the next time (if ever)
+      
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#3b82f6', '#8b5cf6', '#ffffff']
       })
 
-      if (newClicks === 10) {
-        // Trigger celebration!
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#3b82f6', '#8b5cf6', '#ffffff']
-        })
-
-        // Award reward
-        await updateXP(1000)
-        await updateProfile({ foundEasterEgg: true })
-        showToast('Wait... That Worked? Secret Found! +1000 XP', 'success')
-      }
+      await updateXP(1000)
+      await updateProfile({ foundEasterEgg: true })
+      showToast('Wait... That Worked? Secret Found! +1000 XP', 'success')
+      
+      // After finding it, navigate to dashboard
+      navigate('/app/dashboard')
+    } else {
+      setLogoClicks(newClicks)
+      // Reset the counter if they stop clicking for more than 800ms
+      clickTimeoutRef.current = setTimeout(() => {
+        setLogoClicks(0)
+      }, 800)
     }
-  }, [logoClicks, userStats.foundEasterEgg, updateXP, updateProfile, showToast, logoControls])
+  }, [logoClicks, userStats.foundEasterEgg, updateXP, updateProfile, showToast, logoControls, navigate])
 
   // ... (rest of the component remains the same, but update Logo Click)
   if (isLoading) {
