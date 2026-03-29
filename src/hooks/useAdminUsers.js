@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, getDocs, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { collection, query, getDocs, orderBy, doc, updateDoc, deleteDoc, arrayRemove } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
 export function useAdminUsers() {
@@ -22,6 +22,7 @@ export function useAdminUsers() {
                     level: data.level || 1,
                     role: data.role || 'user',
                     status: data.status || 'active',
+                    foundEasterEgg: data.foundEasterEgg || false,
                     joined: createdAt
                         ? createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                         : 'Unknown'
@@ -61,5 +62,19 @@ export function useAdminUsers() {
         }
     }
 
-    return { users, isLoading, updateUserStatus, deleteUser, refetch: fetchUsers }
+    const resetEasterEgg = async (userId) => {
+        try {
+            const userRef = doc(db, 'users', userId)
+            await updateDoc(userRef, { 
+                foundEasterEgg: false,
+                achievements: arrayRemove('wait_that_worked')
+            })
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, foundEasterEgg: false } : u))
+        } catch (error) {
+            console.error("Error resetting easter egg:", error)
+            throw error
+        }
+    }
+
+    return { users, isLoading, updateUserStatus, deleteUser, resetEasterEgg, refetch: fetchUsers }
 }

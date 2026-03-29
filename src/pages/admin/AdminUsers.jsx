@@ -228,7 +228,7 @@ const AdminUsers = () => {
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
-    const { users, isLoading, updateUserStatus, deleteUser } = useAdminUsers()
+    const { users, isLoading, updateUserStatus, deleteUser, resetEasterEgg } = useAdminUsers()
     const { pushDirectNotification } = useAdminNotifications()
     const { showToast } = useNotification()
     
@@ -249,6 +249,9 @@ const AdminUsers = () => {
             } else if (type === 'delete') {
                 await deleteUser(user.id)
                 showToast('User account deleted permanently.', 'success')
+            } else if (type === 'reset_egg') {
+                await resetEasterEgg(user.id)
+                showToast('Easter egg discovery reset for this user.', 'info')
             }
         } catch (error) {
             console.error(error)
@@ -347,7 +350,14 @@ const AdminUsers = () => {
                                                 {user.username.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight">{user.username}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight">{user.username}</p>
+                                                    {user.foundEasterEgg && (
+                                                        <span className="material-symbols-outlined text-xs text-amber-500 animate-pulse" title="Easter Egg Found!">
+                                                            auto_fix
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <p className="text-[10px] text-slate-500 font-mono italic">{user.email}</p>
                                             </div>
                                         </div>
@@ -366,6 +376,15 @@ const AdminUsers = () => {
                                     <td className="px-6 py-5 text-slate-500 text-xs font-medium">{user.joined}</td>
                                     <td className="px-6 py-5 text-right">
                                         <div className="flex items-center justify-end gap-1">
+                                            {user.foundEasterEgg && (
+                                                <button
+                                                    onClick={() => handleActionClick('reset_egg', user)}
+                                                    title="Reset Easter Egg Discovery"
+                                                    className="p-2 rounded-xl text-amber-500 hover:bg-amber-500/10 transition-all"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">restart_alt</span>
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => setPushModal({ isOpen: true, user })}
                                                 title="Push Notification"
@@ -434,12 +453,17 @@ const AdminUsers = () => {
                 isOpen={confirmModal.isOpen}
                 onClose={() => setConfirmModal({ isOpen: false, type: '', user: null })}
                 onConfirm={executeAction}
-                title={confirmModal.type === 'delete' ? 'Delete User Account?' : (confirmModal.type === 'suspend' ? 'Suspend User?' : 'Restore User Access?')}
-                message={confirmModal.type === 'delete' 
-                    ? `Are you absolutely sure you want to permanently delete "${confirmModal.user?.username}"? This action cannot be undone.`
-                    : `Confirm status protocol change for ${confirmModal.user?.username}. This will ${confirmModal.type === 'suspend' ? 'block' : 'restore'} their platform access.`
+                title={
+                    confirmModal.type === 'delete' ? 'Delete User Account?' : 
+                    confirmModal.type === 'suspend' ? 'Suspend User?' : 
+                    confirmModal.type === 'reset_egg' ? 'Reset Easter Egg?' : 'Restore User Access?'
                 }
-                confirmText={confirmModal.type === 'delete' ? 'Delete' : (confirmModal.type === 'suspend' ? 'Suspend' : 'Restore')}
+                message={
+                    confirmModal.type === 'delete' ? `Are you absolutely sure you want to permanently delete "${confirmModal.user?.username}"? This action cannot be undone.` :
+                    confirmModal.type === 'reset_egg' ? `Clear easter egg discovery for "${confirmModal.user?.username}"? This will hide the wand icon and remove the achievement.` :
+                    `Confirm status protocol change for ${confirmModal.user?.username}. This will ${confirmModal.type === 'suspend' ? 'block' : 'restore'} their platform access.`
+                }
+                confirmText={confirmModal.type === 'delete' ? 'Delete' : (confirmModal.type === 'suspend' ? 'Suspend' : (confirmModal.type === 'reset_egg' ? 'Reset' : 'Restore'))}
                 variant={confirmModal.type === 'delete' || confirmModal.type === 'suspend' ? 'danger' : 'success'}
             />
         </div>
