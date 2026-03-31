@@ -27,7 +27,8 @@ export function useAdminUsers() {
                     foundEasterEgg: data.foundEasterEgg || false,
                     joined: createdAt
                         ? createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                        : 'Unknown'
+                        : 'Unknown',
+                    rawJoined: createdAt || new Date(0)
                 }
             })
 

@@ -349,9 +349,18 @@ const AdminUsers = () => {
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('all')
+    const [sortConfig, setSortConfig] = useState({ key: 'username', direction: 'asc' })
     const { users, isLoading, updateUserStatus, deleteUser, resetEasterEgg, refetch } = useAdminUsers()
     const { pushDirectNotification } = useAdminNotifications()
     const { showToast } = useNotification()
+    
+    const handleSort = (key) => {
+        let direction = 'asc'
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc'
+        }
+        setSortConfig({ key, direction })
+    }
     
     const [awardModal, setAwardModal] = useState({ isOpen: false, user: null })
     const [pushModal, setPushModal] = useState({ isOpen: false, user: null })
@@ -411,11 +420,28 @@ const AdminUsers = () => {
         }
     }
 
-    const filtered = users.filter(u => {
-        const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
-        const matchesFilter = filter === 'all' || u.status === filter
-        return matchesSearch && matchesFilter
-    })
+    const filtered = users
+        .filter(u => {
+            const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
+            const matchesFilter = filter === 'all' || u.status === filter
+            return matchesSearch && matchesFilter
+        })
+        .sort((a, b) => {
+            if (!sortConfig.key) return 0
+            
+            let aVal = a[sortConfig.key]
+            let bVal = b[sortConfig.key]
+
+            // Use raw date for sorting joined column
+            if (sortConfig.key === 'joined') {
+                aVal = a.rawJoined
+                bVal = b.rawJoined
+            }
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1
+            return 0
+        })
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -450,6 +476,27 @@ const AdminUsers = () => {
                             </button>
                         ))}
                     </div>
+
+                    <div className="h-8 w-[1px] bg-white/5 hidden md:block mx-2" />
+
+                    <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+                        <span className="material-symbols-outlined text-slate-500 text-sm">sort</span>
+                        <select 
+                            value={`${sortConfig.key}-${sortConfig.direction}`}
+                            onChange={(e) => {
+                                const [key, direction] = e.target.value.split('-')
+                                setSortConfig({ key, direction })
+                            }}
+                            className="bg-transparent border-none text-xs font-black text-slate-300 uppercase tracking-widest focus:ring-0 cursor-pointer outline-none hover:text-white transition-colors"
+                        >
+                            <option value="username-asc" className="bg-[#161632]">Name (A-Z)</option>
+                            <option value="username-desc" className="bg-[#161632]">Name (Z-A)</option>
+                            <option value="xp-desc" className="bg-[#161632]">Highest XP</option>
+                            <option value="xp-asc" className="bg-[#161632]">Lowest XP</option>
+                            <option value="joined-desc" className="bg-[#161632]">Newest First</option>
+                            <option value="joined-asc" className="bg-[#161632]">Oldest First</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -469,10 +516,40 @@ const AdminUsers = () => {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-white/5 text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
-                                <th className="text-left px-6 py-5">User Account</th>
-                                <th className="text-left px-6 py-5">Level / XP</th>
+                                <th 
+                                    className="text-left px-6 py-5 cursor-pointer hover:text-white transition-colors group/header"
+                                    onClick={() => handleSort('username')}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        User Account
+                                        <span className={`material-symbols-outlined text-sm transition-opacity ${sortConfig.key === 'username' ? 'opacity-100 text-blue-400' : 'opacity-0 group-hover/header:opacity-50'}`}>
+                                            {sortConfig.key === 'username' && sortConfig.direction === 'desc' ? 'arrow_downward' : 'arrow_upward'}
+                                        </span>
+                                    </div>
+                                </th>
+                                <th 
+                                    className="text-left px-6 py-5 cursor-pointer hover:text-white transition-colors group/header"
+                                    onClick={() => handleSort('xp')}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        Level / XP
+                                        <span className={`material-symbols-outlined text-sm transition-opacity ${sortConfig.key === 'xp' ? 'opacity-100 text-blue-400' : 'opacity-0 group-hover/header:opacity-50'}`}>
+                                            {sortConfig.key === 'xp' && sortConfig.direction === 'desc' ? 'arrow_downward' : 'arrow_upward'}
+                                        </span>
+                                    </div>
+                                </th>
                                 <th className="text-left px-6 py-5 text-center">Status</th>
-                                <th className="text-left px-6 py-5">Joined Date</th>
+                                <th 
+                                    className="text-left px-6 py-5 cursor-pointer hover:text-white transition-colors group/header"
+                                    onClick={() => handleSort('joined')}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        Joined Date
+                                        <span className={`material-symbols-outlined text-sm transition-opacity ${sortConfig.key === 'joined' ? 'opacity-100 text-blue-400' : 'opacity-0 group-hover/header:opacity-50'}`}>
+                                            {sortConfig.key === 'joined' && sortConfig.direction === 'desc' ? 'arrow_downward' : 'arrow_upward'}
+                                        </span>
+                                    </div>
+                                </th>
                                 <th className="text-right px-6 py-5">Actions</th>
                             </tr>
                         </thead>
