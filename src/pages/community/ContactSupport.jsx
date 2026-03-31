@@ -60,28 +60,6 @@ const ContactSupport = () => {
     }
   }
 
-  const quickChannels = [
-    {
-      title: 'Knowledge Base',
-      desc: 'Browse common bugs, syntax errors & fixes in our documentation.',
-      icon: 'menu_book',
-      link: '#',
-      external: true
-    },
-    {
-      title: 'Community Discord',
-      desc: 'Ask fellow students and mentors in the #help channel.',
-      icon: 'chat_bubble',
-      link: '#',
-      external: true
-    },
-    {
-      title: 'Live Chat',
-      desc: 'Chat with a support agent. Available 9am-5pm PST.',
-      icon: 'smart_toy',
-      online: true
-    }
-  ]
 
   return (
     <div className="max-w-[1280px] mx-auto p-4 lg:p-12 min-h-screen bg-background-dark text-white selection:bg-primary/30">
@@ -97,52 +75,12 @@ const ContactSupport = () => {
       {/* Hero Header */}
       <div className="mb-14 animate-slide-in-top">
         <h1 className="text-5xl md:text-6xl font-bold mb-4 tracking-tight">Stuck on a Quest? We’re here to help.</h1>
-        <p className="text-slate-400 text-lg">Choose a quick support method or fill out the form to summon an admin.</p>
+        <p className="text-slate-400 text-lg">Help is on the way! Fill out the form below to summon an admin.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-        {/* --- QUICK CHANNELS (Left Sidebar) --- */}
-        <div className="lg:col-span-4 space-y-4 animate-slide-in-left">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500 ml-1 mb-6">Quick Channels</h3>
-
-          {quickChannels.map((channel, i) => (
-            <Card
-              key={i}
-              className="bg-panel-dark border-white/5 p-8 group hover:bg-card-dark transition-all cursor-pointer relative overflow-hidden"
-            >
-              <div className="flex items-start gap-4 h-full relative z-10">
-                <span className={`material-symbols-outlined text-primary text-2xl ${channel.online ? 'relative' : ''}`}>
-                  {channel.icon}
-                  {channel.online && (
-                    <span className="absolute -top-1 -right-1 block size-2 bg-green-500 rounded-full border-2 border-panel-dark"></span>
-                  )}
-                </span>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-lg group-hover:text-primary transition-colors">{channel.title}</h4>
-                    {channel.external && (
-                      <span className="material-symbols-outlined text-slate-600 text-lg group-hover:translate-x-1 group-hover:-translate-y-1 transition-all">north_east</span>
-                    )}
-                    {channel.online && (
-                      <div className="flex items-center gap-1.5 ml-2">
-                        <div className="size-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></div>
-                        <span className="text-[10px] font-bold text-green-500 uppercase tracking-tighter">Online</span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-slate-400 leading-relaxed font-medium">{channel.desc}</p>
-                </div>
-              </div>
-              <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-10 transition-opacity">
-                <span className="material-symbols-outlined text-6xl text-primary">arrow_forward</span>
-              </div>
-            </Card>
-          ))}
-        </div>
-
+      <div className="flex justify-center text-left">
         {/* --- SUPPORT FORM (Main Area) --- */}
-        <form onSubmit={handleSubmit} className="lg:col-span-8 animate-slide-in-right">
+        <form onSubmit={handleSubmit} className="w-full max-w-4xl animate-slide-in-bottom">
           <Card className="bg-panel-dark border-white/5 p-10 lg:p-14 relative overflow-hidden">
             <div className="relative z-10">
               <h2 className="text-3xl font-bold mb-2">Submit a Ticket</h2>
@@ -247,9 +185,9 @@ const ContactSupport = () => {
       <div className="mt-24 pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
         <p>&copy; 2026 CodeQuest Inc. All rights reserved.</p>
         <div className="flex items-center gap-8">
-          <Link to="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-          <Link to="#" className="hover:text-primary transition-colors">Terms of Service</Link>
-          <Link to="#" className="hover:text-primary transition-colors">Code of Conduct</Link>
+          <Link to="/legal/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+          <Link to="/legal/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+          <Link to="/legal/terms#conduct" className="hover:text-primary transition-colors">Code of Conduct</Link>
         </div>
       </div>
 
