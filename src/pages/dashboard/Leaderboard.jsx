@@ -48,6 +48,7 @@ const Leaderboard = () => {
     xp: userStats?.totalXP || 0,
     displayXP: 0,
     questsCompleted: userStats?.completedQuests || 0,
+    id: user?.uid,
   }
 
   const periods = [
@@ -137,14 +138,17 @@ const Leaderboard = () => {
                  {/* Floating Avatar Hub */}
                  <div className="relative z-20 mb-6 flex flex-col items-center">
                     {isFirst && <motion.span animate={{ rotate: [0, 10, -10, 0], y: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 4 }} className="text-4xl mb-2 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">👑</motion.span>}
-                    <div className="relative">
+                    <div 
+                      className="relative cursor-pointer group/avatar"
+                      onClick={() => setQuickViewUser(leader)}
+                    >
                       <Avatar 
                         src={leader.avatar} 
                         name={leader.username} 
                         size="xl" 
                         ring 
                         ringColor={isFirst ? 'ring-yellow-400' : isSecond ? 'ring-blue-400' : 'ring-orange-600'}
-                        className="shadow-2xl group-hover:scale-110 transition-transform duration-500"
+                        className="shadow-2xl group-hover/avatar:scale-110 transition-transform duration-500"
                       />
                       <div className={`absolute -bottom-2 right-0 size-8 rounded-full flex items-center justify-center text-white font-black text-sm border-2 shadow-lg ${
                         isFirst ? 'bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-300' : 
@@ -187,7 +191,15 @@ const Leaderboard = () => {
               <div className="size-14 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-2xl font-black text-white border border-white/20 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                 #{currentUserRank.rank}
               </div>
-              <Avatar src={currentUserRank.avatar} name={currentUserRank.username} size="lg" ring ringColor="ring-primary/40" />
+              <Avatar 
+                src={currentUserRank.avatar} 
+                name={currentUserRank.username} 
+                size="lg" 
+                ring 
+                ringColor="ring-primary/40" 
+                className="cursor-pointer hover:ring-primary transition-all active:scale-95"
+                onClick={() => setQuickViewUser(currentUserRank)}
+              />
               <div>
                 <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Your Standing</p>
                 <h3 className="text-xl font-black text-white">{currentUserRank.username} <span className="text-slate-500 text-xs">(YOU)</span></h3>
@@ -242,7 +254,13 @@ const Leaderboard = () => {
                     <span className={`w-8 text-center text-sm font-black ${
                       leader.rank <= 10 ? 'text-white' : 'text-slate-500'
                     }`}>#{leader.rank}</span>
-                    <Avatar src={leader.avatar} name={leader.username} size="sm" />
+                    <Avatar 
+                      src={leader.avatar} 
+                      name={leader.username} 
+                      size="sm" 
+                      className="cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all active:scale-95"
+                      onClick={() => setQuickViewUser(leader)}
+                    />
                     <div>
                     <div 
                       onClick={() => setQuickViewUser(leader)}
