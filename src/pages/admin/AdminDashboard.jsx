@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAdminStats } from '../../hooks/useAdminStats'
 import { useAdminBroadcasts } from '../../hooks/useAdminBroadcasts'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
