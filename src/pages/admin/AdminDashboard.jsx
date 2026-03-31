@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAdminStats } from '../../hooks/useAdminStats'
 import { useAdminBroadcasts } from '../../hooks/useAdminBroadcasts'
 import { useAdminNotifications } from '../../hooks/useAdminNotifications'
+import { useAdminTickets } from '../../hooks/useAdminTickets'
 import { useNotification } from '../../context/NotificationContext'
 import Card from '../../components/common/Card'
 import TrafficRadar from '../../components/admin/TrafficRadar'
@@ -130,7 +131,9 @@ const AdminDashboard = () => {
     const { totalUsers, activeQuests, completionsToday, recentActivity, firstEasterEggUser, isLoading } = useAdminStats()
     const { broadcasts, createBroadcast, deleteBroadcast, toggleBroadcast, isLoading: broadcastsLoading } = useAdminBroadcasts()
     const { pushGlobalNotification } = useAdminNotifications()
-    const { showToast } = useNotification()
+    const { unreadCount, showToast } = useNotification()
+    const { tickets, isLoading: ticketsLoading } = useAdminTickets()
+    const navigate = useNavigate()
 
     const handleCreateBroadcast = async (e) => {
         e.preventDefault()
@@ -248,10 +251,42 @@ const AdminDashboard = () => {
                         </div>
 
                         <Link 
-                            to="/admin/dashboard" 
+                            to="/admin/tickets" 
                             className="mt-6 flex items-center justify-center gap-2 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[10px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all group/btn"
                         >
                             View All Logs
+                            <span className="material-symbols-outlined text-sm transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
+                        </Link>
+                    </div>
+
+                    <div className="bg-[#0b0b1e]/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 shadow-2xl flex-1 flex flex-col justify-between group overflow-hidden relative">
+                        <div className="absolute -right-4 -top-4 size-32 bg-blue-500/5 blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Support Queue</h3>
+                                <span className="material-symbols-outlined text-blue-400 text-sm">confirmation_number</span>
+                            </div>
+                            <h4 className="text-white font-black text-lg mb-1 leading-tight">Pending Inquiries</h4>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">Recent user support tickets</p>
+                        </div>
+                        
+                        <div className="mt-6 space-y-3">
+                            {ticketsLoading ? (
+                                <div className="h-20 flex items-center justify-center"><div className="size-4 border-2 border-white/20 border-t-white animate-spin rounded-full"/></div>
+                            ) : tickets.slice(0, 3).map((t, i) => (
+                                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+                                    <div className={`size-2 rounded-full ${t.status === 'open' ? 'bg-blue-400' : 'bg-slate-600'}`}></div>
+                                    <p className="text-[11px] text-slate-400 font-medium truncate flex-1">{t.username}: {t.description}</p>
+                                </div>
+                            ))}
+                            {!ticketsLoading && tickets.length === 0 && <p className="text-[10px] text-slate-600 italic">No pending tickets</p>}
+                        </div>
+
+                        <Link 
+                            to="/admin/tickets" 
+                            className="mt-6 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[10px] font-black text-blue-400 uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all group/btn"
+                        >
+                            Open Ticket Center
                             <span className="material-symbols-outlined text-sm transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
                         </Link>
                     </div>
@@ -283,6 +318,13 @@ const AdminDashboard = () => {
                                 label="Moderation"
                                 desc="Content Control"
                                 color={{ border: 'border-red-500/10', bg: 'bg-red-500/10', text: 'text-red-400', hoverBg: 'bg-red-500/5' }}
+                            />
+                            <QuickLink
+                                to="/admin/tickets"
+                                icon="confirmation_number"
+                                label="Tickets"
+                                desc="Support Queue"
+                                color={{ border: 'border-blue-400/10', bg: 'bg-blue-400/10', text: 'text-blue-400', hoverBg: 'bg-blue-400/5' }}
                             />
                             <QuickLink
                                 to="/admin/analytics"

@@ -23,6 +23,7 @@ const AdminLayout = () => {
         { path: '/admin/users', icon: 'group', label: 'User Management' },
         { path: '/admin/quests', icon: 'military_tech', label: 'Quest Management' },
         { path: '/admin/moderation', icon: 'shield', label: 'Content Moderation' },
+        { path: '/admin/tickets', icon: 'confirmation_number', label: 'Support Tickets' },
         { path: '/admin/analytics', icon: 'bar_chart', label: 'System Analytics' },
     ]
 

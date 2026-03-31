@@ -64,6 +64,7 @@ import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminUsers from '../pages/admin/AdminUsers'
 import AdminModeration from '../pages/admin/AdminModeration'
 import AdminAnalytics from '../pages/admin/AdminAnalytics'
+import AdminTickets from '../pages/admin/AdminTickets'
 
 // Legal Pages
 import TermsOfService from '../pages/legal/TermsPage'
@@ -330,6 +331,10 @@ const router = createBrowserRouter([
       {
         path: 'analytics',
         element: <AdminAnalytics />,
+      },
+      {
+        path: 'tickets',
+        element: <AdminTickets />,
       },
     ],
   },

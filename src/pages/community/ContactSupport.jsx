@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../../config/firebase'
 import { useAuth } from '../../context/AuthContext'
+import { useNotification } from '../../context/NotificationContext'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
@@ -11,6 +12,7 @@ import Input from '../../components/common/Input'
  */
 const ContactSupport = () => {
   const { user } = useAuth()
+  const { showToast } = useNotification()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: user?.displayName || user?.username || 'Alex Dev',
@@ -28,11 +30,32 @@ const ContactSupport = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!formData.issueType || !formData.description) {
+      showToast('Please select an issue type and provide a description.', 'error')
+      return
+    }
+
     setIsSubmitting(true)
-    // Simulate submission
-    await new Promise(resolve => setTimeout(resolve, 1200))
-    setIsSubmitting(false)
-    alert('Support request deployed! 🚀 Check your inbox for updates.')
+    try {
+      await addDoc(collection(db, 'support_tickets'), {
+        uid: user?.uid || 'anonymous',
+        userEmail: user?.email || 'N/A',
+        username: formData.name,
+        studentId: formData.studentId,
+        issueType: formData.issueType,
+        description: formData.description,
+        status: 'open',
+        createdAt: serverTimestamp()
+      })
+
+      showToast('Support request deployed! 🚀 Check your inbox for updates.', 'success')
+      setFormData(prev => ({ ...prev, description: '', issueType: '' }))
+    } catch (error) {
+      console.error('Error submitting ticket:', error)
+      showToast('Failed to deploy request. Please try again.', 'error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const quickChannels = [
