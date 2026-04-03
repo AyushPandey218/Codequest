@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../config/firebase'
+import { db, isDemoMode } from '../config/firebase'
+import { questDetails } from '../data/quests'
 
 /**
  * Hook to fetch quest details from Firestore
@@ -21,18 +22,28 @@ export const useQuest = (questId) => {
 
     setLoading(true)
 
+    // Demo Mode: always use local data, no Firestore calls
+    if (isDemoMode) {
+      setQuest(questDetails[questId] || null)
+      setLoading(false)
+      return
+    }
+
     const unsubscribe = onSnapshot(
       doc(db, 'quests', questId),
       (docSnapshot) => {
         if (docSnapshot.exists()) {
           setQuest({ id: docSnapshot.id, ...docSnapshot.data() })
         } else {
-          setQuest(null)
+          // Fallback to local if doc missing in Firestore
+          setQuest(questDetails[questId] || null)
         }
         setLoading(false)
       },
       (err) => {
         console.error('Firestore error fetching quest:', err.message)
+        // Fallback on error
+        setQuest(questDetails[questId] || null)
         setError(err.message)
         setLoading(false)
       }
