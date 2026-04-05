@@ -21,8 +21,6 @@ const SpaceHero = () => {
                     preload="auto"
                     className="h-full w-full object-cover"
                 >
-                    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260306_115329_5e00c9c5-4d69-49b7-94c3-9c31c60bb644.mp4" type="video/mp4" />
-                    {/* Fallback to local original video if necessary */}
                     <source src="/landingvid/pk34pwvq0nrmt0cwshts0ymj1m_result_.mp4" type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-black/40 z-0" />
