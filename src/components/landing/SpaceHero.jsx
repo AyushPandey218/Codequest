@@ -21,6 +21,9 @@ const SpaceHero = () => {
                     preload="auto"
                     className="h-full w-full object-cover"
                 >
+                    {/* GitHub Raw Content (Faster loading/CDN) */}
+                    <source src="https://raw.githubusercontent.com/AyushPandey218/Codequest/main/public/landingvid/pk34pwvq0nrmt0cwshts0ymj1m_result_.mp4" type="video/mp4" />
+                    {/* Local Fallback */}
                     <source src="/landingvid/pk34pwvq0nrmt0cwshts0ymj1m_result_.mp4" type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-black/40 z-0" />
