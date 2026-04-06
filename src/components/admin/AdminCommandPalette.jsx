@@ -91,7 +91,8 @@ const AdminCommandPalette = () => {
             }
         }
     }
-
+    
+    
     if (!isOpen) return null
 
     return (

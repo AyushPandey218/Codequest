@@ -24,6 +24,8 @@ const TrafficRadar = () => {
         setLogs(initialLogs);
     }, []);
 
+
+    
     // Listen to real activity (e.g., from notifications or users)
     useEffect(() => {
         const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(5));
