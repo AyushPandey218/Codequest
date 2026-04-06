@@ -21,6 +21,7 @@ const FloatingCodeBackground = () => {
         'const [xp, setXp] = useState(0)'
     ]
 
+    
     useEffect(() => {
         // Generate randomized snippet positions and timings
         const newSnippets = Array.from({ length: 24 }).map((_, i) => ({
