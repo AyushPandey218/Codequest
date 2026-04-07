@@ -654,19 +654,6 @@ export const quests = [
         completions: '0',
         tags: ['Arrays', 'Hash Map', 'Boyer-Moore'],
         createdAt: new Date(),
-    },
-    {
-        id: 'complete-your-dossier',
-        title: 'Complete Your Dossier',
-        description: 'Update your profile with a bio, university, and website.',
-        category: 'profile',
-        difficulty: 'Easy',
-        xp: 250,
-        duration: '5 min',
-        icon: '👤',
-        completions: '1.2k',
-        tags: ['Profile', 'Onboarding'],
-        createdAt: new Date(),
     }]
 
 export const questDetails = {

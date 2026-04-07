@@ -25,11 +25,16 @@ const QuestSelection = () => {
     const unique = new Map()
     quests.forEach(q => {
       const key = q.id
+      const category = (q.category || q.Category || 'other').toString().toLowerCase().trim()
+      
+      // EXCLUDE profile-related tasks from the main Quest Selection grid
+      if (category === 'profile') return
+      
       if (!unique.has(key)) {
         unique.set(key, {
           ...q,
           difficulty: q.difficulty || q.Difficulty || 'Medium',
-          category: q.category || q.Category || 'other',
+          category: category,
           progress: userProgress[q.id]?.completed ? 100 :
             userProgress[q.id]?.passedTests && userProgress[q.id]?.totalTests
               ? (userProgress[q.id].passedTests / userProgress[q.id].totalTests * 100)
