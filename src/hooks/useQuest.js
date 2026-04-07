@@ -32,12 +32,23 @@ export const useQuest = (questId) => {
     const unsubscribe = onSnapshot(
       doc(db, 'quests', questId),
       (docSnapshot) => {
+        let mergedQuest = null;
+        const localDetails = questDetails[questId] || {};
+
         if (docSnapshot.exists()) {
-          setQuest({ id: docSnapshot.id, ...docSnapshot.data() })
+          const remoteData = docSnapshot.data();
+          // Merge logic: local data provides defaults for missing remote fields
+          mergedQuest = {
+            ...localDetails,
+            ...remoteData,
+            id: docSnapshot.id
+          };
         } else {
           // Fallback to local if doc missing in Firestore
-          setQuest(questDetails[questId] || null)
+          mergedQuest = questId in questDetails ? { ...localDetails, id: questId } : null;
         }
+
+        setQuest(mergedQuest)
         setLoading(false)
       },
       (err) => {

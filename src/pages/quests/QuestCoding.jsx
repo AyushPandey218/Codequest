@@ -380,7 +380,15 @@ const QuestCoding = () => {
                         if (line.trim() === '') return <br key={i} />
                         return <p key={i} className="text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-2 leading-relaxed">{line}</p>
                       })
-                      : <p className="text-slate-600 dark:text-slate-400">No instructions available.</p>
+                      : (
+                        <div className="py-8 text-center bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
+                           <span className="material-symbols-outlined text-4xl text-slate-400 mb-2">description_off</span>
+                           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Mission Details Missing</h3>
+                           <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                             The briefing for this mission hasn't been uploaded yet. Check your dashboard for mission-specific objectives.
+                           </p>
+                        </div>
+                      )
                     }
                   </div>
                 )}

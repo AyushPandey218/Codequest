@@ -654,6 +654,19 @@ export const quests = [
         completions: '0',
         tags: ['Arrays', 'Hash Map', 'Boyer-Moore'],
         createdAt: new Date(),
+    },
+    {
+        id: 'complete-your-dossier',
+        title: 'Complete Your Dossier',
+        description: 'Update your profile with a bio, university, and website.',
+        category: 'profile',
+        difficulty: 'Easy',
+        xp: 250,
+        duration: '5 min',
+        icon: '👤',
+        completions: '1.2k',
+        tags: ['Profile', 'Onboarding'],
+        createdAt: new Date(),
     }]
 
 export const questDetails = {
@@ -2051,4 +2064,32 @@ export const questDetails = {
             { id: 'tc1', description: 'Basic majority', input: '[3,2,3]', expectedOutput: '3', isHidden: false }],
         tags: ['Arrays', 'Hash Map', 'Boyer-Moore'],
     },
-}
+    'complete-your-dossier': {
+        id: 'complete-your-dossier',
+        title: 'Complete Your Dossier',
+        description: 'Update your profile with a bio, university, and website to establish your legacy.',
+        category: 'profile',
+        difficulty: 'Easy',
+        xp: 250,
+        duration: '5 min',
+        icon: '👤',
+        instructions: `## Complete Your Dossier\n\nTo establish your legacy in the CodeQuest universe, you must complete your profile dossier.\n\n### Requirements\n- **Bio**: Tell us about your coding journey.\n- **University**: Where do you sharpen your mind?\n- **Website**: Share your digital fortress.\n\n### How to complete\nNavigate to your profile settings and fill in the missing information. Once updated, this quest will automatically mark as complete.\n\n*Note: This is a special onboarding mission.*`,
+        hints: [
+            'Click on your avatar in the top right.',
+            'Go to "Edit Profile".',
+            'Fill all required fields to earn the Profile Perfectionist trophy!'],
+        solution: {
+            Python3: `# This is a profile task, no code needed.\nprint("Profile updated!")`,
+            JavaScript: `// This is a profile task, no code needed.\nconsole.log("Profile updated!");`,
+            TypeScript: `// This is a profile task, no code needed.\nconsole.log("Profile updated!");`,
+        },
+        starterCode: {
+            Python3: `# Your profile updates are handled in settings.\n# Review the instructions tab for more details.`,
+            JavaScript: `// Your profile updates are handled in settings.\n// Review the instructions tab for more details.`,
+            TypeScript: `// Your profile updates are earned via profile settings.`,
+        },
+        testCases: [
+            { id: 'tc1', description: 'Profile status', input: 'check()', expectedOutput: 'updated', isHidden: false }],
+        tags: ['Profile', 'Onboarding'],
+    },
+};

@@ -17,34 +17,45 @@ export const useQuestList = () => {
       try {
         setLoading(true)
 
-        // Demo Mode: always use local data, no Firestore calls
-        if (isDemoMode) {
-          setQuests([...localQuests].sort((a, b) => b.xp - a.xp))
-          setLoading(false)
-          return
+        let firestoreQuests = []
+        
+        // Only fetch from Firestore if not in Demo Mode
+        if (!isDemoMode) {
+          try {
+            const q = query(collection(db, 'quests'), orderBy('xp', 'desc'))
+            const querySnapshot = await getDocs(q)
+            querySnapshot.forEach((doc) => {
+              firestoreQuests.push({ id: doc.id, ...doc.data() })
+            })
+          } catch (err) {
+            console.error('Firestore error fetching quest list:', err.message)
+            // Continue with local data if firestore fails
+          }
         }
 
-        const q = query(collection(db, 'quests'), orderBy('xp', 'desc'))
-        const querySnapshot = await getDocs(q)
-        const questsData = []
-        querySnapshot.forEach((doc) => {
-          questsData.push({ id: doc.id, ...doc.data() })
+        // Merge logic: Map for deduplication, Firestore data takes precedence for shared IDs
+        const uniqueQuests = new Map()
+        
+        // Add all local quests first
+        localQuests.forEach(q => uniqueQuests.set(q.id, q))
+        
+        // Override or add Firestore quests
+        firestoreQuests.forEach(q => {
+          uniqueQuests.set(q.id, {
+            ...uniqueQuests.get(q.id),
+            ...q
+          })
         })
+
+        // Sort by XP (descending)
+        const mergedQuests = Array.from(uniqueQuests.values()).sort((a, b) => (b.xp || 0) - (a.xp || 0))
         
-        // Sort by XP
-        questsData.sort((a, b) => b.xp - a.xp)
-        
-        // If Firestore returned nothing, fall back to local
-        if (questsData.length === 0) {
-          setQuests([...localQuests].sort((a, b) => b.xp - a.xp))
-        } else {
-          setQuests(questsData)
-        }
+        setQuests(mergedQuests)
         setError(null)
       } catch (err) {
-        console.error('Firestore error fetching quest list:', err.message)
-        // Fallback on error
-        setQuests([...localQuests].sort((a, b) => b.xp - a.xp))
+        console.error('Unexpected error in useQuestList:', err.message)
+        // Ultimate fallback
+        setQuests([...localQuests].sort((a, b) => (b.xp || 0) - (a.xp || 0)))
         setError(err.message)
       } finally {
         setLoading(false)
