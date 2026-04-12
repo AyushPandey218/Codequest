@@ -15,6 +15,7 @@ import PasswordRecovery from '../pages/auth/PasswordRecovery'
 import PasswordRecoveryConfirmation from '../pages/auth/PasswordRecoveryConfirmation'
 import NewPasswordSetup from '../pages/auth/NewPasswordSetup'
 import PasswordChanged from '../pages/auth/PasswordChanged'
+import AuthActionHandler from '../pages/auth/AuthActionHandler'
 
 // Dashboard Pages
 import Dashboard from '../pages/dashboard/Dashboard'
@@ -147,6 +148,10 @@ const router = createBrowserRouter([
           {
             path: 'password-changed',
             element: <PasswordChanged />,
+          },
+          {
+            path: 'action',
+            element: <AuthActionHandler />,
           },
         ],
       },

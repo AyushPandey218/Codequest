@@ -8,7 +8,8 @@ import {
   updateProfile as firebaseUpdateProfile,
   sendEmailVerification,
   sendPasswordResetEmail,
-  confirmPasswordReset
+  confirmPasswordReset,
+  applyActionCode
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion, increment, onSnapshot as firestoreSnapshot } from 'firebase/firestore'
 import { auth, db, googleProvider, isDemoMode } from '../config/firebase'
@@ -389,6 +390,16 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const verifyEmailCode = async (oobCode) => {
+    try {
+      await applyActionCode(auth, oobCode)
+      return { success: true }
+    } catch (error) {
+      console.error('Email verification error:', error)
+      return { success: false, error: getAuthErrorMessage(error.code) }
+    }
+  }
+
   const isAdmin = user?.role === 'admin'
 
   const value = {
@@ -406,6 +417,7 @@ export const AuthProvider = ({ children }) => {
     completeLesson,
     resetPassword,
     confirmReset,
+    verifyEmailCode,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
