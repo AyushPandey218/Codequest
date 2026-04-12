@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/__/auth/(.*)", "destination": "https://codequest-1ad1a.firebaseapp.com/__/auth/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
